@@ -1,0 +1,33 @@
+@use "../tokens/colors" as *;
+
+[data-theme="dark"] {
+  --color-bg: #{$color-slate-950};
+  --color-bg-soft: #0b1120;
+  --color-bg-muted: #111827;
+
+  --color-surface: rgba(15, 23, 42, 0.72);
+  --color-surface-solid: #{$color-slate-900};
+  --color-surface-muted: #{$color-slate-800};
+
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-border-strong: rgba(255, 255, 255, 0.14);
+
+  --color-text: #{$color-slate-50};
+  --color-text-soft: #{$color-slate-300};
+  --color-text-muted: #{$color-slate-400};
+  --color-text-inverse: #{$color-slate-950};
+
+  --color-primary: #{$color-zenix-400};
+  --color-primary-hover: #{$color-zenix-300};
+  --color-primary-soft: rgba(124, 145, 255, 0.14);
+
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --color-info: #38bdf8;
+
+  --shadow-surface: 0 24px 80px rgba(0, 0, 0, 0.32);
+  --shadow-floating: 0 36px 110px rgba(0, 0, 0, 0.46);
+
+  --blur-surface: blur(24px) saturate(180%);
+}

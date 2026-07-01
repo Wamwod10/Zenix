@@ -1,0 +1,37 @@
+@use "../abstracts" as *;
+@use "../tokens/typography" as *;
+
+html {
+  font-family: $font-family-primary;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+body {
+  min-width: 320px;
+  background:
+    radial-gradient(circle at top left, rgba(74, 103, 255, 0.12), transparent 34rem),
+    radial-gradient(circle at top right, rgba(142, 96, 128, 0.12), transparent 32rem),
+    var(--color-bg);
+  color: var(--color-text);
+  font-size: $font-size-md;
+  line-height: $line-height-body;
+  letter-spacing: $letter-spacing-body;
+  overflow-x: hidden;
+  transition:
+    background $transition-base,
+    color $transition-base;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+::selection {
+  background: var(--color-primary-soft);
+  color: var(--color-text);
+}
+
+:focus-visible {
+  @include focus-ring;
+}

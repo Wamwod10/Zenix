@@ -1,0 +1,7 @@
+@function rem($px) {
+  @return calc($px / 16) * 1rem;
+}
+
+@function fluid($min, $max) {
+  @return clamp(#{$min}px, 2vw, #{$max}px);
+}

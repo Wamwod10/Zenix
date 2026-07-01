@@ -1,0 +1,23 @@
+.ui-loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--color-text-muted);
+  font-size: 14px;
+  font-weight: 600;
+
+  &__spinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--color-border-strong);
+    border-top-color: var(--color-primary);
+    border-radius: 50%;
+    animation: ui-loading-spin 700ms linear infinite;
+  }
+}
+
+@keyframes ui-loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

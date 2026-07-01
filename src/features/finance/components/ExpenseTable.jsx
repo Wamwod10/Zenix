@@ -1,0 +1,1 @@
+﻿import "./ExpenseTable.scss";

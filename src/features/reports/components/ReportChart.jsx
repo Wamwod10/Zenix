@@ -1,0 +1,1 @@
+﻿import "./ReportChart.scss";

@@ -1,0 +1,58 @@
+@use "./breakpoints" as *;
+
+@mixin respond-up($key) {
+  $size: map-get($breakpoints, $key);
+
+  @if $size {
+    @media (min-width: $size) {
+      @content;
+    }
+  } @else {
+    @error "Breakpoint `#{$key}` topilmadi.";
+  }
+}
+
+@mixin respond-down($key) {
+  $size: map-get($breakpoints, $key);
+
+  @if $size {
+    @media (max-width: calc($size - 1px)) {
+      @content;
+    }
+  } @else {
+    @error "Breakpoint `#{$key}` topilmadi.";
+  }
+}
+
+@mixin focus-ring {
+  outline: 3px solid rgba(74, 103, 255, 0.18);
+  outline-offset: 2px;
+}
+
+@mixin smooth-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(15, 23, 42, 0.18) transparent;
+
+  &::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(15, 23, 42, 0.16);
+    border: 3px solid transparent;
+    border-radius: 999px;
+    background-clip: content-box;
+  }
+}
+
+@mixin glass-surface {
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.52);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+}

@@ -1,0 +1,38 @@
+@use "../tokens/typography" as *;
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: var(--color-text);
+  font-weight: $font-weight-semibold;
+  line-height: $line-height-heading;
+  letter-spacing: $letter-spacing-heading;
+}
+
+h1 {
+  font-size: clamp(2.25rem, 5vw, $font-size-5xl);
+}
+
+h2 {
+  font-size: clamp(1.875rem, 4vw, $font-size-4xl);
+}
+
+h3 {
+  font-size: clamp(1.5rem, 3vw, $font-size-3xl);
+}
+
+p {
+  color: var(--color-text-soft);
+}
+
+small {
+  font-size: $font-size-sm;
+  color: var(--color-text-muted);
+}
+
+strong {
+  font-weight: $font-weight-semibold;
+}

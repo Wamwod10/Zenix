@@ -1,0 +1,1 @@
+﻿import "./FinanceCard.scss";

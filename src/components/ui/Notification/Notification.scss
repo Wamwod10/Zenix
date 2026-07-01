@@ -1,0 +1,187 @@
+.ui-notification-layer {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  z-index: 9999;
+  width: min(calc(100vw - 32px), 460px);
+  pointer-events: none;
+  transform: translateX(-50%);
+}
+
+.ui-notification {
+  position: relative;
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) 34px;
+  align-items: center;
+  gap: 12px;
+  min-height: 62px;
+  padding: 12px 12px 12px 14px;
+  overflow: hidden;
+  color: rgba(44, 30, 10, 0.9);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.56), rgba(255, 255, 255, 0.22)),
+    rgba(255, 255, 255, 0.32);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 22px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.96),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.24),
+    0 20px 60px rgba(0, 0, 0, 0.08),
+    0 6px 22px rgba(180, 105, 18, 0.08);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-40px) scale(0.96);
+  transition:
+    opacity 360ms ease-out,
+    transform 360ms ease-out,
+    box-shadow 260ms ease;
+  backdrop-filter: blur(30px) saturate(180%);
+  -webkit-backdrop-filter: blur(30px) saturate(180%);
+}
+
+.ui-notification::before {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  pointer-events: none;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.62), transparent 42%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.28), transparent 58%);
+  border-radius: 21px;
+}
+
+.ui-notification--visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+}
+
+.ui-notification__glow {
+  position: absolute;
+  inset: auto auto -38px -34px;
+  width: 118px;
+  height: 118px;
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.28), transparent 68%);
+  filter: blur(4px);
+}
+
+.ui-notification__icon,
+.ui-notification__close,
+.ui-notification__message {
+  position: relative;
+  z-index: 1;
+}
+
+.ui-notification__icon {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  color: rgba(176, 94, 10, 0.95);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.6), rgba(255, 247, 237, 0.28)),
+    rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(255, 237, 213, 0.78);
+  border-radius: 14px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 10px 26px rgba(180, 105, 18, 0.12);
+}
+
+.ui-notification__message {
+  margin: 0;
+  color: rgba(35, 24, 12, 0.84);
+  font-size: 14px;
+  font-weight: 680;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.ui-notification__close {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  color: rgba(70, 50, 30, 0.5);
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.38);
+  border-radius: 13px;
+  cursor: pointer;
+  transition:
+    color 180ms ease,
+    background 180ms ease,
+    transform 180ms ease,
+    border-color 180ms ease;
+}
+
+.ui-notification__close:hover {
+  color: rgba(35, 24, 12, 0.84);
+  background: rgba(255, 255, 255, 0.34);
+  border-color: rgba(255, 255, 255, 0.58);
+  transform: translateY(-1px);
+}
+
+.ui-notification__close:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+}
+
+.ui-notification--success .ui-notification__icon {
+  color: rgba(22, 101, 52, 0.94);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.62), rgba(240, 253, 244, 0.3)),
+    rgba(34, 197, 94, 0.12);
+  border-color: rgba(187, 247, 208, 0.72);
+}
+
+.ui-notification--success .ui-notification__glow {
+  background: radial-gradient(circle, rgba(34, 197, 94, 0.24), transparent 68%);
+}
+
+.ui-notification--info .ui-notification__icon {
+  color: rgba(37, 99, 235, 0.94);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.62), rgba(239, 246, 255, 0.3)),
+    rgba(59, 130, 246, 0.12);
+  border-color: rgba(191, 219, 254, 0.72);
+}
+
+.ui-notification--info .ui-notification__glow {
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.22), transparent 68%);
+}
+
+.ui-notification--warning .ui-notification__icon,
+.ui-notification--error .ui-notification__icon {
+  color: rgba(176, 94, 10, 0.95);
+}
+
+@media (max-width: 560px) {
+  .ui-notification-layer {
+    top: 18px;
+    width: min(calc(100vw - 24px), 420px);
+  }
+
+  .ui-notification {
+    grid-template-columns: 34px minmax(0, 1fr) 32px;
+    min-height: 58px;
+    gap: 10px;
+    padding: 11px;
+    border-radius: 20px;
+  }
+
+  .ui-notification::before {
+    border-radius: 19px;
+  }
+
+  .ui-notification__icon,
+  .ui-notification__close {
+    width: 32px;
+    height: 32px;
+    border-radius: 12px;
+  }
+
+  .ui-notification__message {
+    font-size: 13px;
+  }
+}
