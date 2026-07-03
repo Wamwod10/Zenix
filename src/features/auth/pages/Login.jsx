@@ -1,9 +1,11 @@
 import { Lock, Mail } from "lucide-react";
 import { Button, Input, useNotification } from "../../../components/ui";
+import { useGlassFollow } from "../../../shared/hooks/useGlassFollow";
 import "./Login.scss";
 
 export default function Login() {
   const { error } = useNotification();
+  const glassFollowRef = useGlassFollow();
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -89,13 +91,15 @@ export default function Login() {
       </section>
 
       <aside className="login-page__visual">
-        <div className="login-page__glass-card">
+        <div className="login-page__follow" ref={glassFollowRef}>
+          <div className="login-page__glass-card">
           <span>AI tahlili</span>
           <h2>Bugungi savdo kechagidan 18% yuqori.</h2>
           <p>
             Ombordagi tez aylanadigan mahsulotlar bo‘yicha aqlli tavsiyalar
             tayyor.
           </p>
+          </div>
         </div>
       </aside>
     </main>

@@ -1,34 +1,110 @@
-import { ChevronDown } from "lucide-react";
+import { Check, ChevronDown } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import "./Dropdown.scss";
 
 export function Dropdown({
   label,
+  name,
   value,
   placeholder = "Select option",
   options = [],
   onChange,
   className = "",
 }) {
+  const dropdownRef = useRef(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const [internalValue, setInternalValue] = useState("");
+
+  const selectedValue = value ?? internalValue;
+  const selectedOption = useMemo(
+    () => options.find((option) => option.value === selectedValue),
+    [options, selectedValue],
+  );
+
+  const handleSelect = (nextValue) => {
+    if (value === undefined) {
+      setInternalValue(nextValue);
+    }
+
+    onChange?.(nextValue);
+    setIsOpen(false);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!dropdownRef.current?.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    const handleEscape = (event) => {
+      if (event.key === "Escape") {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, []);
+
   return (
-    <div className={`ui-dropdown ${className}`}>
+    <div
+      className={`ui-dropdown ${isOpen ? "ui-dropdown--open" : ""} ${className}`}
+      ref={dropdownRef}
+    >
       {label && <label className="ui-dropdown__label">{label}</label>}
 
-      <div className="ui-dropdown__control">
-        <select
-          className="ui-dropdown__select"
-          value={value}
-          onChange={(event) => onChange?.(event.target.value)}
+      <div className="ui-dropdown__control-wrap">
+        <button
+          className="ui-dropdown__control"
+          type="button"
+          aria-haspopup="listbox"
+          aria-expanded={isOpen}
+          onClick={() => setIsOpen((current) => !current)}
         >
-          <option value="">{placeholder}</option>
+          <span
+            className={
+              selectedOption
+                ? "ui-dropdown__value"
+                : "ui-dropdown__value ui-dropdown__value--placeholder"
+            }
+          >
+            {selectedOption?.label || placeholder}
+          </span>
 
-          {options.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
+          <ChevronDown className="ui-dropdown__icon" size={18} />
+        </button>
 
-        <ChevronDown className="ui-dropdown__icon" size={18} />
+        {name && <input type="hidden" name={name} value={selectedValue} />}
+
+        {isOpen && (
+          <div className="ui-dropdown__menu" role="listbox">
+            {options.map((option) => {
+              const isSelected = option.value === selectedValue;
+
+              return (
+                <button
+                  className={`ui-dropdown__option ${
+                    isSelected ? "ui-dropdown__option--selected" : ""
+                  }`}
+                  key={option.value}
+                  type="button"
+                  role="option"
+                  aria-selected={isSelected}
+                  onClick={() => handleSelect(option.value)}
+                >
+                  <span>{option.label}</span>
+                  {isSelected && <Check size={15} />}
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );

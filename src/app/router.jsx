@@ -6,8 +6,10 @@ import Login from "../features/auth/pages/Login";
 import Register from "../features/auth/pages/Register";
 import BusinessType from "../features/onboarding/pages/BusinessType";
 import BusinessSetup from "../features/onboarding/pages/BusinessSetup";
+import Pricing from "../features/onboarding/pages/Pricing";
 import NotFound from "../pages/NotFound";
 import EmailVerification from "../features/auth/pages/EmailVerification";
+import PaymentCard from "../features/onboarding/pages/PaymentCard";
 
 export const router = createBrowserRouter([
   {
@@ -38,6 +40,16 @@ export const router = createBrowserRouter([
   {
     path: "/business-setup",
     element: <BusinessSetup />,
+  },
+
+  {
+    path: "/pricing",
+    element: <Pricing />,
+  },
+
+  {
+    path: "/payment-card",
+    element: <PaymentCard />,
   },
 
   {

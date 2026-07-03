@@ -4,38 +4,159 @@
   Check,
   Factory,
   GraduationCap,
+  Hotel,
+  Pill,
   ShoppingBag,
   UtensilsCrossed,
   Wrench,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "../../../components/ui";
+import { useGlassFollow } from "../../../shared/hooks/useGlassFollow";
 import "./BusinessType.scss";
 
 const businessCategories = [
   {
     id: "retail",
     title: "Savdo",
-    description: "Mahsulotni sotib olib, sotasiz.",
+    description: "Do‘kon, market va mahsulot savdosi.",
     icon: ShoppingBag,
     tone: "blue",
-    modules: ["Products", "Warehouse", "POS", "Customers", "Reports", "AI"],
+    types: [
+      "Telefon do‘koni",
+      "Maishiy texnika",
+      "Kompyuter do‘koni",
+      "Mini market",
+      "Supermarket",
+      "Kiyim do‘koni",
+      "Poyabzal do‘koni",
+      "Kosmetika",
+      "Zargarlik",
+      "Kitob do‘koni",
+      "O‘yinchoqlar",
+      "Sport anjomlari",
+      "Gul do‘koni",
+      "Avto ehtiyot qismlar",
+      "Qurilish materiallari",
+      "Mebel",
+      "Elektronika",
+      "Optika",
+    ],
+    modules: [
+      "Mahsulotlar",
+      "Ombor",
+      "Kassa",
+      "Mijozlar",
+      "Yetkazuvchilar",
+      "Shtrix-kod",
+    ],
   },
   {
     id: "food",
     title: "Ovqatlanish",
-    description: "Kafe, restoran va fast food.",
+    description: "Restoran, kafe, fast food va oshxona.",
     icon: UtensilsCrossed,
     tone: "orange",
-    modules: ["Menu", "Tables", "Kitchen", "Orders", "Delivery", "AI"],
+    types: [
+      "Restoran",
+      "Kafe",
+      "Fast food",
+      "Milliy taomlar",
+      "Burger",
+      "Pitseriya",
+      "Sushi",
+      "Choyxona",
+      "Kofe shop",
+      "Nonvoyxona",
+      "Qandolat",
+      "Oshxona",
+      "Catering",
+    ],
+    modules: [
+      "Menyu",
+      "Stollar",
+      "Oshxona",
+      "Buyurtmalar",
+      "Yetkazish",
+      "To‘lovlar",
+    ],
+  },
+  {
+    id: "medical",
+    title: "Apteka va tibbiyot",
+    description: "Dorixona, klinika va tibbiy xizmatlar.",
+    icon: Pill,
+    tone: "rose",
+    types: [
+      "Dorixona",
+      "Klinika",
+      "Stomatologiya",
+      "Diagnostika markazi",
+      "Laboratoriya",
+      "Veterinariya klinikasi",
+      "Tibbiy buyumlar do‘koni",
+    ],
+    modules: [
+      "Dorilar",
+      "Partiyalar",
+      "Yaroqlilik",
+      "Bemorlar",
+      "Qabullar",
+      "Ombor",
+    ],
   },
   {
     id: "education",
-    title: "Ta'lim",
-    description: "O'quv markazi, kurslar va bog'cha.",
+    title: "Ta’lim",
+    description: "O‘quv markazi, kurslar va bog‘cha.",
     icon: GraduationCap,
     tone: "violet",
-    modules: ["Students", "Groups", "Schedule", "Payments", "Attendance", "AI"],
+    types: [
+      "O‘quv markazi",
+      "IT akademiya",
+      "Til markazi",
+      "Maktab",
+      "Bog‘cha",
+      "Universitet",
+      "O‘quv kurslari",
+      "Haydovchilik maktabi",
+    ],
+    modules: [
+      "O‘quvchilar",
+      "Guruhlar",
+      "Dars jadvali",
+      "To‘lovlar",
+      "Davomat",
+      "Ustozlar",
+    ],
+  },
+  {
+    id: "service",
+    title: "Xizmat ko‘rsatish",
+    description: "Salon, servis va xizmat bizneslari.",
+    icon: Wrench,
+    tone: "green",
+    types: [
+      "Telefon ta’mirlash",
+      "Kompyuter servisi",
+      "Avtoservis",
+      "Go‘zallik saloni",
+      "Barbershop",
+      "Kimyoviy tozalash",
+      "Kir yuvish",
+      "Foto studio",
+      "Reklama agentligi",
+      "Turizm agentligi",
+    ],
+    modules: [
+      "Bronlar",
+      "Xizmatlar",
+      "Mijozlar",
+      "Jamoa",
+      "To‘lovlar",
+      "Vazifalar",
+    ],
   },
   {
     id: "production",
@@ -43,38 +164,101 @@ const businessCategories = [
     description: "Mahsulot ishlab chiqaruvchi korxonalar.",
     icon: Factory,
     tone: "teal",
-    modules: ["Materials", "Production", "Warehouse", "Orders", "Costs", "AI"],
+    types: [
+      "Tikuvchilik",
+      "Mebel ishlab chiqarish",
+      "Metall ishlab chiqarish",
+      "Plastik mahsulotlar",
+      "Poligrafiya",
+      "Oziq-ovqat ishlab chiqarish",
+      "Ichimlik ishlab chiqarish",
+    ],
+    modules: [
+      "Xomashyo",
+      "Ishlab chiqarish",
+      "Ombor",
+      "Buyurtmalar",
+      "Xarajatlar",
+      "Sifat nazorati",
+    ],
   },
   {
-    id: "service",
-    title: "Xizmat",
-    description: "Salon, servis va boshqa xizmatlar.",
-    icon: Wrench,
-    tone: "green",
-    modules: ["Bookings", "Clients", "Services", "Staff", "Payments", "AI"],
+    id: "hospitality",
+    title: "Mehmonxona",
+    description: "Hotel, hostel va dam olish maskanlari.",
+    icon: Hotel,
+    tone: "sky",
+    types: [
+      "Mehmonxona",
+      "Hostel",
+      "Kapsula hotel",
+      "Dam olish maskani",
+      "Mehmon uyi",
+      "Resort",
+      "Sanatoriya",
+    ],
+    modules: [
+      "Xonalar",
+      "Bronlash",
+      "Kirish",
+      "Chiqish",
+      "Tozalash",
+      "Mehmonlar",
+    ],
   },
   {
     id: "construction",
     title: "Qurilish",
-    description: "Qurilish va ko'chmas mulk.",
+    description: "Qurilish, ta’mirlash va developerlik.",
     icon: Building2,
     tone: "amber",
-    modules: ["Projects", "Materials", "Teams", "Budget", "Timeline", "AI"],
+    types: [
+      "Qurilish kompaniyasi",
+      "Ta’mirlash xizmati",
+      "Arxitektura",
+      "Dizayn studiyasi",
+      "Qurilish materiallari ishlab chiqarish",
+      "Developer kompaniyalari",
+    ],
+    modules: [
+      "Loyihalar",
+      "Materiallar",
+      "Jamoalar",
+      "Budjet",
+      "Muddatlar",
+      "Hujjatlar",
+    ],
   },
 ];
 
-const defaultModules = ["Products", "Warehouse", "POS", "Customers", "Reports", "AI"];
+const defaultModules = [
+  "Mahsulotlar",
+  "Ombor",
+  "Kassa",
+  "CRM",
+  "Hisobotlar",
+  "AI",
+];
 const previewSwapDelay = 340;
+const selectedBusinessStorageKey = "zenix:selectedBusinessType";
 
 export default function BusinessType() {
-  const [selected, setSelected] = useState(null);
+  const navigate = useNavigate();
+  const [selected, setSelected] = useState(() =>
+    window.localStorage.getItem(selectedBusinessStorageKey),
+  );
   const [previewCategory, setPreviewCategory] = useState(null);
   const [previewStatus, setPreviewStatus] = useState("idle");
+  const glassFollowRef = useGlassFollow();
 
   const selectedCategory = businessCategories.find(
     (item) => item.id === selected,
   );
-  const previewModules = previewCategory?.modules || defaultModules;
+
+  const previewModules = previewCategory
+    ? previewCategory.modules.slice(0, 6)
+    : defaultModules;
+
   const previewContentClasses = [
     "business-type__preview-content",
     previewStatus !== "idle"
@@ -85,9 +269,7 @@ export default function BusinessType() {
     .join(" ");
 
   useEffect(() => {
-    if (selectedCategory?.id === previewCategory?.id) {
-      return undefined;
-    }
+    if (selectedCategory?.id === previewCategory?.id) return undefined;
 
     setPreviewStatus("leaving");
 
@@ -105,17 +287,33 @@ export default function BusinessType() {
     return () => window.clearTimeout(swapTimer);
   }, [previewCategory?.id, selectedCategory]);
 
+  const handleSelect = (businessTypeId) => {
+    setSelected(businessTypeId);
+    window.localStorage.setItem(selectedBusinessStorageKey, businessTypeId);
+  };
+
+  const handleContinue = () => {
+    if (!selectedCategory) return;
+
+    navigate("/business-setup", {
+      state: {
+        businessTypeId: selectedCategory.id,
+      },
+    });
+  };
+
   return (
     <main className="business-type">
       <section className="business-type__left">
         <div className="business-type__header">
-          <span className="business-type__step">STEP 2 OF 5</span>
+          <span className="business-type__step">2 / 5-qadam</span>
 
-          <h1>Biznesingizni tanlang.</h1>
+          <h1>Biznes turini tanlang.</h1>
 
           <p>
-            Tanlovingiz asosida ZENIX sizga mos modullar, maydonlar va AI
-            imkoniyatlarini avtomatik tayyorlaydi.
+            Tanlovingiz asosida ZENIX ish maydonini biznesingizga moslaydi:
+            modullar, maydonlar, atamalar va AI imkoniyatlari avtomatik
+            tayyorlanadi.
           </p>
         </div>
 
@@ -131,10 +329,10 @@ export default function BusinessType() {
                 className={`business-type__card business-type__card--${item.tone} ${
                   isActive ? "business-type__card--active" : ""
                 }`}
-                onClick={() => setSelected(item.id)}
+                onClick={() => handleSelect(item.id)}
               >
                 <div className="business-type__icon">
-                  <Icon size={24} />
+                  <Icon size={23} />
                 </div>
 
                 <div>
@@ -153,65 +351,85 @@ export default function BusinessType() {
         </div>
 
         <div className="business-type__footer">
-          <Button rightIcon={<ArrowRight size={18} />} disabled={!selected}>
+          <Button
+            rightIcon={<ArrowRight size={18} />}
+            disabled={!selected}
+            onClick={handleContinue}
+          >
             Davom etish
           </Button>
         </div>
       </section>
 
       <aside className="business-type__right">
-        <div className="business-type__setup-card">
-          <div className="business-type__setup-top">
-            <span>STEP 2 / 5</span>
-            <strong>Workspace setup</strong>
-          </div>
-
-          <div className="business-type__progress">
-            <div className="business-type__progress-item business-type__progress-item--done">
-              <span>1</span>
-              <p>Account</p>
+        <div className="business-type__follow" ref={glassFollowRef}>
+          <div className="business-type__setup-card">
+            <div className="business-type__setup-top">
+              <span>2 / 5-qadam</span>
+              <strong>Ish maydonini sozlash</strong>
             </div>
 
-            <div className="business-type__rope business-type__rope--active" />
+            <div className="business-type__progress">
+              <div className="business-type__progress-item business-type__progress-item--done">
+                <span>1</span>
+                <p>Akkaunt</p>
+              </div>
 
-            <div className="business-type__progress-item business-type__progress-item--active">
-              <span>2</span>
-              <p>Business</p>
+              <div className="business-type__rope business-type__rope--active" />
+
+              <div className="business-type__progress-item business-type__progress-item--active">
+                <span>2</span>
+                <p>Biznes</p>
+              </div>
+
+              <div className="business-type__rope" />
+
+              <div className="business-type__progress-item">
+                <span>3</span>
+                <p>Ish maydoni</p>
+              </div>
+
+              <div className="business-type__rope" />
+
+              <div className="business-type__progress-item">
+                <span>4</span>
+                <p>Tariflar</p>
+              </div>
+
+              <div className="business-type__rope" />
+
+              <div className="business-type__progress-item">
+                <span>5</span>
+                <p>AI tayyor</p>
+              </div>
             </div>
 
-            <div className="business-type__rope" />
+            <div className="business-type__preview">
+              <span>ZENIX FAOLLASHTIRADI</span>
 
-            <div className="business-type__progress-item">
-              <span>3</span>
-              <p>Workspace</p>
-            </div>
+              <div className={previewContentClasses}>
+                <h2>
+                  {previewCategory ? previewCategory.title : "Biznes modullari"}
+                </h2>
 
-            <div className="business-type__rope" />
+                <div className="business-type__modules">
+                  {previewModules.map((module, index) => (
+                    <div
+                      key={`${module}-${index}`}
+                      style={{ "--module-index": index }}
+                    >
+                      <Check size={15} />
+                      {module}
+                    </div>
+                  ))}
+                </div>
 
-            <div className="business-type__progress-item">
-              <span>4</span>
-              <p>AI Ready</p>
-            </div>
-          </div>
-
-          <div className="business-type__preview">
-            <span>ZENIX WILL ENABLE</span>
-
-            <div className={previewContentClasses}>
-              <h2>
-                {previewCategory ? previewCategory.title : "Business modules"}
-              </h2>
-
-              <div className="business-type__modules">
-                {previewModules.map((module, index) => (
-                  <div
-                    key={module}
-                    style={{ "--module-index": index }}
-                  >
-                    <Check size={15} />
-                    {module}
+                {previewCategory?.types?.length > 0 && (
+                  <div className="business-type__types-preview">
+                    <span>Ichki turlar</span>
+                    <p>{previewCategory.types.join(", ")}</p>
                   </div>
-                ))}
+                )}
               </div>
             </div>
           </div>

@@ -9,10 +9,11 @@ import {
   User,
 } from "lucide-react";
 import { Button, Input, useNotification } from "../../../components/ui";
+import { useGlassFollow } from "../../../shared/hooks/useGlassFollow";
 import "./Register.scss";
 import "./Login.scss";
 
-const steps = ["Account", "Business", "Workspace", "AI Ready"];
+const steps = ["Account", "Business", "Workspace", "Tariflar", "AI Ready"];
 
 const initialForm = {
   company: "",
@@ -45,6 +46,10 @@ export default function Register() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
   const { error } = useNotification();
+  const glassFollowRef = useGlassFollow({
+    activationPaddingX: 280,
+    activationPaddingY: 170,
+  });
 
   const handleChange = (event) => {
     const { checked, name, type, value } = event.target;
@@ -235,52 +240,54 @@ export default function Register() {
       </section>
 
       <aside className="register-page__visual">
-        <div className="register-page__progress-card">
-          <div className="register-page__progress-top">
-            <span>Step 1 / 4</span>
-            <strong>Workspace setup</strong>
-          </div>
+        <div className="register-page__follow" ref={glassFollowRef}>
+          <div className="register-page__progress-card">
+            <div className="register-page__progress-top">
+              <span>Step 1 / 5</span>
+              <strong>Workspace setup</strong>
+            </div>
 
-          <div className="register-page__timeline">
-            {steps.map((step, index) => (
-              <div
-                className={`register-page__step ${
-                  index === 0 ? "register-page__step--active" : ""
-                }`}
-                key={step}
-              >
-                <span>{index + 1}</span>
-                <p>{step}</p>
-              </div>
-            ))}
-          </div>
+            <div className="register-page__timeline">
+              {steps.map((step, index) => (
+                <div
+                  className={`register-page__step ${
+                    index === 0 ? "register-page__step--active" : ""
+                  }`}
+                  key={step}
+                >
+                  <span>{index + 1}</span>
+                  <p>{step}</p>
+                </div>
+              ))}
+            </div>
 
-          <div className="register-page__workspace">
-            <span className="register-page__workspace-label">
-              Workspace Preview
-            </span>
+            <div className="register-page__workspace">
+              <span className="register-page__workspace-label">
+                Workspace Preview
+              </span>
 
-            <h2>ZENIX Workspace</h2>
+              <h2>ZENIX Workspace</h2>
 
-            <div className="register-page__workspace-grid">
-              <div>
-                <span>Business</span>
-                <strong>Not selected</strong>
-              </div>
+              <div className="register-page__workspace-grid">
+                <div>
+                  <span>Business</span>
+                  <strong>Not selected</strong>
+                </div>
 
-              <div>
-                <span>Products</span>
-                <strong>0</strong>
-              </div>
+                <div>
+                  <span>Products</span>
+                  <strong>0</strong>
+                </div>
 
-              <div>
-                <span>Employees</span>
-                <strong>0</strong>
-              </div>
+                <div>
+                  <span>Employees</span>
+                  <strong>0</strong>
+                </div>
 
-              <div>
-                <span>AI Status</span>
-                <strong>Ready</strong>
+                <div>
+                  <span>AI Status</span>
+                  <strong>Ready</strong>
+                </div>
               </div>
             </div>
           </div>

@@ -347,9 +347,13 @@
     padding: 48px;
   }
 
+  &__follow {
+    width: min(100%, 470px);
+  }
+
   &__glass-card {
     position: relative;
-    width: min(100%, 470px);
+    width: 100%;
     padding: 38px;
     background: rgba(255, 255, 255, 0.28);
     border: 1px solid rgba(255, 255, 255, 0.62);

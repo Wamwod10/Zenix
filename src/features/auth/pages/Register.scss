@@ -393,8 +393,12 @@
     padding: 48px;
   }
 
-  &__progress-card {
+  &__follow {
     width: min(100%, 520px);
+  }
+
+  &__progress-card {
+    width: 100%;
     padding: 34px;
     background: rgba(255, 255, 255, 0.28);
     border: 1px solid rgba(255, 255, 255, 0.62);
@@ -431,8 +435,8 @@
 
   &__timeline {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
     margin-bottom: 30px;
   }
 
