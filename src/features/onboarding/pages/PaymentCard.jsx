@@ -14,24 +14,51 @@ const cardBrands = {
   visa: {
     name: "Visa",
     pattern: /^4/,
+    image: "/visa.png",
   },
   mastercard: {
     name: "Mastercard",
     pattern: /^(5[1-5]|2[2-7])/,
+    image: "/mastercard.jpg",
   },
   humo: {
     name: "Humo",
     pattern: /^9860/,
+    image: "/humo.png",
   },
   uzcard: {
     name: "Uzcard",
     pattern: /^8600/,
+    image: "/uzcard.jpg",
   },
   unknown: {
     name: "Card",
     pattern: /.*/,
+    image: "",
   },
 };
+
+const billingCountryOptions = [
+  { label: "O‘zbekiston", value: "uzbekistan" },
+  { label: "Qozog‘iston", value: "kazakhstan" },
+  { label: "Qirg‘iziston", value: "kyrgyzstan" },
+  { label: "Tojikiston", value: "tajikistan" },
+  { label: "Turkmaniston", value: "turkmenistan" },
+  { label: "Turkiya", value: "turkey" },
+  { label: "Ozarbayjon", value: "azerbaijan" },
+  { label: "Gruziya", value: "georgia" },
+  { label: "Xitoy", value: "china" },
+  { label: "Janubiy Koreya", value: "south-korea" },
+  { label: "Yaponiya", value: "japan" },
+  { label: "Hindiston", value: "india" },
+  { label: "BAA", value: "uae" },
+  { label: "Saudiya Arabistoni", value: "saudi-arabia" },
+  { label: "Germaniya", value: "germany" },
+  { label: "Fransiya", value: "france" },
+  { label: "Buyuk Britaniya", value: "united-kingdom" },
+  { label: "Shveytsariya", value: "switzerland" },
+  { label: "Polsha", value: "poland" },
+];
 
 function detectCardBrand(number) {
   const clean = number.replace(/\D/g, "");
@@ -52,8 +79,20 @@ function formatCardNumber(value) {
     .trim();
 }
 
-function formatExpiry(value) {
+function formatExpiry(value, previousValue = "") {
   const clean = value.replace(/\D/g, "").slice(0, 4);
+
+  if (!clean) return "";
+
+  if (clean.length === 1) {
+    return Number(clean) > 1 ? previousValue : clean;
+  }
+
+  const month = Number(clean.slice(0, 2));
+
+  if (month < 1 || month > 12) {
+    return previousValue;
+  }
 
   if (clean.length < 3) return clean;
 
@@ -77,6 +116,8 @@ export default function PaymentCard() {
   );
 
   const brandName = cardBrands[cardBrand].name;
+  const brandImage = cardBrands[cardBrand].image;
+  const requiresCvc = cardBrand === "visa" || cardBrand === "mastercard";
 
   const updateField = (field, value) => {
     setForm((prev) => ({
@@ -97,15 +138,19 @@ export default function PaymentCard() {
       cardNumber.length === 16 &&
       form.holder.trim() &&
       form.expiry.length === 5 &&
-      form.cvc.length === 3 &&
+      (!requiresCvc || form.cvc.length === 3) &&
       form.country;
 
     if (!hasCompleteCard) {
-      notification.warning("Karta ma'lumotlarini to'liq kiriting.");
+      notification.warning(
+        requiresCvc
+          ? "Visa yoki Mastercard uchun CVC kodini kiriting."
+          : "Karta ma'lumotlarini to'liq kiriting.",
+      );
       return;
     }
 
-    navigate("/dashboard");
+    navigate("/ai-preparing");
   };
 
   return (
@@ -168,20 +213,21 @@ export default function PaymentCard() {
             inputMode="numeric"
             value={form.expiry}
             onChange={(event) =>
-              updateField("expiry", formatExpiry(event.target.value))
+              updateField("expiry", formatExpiry(event.target.value, form.expiry))
             }
           />
 
           <Input
-            label="CVC"
+            label={requiresCvc ? "CVC" : "CVC (shart emas)"}
             name="cvc"
-            placeholder="123"
+            placeholder={requiresCvc ? "123" : "Humo/Uzcard uchun kerak emas"}
             inputMode="numeric"
             maxLength="3"
             value={form.cvc}
             onChange={(event) =>
               updateField("cvc", event.target.value.replace(/\D/g, "").slice(0, 3))
             }
+            disabled={!requiresCvc}
             leftIcon={<LockKeyhole size={18} />}
           />
 
@@ -189,11 +235,7 @@ export default function PaymentCard() {
             label="Billing country"
             value={form.country}
             onChange={(value) => updateField("country", value)}
-            options={[
-              { label: "O‘zbekiston", value: "uzbekistan" },
-              { label: "Qozog‘iston", value: "kazakhstan" },
-              { label: "Qirg‘iziston", value: "kyrgyzstan" },
-            ]}
+            options={billingCountryOptions}
           />
 
           <div className="payment-card-page__notice">
@@ -219,7 +261,11 @@ export default function PaymentCard() {
             <strong>{brandName}</strong>
           </div>
 
-          <div className="payment-card-page__chip" />
+          <div
+            className={`payment-card-page__chip payment-card-page__chip--${cardBrand}`}
+          >
+            {brandImage && <img src={brandImage} alt={`${brandName} logo`} />}
+          </div>
 
           <p className="payment-card-page__number">
             {form.cardNumber || "0000 0000 0000 0000"}

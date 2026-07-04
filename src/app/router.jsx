@@ -10,6 +10,7 @@ import Pricing from "../features/onboarding/pages/Pricing";
 import NotFound from "../pages/NotFound";
 import EmailVerification from "../features/auth/pages/EmailVerification";
 import PaymentCard from "../features/onboarding/pages/PaymentCard";
+import AIPreparing from "../features/onboarding/pages/AIPreparing";
 
 export const router = createBrowserRouter([
   {
@@ -50,6 +51,11 @@ export const router = createBrowserRouter([
   {
     path: "/payment-card",
     element: <PaymentCard />,
+  },
+
+  {
+    path: "/ai-preparing",
+    element: <AIPreparing/>,
   },
 
   {
