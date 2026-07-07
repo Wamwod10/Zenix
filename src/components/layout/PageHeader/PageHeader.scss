@@ -1,34 +1,56 @@
-.page-header {
+.zenix-page-header {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 24px;
-  margin-bottom: 28px;
+  gap: 20px;
+  margin-bottom: 20px;
 
-  &__eyebrow {
-    margin: 0 0 8px;
-    color: var(--color-primary);
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+  &__content {
+    min-width: 0;
+
+    span {
+      display: block;
+      margin-bottom: 7px;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--color-primary);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 32px;
+      font-weight: 760;
+      line-height: 1.08;
+      color: var(--color-text);
+    }
+
+    p {
+      margin: 8px 0 0;
+      max-width: 620px;
+      font-size: 15px;
+      line-height: 1.55;
+      color: var(--color-muted);
+    }
   }
 
-  &__title {
-    margin: 0;
-    font-size: clamp(2rem, 4vw, 3.25rem);
-    font-weight: 700;
-    letter-spacing: -0.055em;
+  &__actions {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
   }
+}
 
-  &__description {
-    max-width: 680px;
-    margin-top: 12px;
-    color: var(--color-text-soft);
-    font-size: 15px;
-  }
+@media (max-width: 720px) {
+  .zenix-page-header {
+    align-items: flex-start;
+    flex-direction: column;
 
-  &__action {
-    flex-shrink: 0;
+    &__content h1 {
+      font-size: 26px;
+    }
   }
 }

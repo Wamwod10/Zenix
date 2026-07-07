@@ -2,15 +2,15 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { RouterProvider } from "react-router-dom";
 
-import { Providers } from "./app/providers";
-import { router } from "./app/router";
+import { AppProviders } from "./app/providers/AppProviders";
+import { router } from "./app/router/routes";
 
 import "./styles/main.scss";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <Providers>
+    <AppProviders>
       <RouterProvider router={router} />
-    </Providers>
+    </AppProviders>
   </React.StrictMode>
 );

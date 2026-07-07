@@ -1,15 +1,17 @@
 import "./PageHeader.scss";
 
-export function PageHeader({ eyebrow, title, description, action }) {
+const PageHeader = ({ eyebrow, title, description, actions }) => {
   return (
-    <section className="page-header">
-      <div>
-        {eyebrow && <p className="page-header__eyebrow">{eyebrow}</p>}
-        <h1 className="page-header__title">{title}</h1>
-        {description && <p className="page-header__description">{description}</p>}
+    <div className="zenix-page-header">
+      <div className="zenix-page-header__content">
+        {eyebrow && <span>{eyebrow}</span>}
+        <h1>{title}</h1>
+        {description && <p>{description}</p>}
       </div>
 
-      {action && <div className="page-header__action">{action}</div>}
-    </section>
+      {actions && <div className="zenix-page-header__actions">{actions}</div>}
+    </div>
   );
-}
+};
+
+export default PageHeader;

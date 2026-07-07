@@ -9,10 +9,7 @@ html {
 
 body {
   min-width: 320px;
-  background:
-    radial-gradient(circle at top left, rgba(74, 103, 255, 0.12), transparent 34rem),
-    radial-gradient(circle at top right, rgba(142, 96, 128, 0.12), transparent 32rem),
-    var(--color-bg);
+  background: var(--color-bg);
   color: var(--color-text);
   font-size: $font-size-md;
   line-height: $line-height-body;

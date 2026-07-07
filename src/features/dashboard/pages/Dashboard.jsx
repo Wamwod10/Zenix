@@ -1,56 +1,39 @@
-﻿import "./Dashboard.scss";
-import {
-  Card,
-  Badge,
-  Button,
-} from "../../../components/ui";
+﻿import DashboardGreeting from "../components/DashboardGreeting/DashboardGreeting";
+import "./Dashboard.scss";
+import StatsGrid from "../components/StatsGrid/StatsGrid";
+import RevenueChart from "../components/RevenueChart/RevenueChart";
+import AIInsights from "../components/AIInsights/AIInsights";
+import SalesChart from "../components/SalesChart/SalesChart";
+import TopProducts from "../components/TopProducts/TopProducts";
+import Activity from "../components/Activity/Activity";
+import InventoryStatus from "../components/InventoryStatus/InventoryStatus";
+import EmployeeStatus from "../components/EmployeeStatus/EmployeeStatus";
+import QuickActions from "../components/QuickActions/QuickActions";
 
-import {
-  PageHeader,
-} from "../../../components/layout";
-
-export default function Dashboard() {
+const Dashboard = () => {
   return (
-    <>
-      <PageHeader
-        eyebrow="AI BUSINESS OS"
-        title="Dashboard"
-        description="Welcome to ZENIX."
-      />
+    <main className="zenix-dashboard">
+      <DashboardGreeting />
 
-      <Card>
+      <StatsGrid />
 
-        <Badge tone="primary">
-          Online
-        </Badge>
+      <RevenueChart />
 
-        <h2
-          style={{
-            marginTop: 20,
-          }}
-        >
-          ZENIX Foundation Ready
-        </h2>
+      <AIInsights />
 
-        <p
-          style={{
-            marginTop: 12,
-          }}
-        >
-          Theme Foundation successfully connected.
-        </p>
+      <section className="zenix-dashboard__analytics">
+        <SalesChart />
+        <TopProducts />
+        <Activity />
+      </section>
 
-        <div
-          style={{
-            marginTop: 24,
-          }}
-        >
-          <Button>
-            Continue
-          </Button>
-        </div>
-
-      </Card>
-    </>
+      <section className="zenix-dashboard__widgets">
+        <InventoryStatus />
+        <EmployeeStatus />
+        <QuickActions />
+      </section>
+    </main>
   );
-}
+};
+
+export default Dashboard;

@@ -1,1 +1,0 @@
-﻿import "./RevenueChart.scss";

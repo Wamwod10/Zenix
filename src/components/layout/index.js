@@ -1,4 +1,3 @@
-export { AppShell } from "./AppShell";
-export { Header } from "./Header";
-export { Sidebar } from "./Sidebar";
-export { PageHeader } from "./PageHeader";
+export { default as Header } from "./Header/Header";
+export { default as PageHeader } from "./PageHeader/PageHeader";
+export { default as Sidebar } from "./Sidebar/Sidebar";

@@ -1,1 +1,0 @@
-﻿import "./AiInsightCard.scss";

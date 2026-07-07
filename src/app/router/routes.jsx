@@ -1,16 +1,19 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
 
-import { AppShell } from "../components/layout";
-import Dashboard from "../features/dashboard/pages/Dashboard";
-import Login from "../features/auth/pages/Login";
-import Register from "../features/auth/pages/Register";
-import BusinessType from "../features/onboarding/pages/BusinessType";
-import BusinessSetup from "../features/onboarding/pages/BusinessSetup";
-import Pricing from "../features/onboarding/pages/Pricing";
-import NotFound from "../pages/NotFound";
-import EmailVerification from "../features/auth/pages/EmailVerification";
-import PaymentCard from "../features/onboarding/pages/PaymentCard";
-import AIPreparing from "../features/onboarding/pages/AIPreparing";
+import DashboardLayout from "../../layouts/DashboardLayout/DashboardLayout";
+
+import Login from "../../features/auth/pages/Login";
+import Register from "../../features/auth/pages/Register";
+import EmailVerification from "../../features/auth/pages/EmailVerification";
+
+import BusinessType from "../../features/onboarding/pages/BusinessType";
+import BusinessSetup from "../../features/onboarding/pages/BusinessSetup";
+import Pricing from "../../features/onboarding/pages/Pricing";
+import PaymentCard from "../../features/onboarding/pages/PaymentCard";
+import AIPreparing from "../../features/onboarding/pages/AIPreparing";
+
+import Dashboard from "../../features/dashboard/pages/Dashboard";
+import NotFound from "../../pages/NotFound";
 
 export const router = createBrowserRouter([
   {
@@ -55,11 +58,11 @@ export const router = createBrowserRouter([
 
   {
     path: "/ai-preparing",
-    element: <AIPreparing/>,
+    element: <AIPreparing />,
   },
 
   {
-    element: <AppShell />,
+    element: <DashboardLayout />,
 
     children: [
       {
