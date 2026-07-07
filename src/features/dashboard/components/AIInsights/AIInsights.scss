@@ -12,6 +12,11 @@
   color: rgba(5, 14, 35, 0.84);
   background:
     radial-gradient(
+      circle at 68% 0%,
+      rgba(126, 165, 255, 0.2),
+      transparent 13rem
+    ),
+    radial-gradient(
       circle at 18% 10%,
       rgba(255, 255, 255, 0.86),
       transparent 12rem
@@ -30,8 +35,8 @@
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.98),
     inset 0 -1px 0 rgba(255, 255, 255, 0.24),
-    0 30px 86px rgba(64, 86, 136, 0.12),
-    0 0 56px rgba(92, 134, 245, 0.13);
+    0 34px 92px rgba(64, 86, 136, 0.14),
+    0 0 72px rgba(92, 134, 245, 0.18);
   backdrop-filter: blur(36px) saturate(200%);
   -webkit-backdrop-filter: blur(36px) saturate(200%);
   animation: ai-insights-in 720ms cubic-bezier(0.22, 1, 0.36, 1) both;
@@ -414,16 +419,35 @@
       font-weight: 500;
     }
 
-    em {
+    .ai-insights__action {
       display: inline-flex;
       align-items: center;
       gap: 5px;
       margin-top: 9px;
-      color: rgba(15, 23, 42, 0.58);
+      min-height: 28px;
+      padding: 0 9px;
+      color: rgba(43, 79, 188, 0.82);
+      border: 1px solid rgba(255, 255, 255, 0.66);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.34);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.88),
+        0 10px 22px rgba(70, 101, 174, 0.06);
       font-size: 11px;
       font-style: normal;
       font-weight: 720;
       line-height: 1.25;
+      cursor: pointer;
+      transition:
+        transform 200ms cubic-bezier(0.22, 1, 0.36, 1),
+        background 200ms ease,
+        border-color 200ms ease;
+
+      &:hover {
+        transform: translateY(-1px);
+        background: rgba(255, 255, 255, 0.48);
+        border-color: rgba(255, 255, 255, 0.86);
+      }
     }
 
     &--positive > span {

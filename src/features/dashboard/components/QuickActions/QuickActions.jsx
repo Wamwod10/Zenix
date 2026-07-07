@@ -1,28 +1,57 @@
-import { Zap } from "lucide-react";
+import { PackagePlus, ShoppingCart, UserPlus, WalletCards } from "lucide-react";
 import "./QuickActions.scss";
+
+const actions = [
+  {
+    icon: ShoppingCart,
+    title: "Yangi Savdo",
+    text: "POS oynasini ochish",
+    tone: "green",
+  },
+  {
+    icon: PackagePlus,
+    title: "Mahsulot Qo'shish",
+    text: "Omborga yangi SKU",
+    tone: "blue",
+  },
+  {
+    icon: WalletCards,
+    title: "Xarid Yaratish",
+    text: "Ta'minot rejasini boshlash",
+    tone: "gold",
+  },
+  {
+    icon: UserPlus,
+    title: "Mijoz Qo'shish",
+    text: "CRM profil yaratish",
+    tone: "purple",
+  },
+];
 
 const QuickActions = () => {
   return (
-    <article className="zenix-dashboard__panel dashboard-widget dashboard-widget--gold quick-actions">
-      <div className="zenix-dashboard__panel-head">
-        <div className="zenix-dashboard__panel-title">
-          <span>Tezkor</span>
-          <h3>Action queue</h3>
-        </div>
+    <section className="quick-actions" aria-label="Tezkor amallar">
+      {actions.map((action, index) => {
+        const Icon = action.icon;
 
-        <span className="zenix-dashboard__panel-icon">
-          <Zap size={18} />
-        </span>
-      </div>
-
-      <div className="dashboard-widget__body">
-        <strong>7 ta</strong>
-        <p>2 tasi bugun yopiladi</p>
-        <span className="dashboard-widget__meter" style={{ "--widget-progress": "62%" }}>
-          <i />
-        </span>
-      </div>
-    </article>
+        return (
+          <button
+            className={`quick-actions__card quick-actions__card--${action.tone}`}
+            key={action.title}
+            style={{ "--action-index": index }}
+            type="button"
+          >
+            <span>
+              <Icon size={18} />
+            </span>
+            <div>
+              <strong>{action.title}</strong>
+              <small>{action.text}</small>
+            </div>
+          </button>
+        );
+      })}
+    </section>
   );
 };
 

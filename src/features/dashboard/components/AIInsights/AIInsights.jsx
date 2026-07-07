@@ -33,7 +33,7 @@ const insights = [
     label: "Yuqori imkoniyat",
     title: "Kechki savdo cho'qqisi",
     text: "18:00-21:00 oralig'ida savdo odatdagidan 24% yuqori bo'lishi kutilmoqda.",
-    action: "Smena va vitrinani tayyorlang",
+    action: "Hisobotni ochish",
     type: "positive",
   },
   {
@@ -41,7 +41,7 @@ const insights = [
     label: "E'tibor kerak",
     title: "Ombor riski",
     text: "17 ta mahsulot qoldig'i kritik darajaga yaqin. Xarid rejasini bugun yangilash foydali.",
-    action: "Yetkazib beruvchini tanlang",
+    action: "Buyurtma yaratish",
     type: "warning",
   },
   {
@@ -49,7 +49,7 @@ const insights = [
     label: "Foyda drayveri",
     title: "Bundle aksiya",
     text: "Eng ko'p sotilayotgan 3 ta mahsulotni bitta taklifga bog'lash marjani oshiradi.",
-    action: "A/B taklif ishga tushiring",
+    action: "Tavsiya qo'llash",
     type: "ai",
   },
 ];
@@ -148,10 +148,11 @@ const AIInsights = () => {
                 <small>{item.label}</small>
                 <strong>{item.title}</strong>
                 <p>{item.text}</p>
-                <em>
+                <button className="ai-insights__action" type="button">
                   <ShieldCheck size={13} />
                   {item.action}
-                </em>
+                  <ArrowRight size={13} />
+                </button>
               </div>
             </div>
           );

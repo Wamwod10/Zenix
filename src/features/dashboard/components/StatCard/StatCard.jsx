@@ -9,13 +9,14 @@ const StatCard = ({
   icon: Icon,
   color = "blue",
   trend = "up",
+  priority = "secondary",
   index = 0,
 }) => {
   const TrendIcon = trend === "down" ? ArrowDownRight : ArrowUpRight;
 
   return (
     <article
-      className={`stat-card stat-card--${color}`}
+      className={`stat-card stat-card--${color} stat-card--${priority}`}
       style={{ "--card-index": index }}
     >
       <div className="stat-card__orb">

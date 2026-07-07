@@ -25,7 +25,12 @@ const Header = () => {
       <button className="zenix-header__search" type="button">
         <Search size={18} />
         <span className="zenix-header__search-copy">
-          Search or ask ZENIX AI...
+          Qidirish: mahsulot, mijoz, buyurtma, chek...
+        </span>
+        <span className="zenix-header__search-modules">
+          <small>POS</small>
+          <small>CRM</small>
+          <small>Ombor</small>
         </span>
         <span className="zenix-header__search-ai">
           <Sparkles size={12} />

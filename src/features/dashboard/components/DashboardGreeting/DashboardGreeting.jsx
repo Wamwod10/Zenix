@@ -1,5 +1,18 @@
 import "./DashboardGreeting.scss";
-import { Activity, CalendarDays, MapPin, Sparkles } from "lucide-react";
+import {
+  Activity,
+  CalendarDays,
+  MapPin,
+  Server,
+  Sparkles,
+  Wifi,
+} from "lucide-react";
+
+const liveStatus = [
+  { icon: Wifi, label: "Online", value: "Live" },
+  { icon: Activity, label: "Last Sync", value: "2 daq" },
+  { icon: Server, label: "Server", value: "99.9%" },
+];
 
 const DashboardGreeting = () => {
   return (
@@ -16,6 +29,20 @@ const DashboardGreeting = () => {
           Bugungi savdo, ombor, mijozlar va AI tavsiyalar bir joyda jamlandi.
           ZENIX biznesingizdagi muhim o‘zgarishlarni kuzatmoqda.
         </p>
+
+        <div className="dashboard-greeting__live">
+          {liveStatus.map((item) => {
+            const Icon = item.icon;
+
+            return (
+              <span key={item.label}>
+                <Icon size={13} />
+                <small>{item.label}</small>
+                <strong>{item.value}</strong>
+              </span>
+            );
+          })}
+        </div>
       </div>
 
       <div className="dashboard-greeting__side">

@@ -4,6 +4,7 @@ import {
   BarChart3,
   CalendarDays,
   CircleDollarSign,
+  Sparkles,
   TrendingUp,
 } from "lucide-react";
 const chartData = [
@@ -74,6 +75,10 @@ const RevenueChart = () => {
             <small>Revenue health</small>
             <strong>86%</strong>
             <em>premium momentum</em>
+            <button type="button">
+              <Sparkles size={12} />
+              AI Analysis
+            </button>
           </div>
         </div>
 

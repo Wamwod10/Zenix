@@ -17,6 +17,7 @@ const stats = [
     icon: CircleDollarSign,
     color: "blue",
     trend: "up",
+    priority: "primary",
   },
   {
     title: "Sof foyda",
@@ -26,6 +27,7 @@ const stats = [
     icon: TrendingUp,
     color: "green",
     trend: "up",
+    priority: "primary",
   },
   {
     title: "Mijozlar",

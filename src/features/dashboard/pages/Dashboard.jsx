@@ -15,6 +15,8 @@ const Dashboard = () => {
     <main className="zenix-dashboard">
       <DashboardGreeting />
 
+      <QuickActions />
+
       <StatsGrid />
 
       <RevenueChart />
@@ -30,7 +32,6 @@ const Dashboard = () => {
       <section className="zenix-dashboard__widgets">
         <InventoryStatus />
         <EmployeeStatus />
-        <QuickActions />
       </section>
     </main>
   );
