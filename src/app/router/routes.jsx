@@ -13,6 +13,7 @@ import PaymentCard from "../../features/onboarding/pages/PaymentCard";
 import AIPreparing from "../../features/onboarding/pages/AIPreparing";
 
 import Dashboard from "../../features/dashboard/pages/Dashboard";
+import POS from "../../pages/POS/POS";
 import NotFound from "../../pages/NotFound";
 
 export const router = createBrowserRouter([
@@ -68,6 +69,10 @@ export const router = createBrowserRouter([
       {
         path: "/dashboard",
         element: <Dashboard />,
+      },
+      {
+        path: "/pos",
+        element: <POS />,
       },
     ],
   },

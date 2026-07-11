@@ -1,0 +1,38 @@
+export const posCustomers = [
+  {
+    id: "cus-azizbek",
+    name: "Azizbek Karimov",
+    phone: "+998 90 123 45 67",
+    level: "VIP",
+    ordersCount: 48,
+    totalSpent: 7850000,
+    bonus: 185000,
+  },
+  {
+    id: "cus-madina",
+    name: "Madina Rasulova",
+    phone: "+998 93 456 78 90",
+    level: "Gold",
+    ordersCount: 26,
+    totalSpent: 4320000,
+    bonus: 92000,
+  },
+  {
+    id: "cus-javohir",
+    name: "Javohir Usmonov",
+    phone: "+998 99 876 54 32",
+    level: "Standard",
+    ordersCount: 9,
+    totalSpent: 1240000,
+    bonus: 18000,
+  },
+  {
+    id: "cus-dilnoza",
+    name: "Dilnoza Ahmedova",
+    phone: "+998 97 222 11 00",
+    level: "Gold",
+    ordersCount: 19,
+    totalSpent: 3180000,
+    bonus: 64000,
+  },
+];
