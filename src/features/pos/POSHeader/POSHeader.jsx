@@ -44,11 +44,6 @@ const POSHeader = ({
 
         <h1>Tezkor savdo oynasi</h1>
 
-        <p>
-          Barcode, qidiruv, savat va to'lov jarayoni kassir uchun maksimal
-          tezlikda ishlashi uchun tayyorlangan POS workspace.
-        </p>
-
         <div className="pos-header__live">
           {liveStatus.map((item) => {
             const Icon = item.icon;

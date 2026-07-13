@@ -1,10 +1,11 @@
 .pos-cart {
   position: sticky;
-  top: 0;
+  top: 12px;
+  max-height: calc(100vh - 24px);
   display: grid;
   gap: 12px;
   padding: 16px;
-  overflow: hidden;
+  overflow: hidden auto;
   border-radius: 30px;
   border: 1px solid rgba(255, 255, 255, 0.88);
   background:
@@ -45,7 +46,8 @@
 
   &__head,
   &__list,
-  &__note {
+  &__note,
+  &__sticky-total {
     position: relative;
     z-index: 2;
   }
@@ -101,6 +103,10 @@
   &__list {
     display: grid;
     gap: 8px;
+    max-height: min(42vh, 430px);
+    overflow-y: auto;
+    padding-right: 2px;
+    scrollbar-width: thin;
   }
 
   &__empty {
@@ -147,6 +153,7 @@
 
     textarea {
       width: 100%;
+      min-height: 42px;
       border: 0;
       outline: 0;
       resize: vertical;
@@ -156,6 +163,20 @@
       font-size: 12px;
       font-weight: 650;
     }
+  }
+
+  &__sticky-total {
+    position: sticky;
+    bottom: 0;
+    display: grid;
+    gap: 10px;
+    padding-top: 2px;
+    border-radius: 24px;
+    background:
+      linear-gradient(180deg, rgba(242, 247, 255, 0), rgba(242, 247, 255, 0.72) 14px),
+      rgba(242, 247, 255, 0.48);
+    backdrop-filter: blur(18px) saturate(150%);
+    -webkit-backdrop-filter: blur(18px) saturate(150%);
   }
 }
 

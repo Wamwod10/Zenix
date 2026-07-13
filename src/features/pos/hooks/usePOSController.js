@@ -26,6 +26,36 @@ const paymentLabels = {
   advance: "Advance payment",
 };
 
+const playSuccessBeep = () => {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  const AudioContext = window.AudioContext || window.webkitAudioContext;
+
+  if (!AudioContext) {
+    return;
+  }
+
+  try {
+    const context = new AudioContext();
+    const oscillator = context.createOscillator();
+    const gain = context.createGain();
+
+    oscillator.type = "sine";
+    oscillator.frequency.setValueAtTime(880, context.currentTime);
+    gain.gain.setValueAtTime(0.0001, context.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.08, context.currentTime + 0.015);
+    gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.13);
+    oscillator.connect(gain);
+    gain.connect(context.destination);
+    oscillator.start();
+    oscillator.stop(context.currentTime + 0.14);
+  } catch {
+    // Audio can be blocked by the browser until user interaction.
+  }
+};
+
 const productNeedsOptions = (product) =>
   Boolean(
     product?.variants?.length ||
@@ -110,6 +140,8 @@ const usePOSController = () => {
   const [returnSale, setReturnSale] = useState(null);
   const [shiftMode, setShiftMode] = useState("status");
   const [approvalRequest, setApprovalRequest] = useState(null);
+  const [shortcutFeedback, setShortcutFeedback] = useState(null);
+  const shortcutTimeoutRef = useRef(null);
 
   const cart = usePOSCart({
     taxRate: settings.taxRate,
@@ -231,6 +263,10 @@ const usePOSController = () => {
       handleProductSelect(product);
       setBarcodeValue("");
       setBarcodeStatus({ type: "success", message: `${product.name} topildi` });
+      playSuccessBeep();
+      window.setTimeout(() => {
+        searchInputRef.current?.focus();
+      }, 80);
     },
     [handleProductSelect, notifications],
   );
@@ -329,6 +365,17 @@ const usePOSController = () => {
     [cart, handleVoid, openDiscount, openHoldSale, openPayment, openRecentSales, startNewSale],
   );
 
+  const showShortcutFeedback = useCallback((shortcut, label) => {
+    if (shortcutTimeoutRef.current) {
+      window.clearTimeout(shortcutTimeoutRef.current);
+    }
+
+    setShortcutFeedback({ shortcut, label });
+    shortcutTimeoutRef.current = window.setTimeout(() => {
+      setShortcutFeedback(null);
+    }, 1100);
+  }, []);
+
   usePOSKeyboard({
     activeModal,
     onFocusSearch: () => searchInputRef.current?.focus(),
@@ -341,6 +388,7 @@ const usePOSController = () => {
     onPriceCheck: () => barcodeInputRef.current?.focus(),
     onReturn: () => openRecentSales("return"),
     onEscape: closeActiveModal,
+    onShortcutFeedback: showShortcutFeedback,
   });
 
   const handleHoldSale = useCallback(
@@ -501,6 +549,7 @@ const usePOSController = () => {
       categories: posCategories,
       customers: posCustomers,
       products: filteredProducts,
+      allProducts: posProducts,
     },
     state: {
       activeCategory,
@@ -516,6 +565,7 @@ const usePOSController = () => {
       returnSale,
       shiftMode,
       approvalRequest,
+      shortcutFeedback,
       recommendation,
       posMetrics,
     },

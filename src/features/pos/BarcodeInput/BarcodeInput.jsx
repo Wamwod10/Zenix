@@ -22,7 +22,10 @@ const BarcodeInput = forwardRef(
     };
 
     return (
-      <form className="pos-barcode-input" onSubmit={handleSubmit}>
+      <form
+        className={`pos-barcode-input ${status?.type ? `is-${status.type}` : ""}`}
+        onSubmit={handleSubmit}
+      >
         <label className="pos-barcode-input__field">
           <Barcode size={17} />
           <input

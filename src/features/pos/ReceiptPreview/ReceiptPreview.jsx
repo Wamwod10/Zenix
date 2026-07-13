@@ -1,4 +1,4 @@
-import { Printer, ReceiptText, RotateCcw, X } from "lucide-react";
+import { FileDown, Mail, Printer, ReceiptText, RotateCcw, Send, X } from "lucide-react";
 import { useEffect } from "react";
 
 import { calculateLineTotal, formatMoney } from "../utils/posMoney";
@@ -110,6 +110,18 @@ const ReceiptPreview = ({ open = false, sale = null, onClose, onNewSale, onPrint
           <button type="button" onClick={() => onPrint?.(sale)}>
             <Printer size={17} />
             Print
+          </button>
+          <button type="button" onClick={() => onPrint?.(sale)}>
+            <FileDown size={17} />
+            PDF
+          </button>
+          <button type="button">
+            <Send size={17} />
+            Telegram
+          </button>
+          <button type="button">
+            <Mail size={17} />
+            Email
           </button>
           <button type="button" onClick={onNewSale}>
             <RotateCcw size={17} />

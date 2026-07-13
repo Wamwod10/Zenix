@@ -58,19 +58,10 @@ const Cart = ({
         )}
       </div>
 
-      <OrderSummary
-        subtotal={summary?.subtotal}
-        discount={summary?.discount}
-        bonus={summary?.bonus}
-        serviceFee={summary?.serviceFee}
-        tax={summary?.tax}
-        total={summary?.total}
-      />
-
       <label className="pos-cart__note">
         <span>Order note</span>
         <textarea
-          rows={3}
+          rows={2}
           value={note}
           placeholder="Savdo uchun qisqa izoh..."
           onChange={(event) => onNoteChange?.(event.target.value)}
@@ -79,11 +70,22 @@ const Cart = ({
 
       <QuickActions onAction={onQuickAction} />
 
-      <PaymentButton
-        total={summary?.total}
-        disabled={!hasItems}
-        onClick={onPayment}
-      />
+      <div className="pos-cart__sticky-total">
+        <OrderSummary
+          subtotal={summary?.subtotal}
+          discount={summary?.discount}
+          bonus={summary?.bonus}
+          serviceFee={summary?.serviceFee}
+          tax={summary?.tax}
+          total={summary?.total}
+        />
+
+        <PaymentButton
+          total={summary?.total}
+          disabled={!hasItems}
+          onClick={onPayment}
+        />
+      </div>
     </aside>
   );
 };

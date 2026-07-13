@@ -1,4 +1,3 @@
-import AIRecommendation from "../../features/pos/AIRecommendation/AIRecommendation";
 import BarcodeInput from "../../features/pos/BarcodeInput/BarcodeInput";
 import Cart from "../../features/pos/Cart/Cart";
 import CategoryTabs from "../../features/pos/CategoryTabs/CategoryTabs";
@@ -9,6 +8,7 @@ import HoldSaleModal from "../../features/pos/HoldSaleModal/HoldSaleModal";
 import ItemEditModal from "../../features/pos/ItemEditModal/ItemEditModal";
 import ManagerApprovalModal from "../../features/pos/ManagerApprovalModal/ManagerApprovalModal";
 import POSHeader from "../../features/pos/POSHeader/POSHeader";
+import POSInsightsPanel from "../../features/pos/POSInsightsPanel/POSInsightsPanel";
 import POSNotifications from "../../features/pos/POSNotifications/POSNotifications";
 import POSOfflineBanner from "../../features/pos/POSOfflineBanner/POSOfflineBanner";
 import POSReports from "../../features/pos/POSReports/POSReports";
@@ -130,16 +130,25 @@ const POS = () => {
         />
       </section>
 
-      <AIRecommendation
-        title={state.recommendation.title}
-        message={state.recommendation.message}
-        actionLabel={state.recommendation.actionLabel}
-        disabled={state.recommendation.disabled}
-        onApply={() =>
+      <POSInsightsPanel
+        products={data.allProducts}
+        cartItems={cart.items}
+        recentSales={recentSales.sales}
+        shift={shift.shift}
+        recommendation={state.recommendation}
+        onOpenRecentSales={() => actions.openRecentSales("recent")}
+        onApplyRecommendation={() =>
           state.recommendation.product &&
           actions.handleProductSelect(state.recommendation.product)
         }
       />
+
+      {state.shortcutFeedback && (
+        <div className="zenix-pos__shortcut-feedback" role="status">
+          <kbd>{state.shortcutFeedback.shortcut}</kbd>
+          <span>{state.shortcutFeedback.label}</span>
+        </div>
+      )}
 
       <ProductOptionsModal
         open={state.activeModal === "product-options"}

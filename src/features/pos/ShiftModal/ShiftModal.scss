@@ -69,7 +69,7 @@
 
   &__stats {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 9px;
 
     div {
@@ -139,6 +139,22 @@
       cursor: pointer;
       font-size: 12px;
       font-weight: 760;
+    }
+  }
+}
+
+@media (max-width: 720px) {
+  .pos-shift-modal {
+    &__stats {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+}
+
+@media (max-width: 460px) {
+  .pos-shift-modal {
+    &__stats {
+      grid-template-columns: 1fr;
     }
   }
 }

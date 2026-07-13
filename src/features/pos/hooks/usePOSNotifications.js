@@ -14,6 +14,12 @@ const usePOSNotifications = () => {
     };
 
     setNotifications((current) => [notification, ...current].slice(0, 5));
+    window.setTimeout(() => {
+      setNotifications((current) =>
+        current.filter((item) => item.id !== notification.id),
+      );
+    }, 3000);
+
     return notification;
   }, []);
 

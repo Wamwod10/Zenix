@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   Banknote,
+  CheckCircle2,
   CreditCard,
   HandCoins,
   Layers3,
@@ -67,6 +68,7 @@ const PaymentModal = ({
   const [activeMethod, setActiveMethod] = useState("cash");
   const [digitalProvider, setDigitalProvider] = useState("click");
   const [cashReceived, setCashReceived] = useState(total);
+  const [paymentState, setPaymentState] = useState("idle");
   const [splitValues, setSplitValues] = useState({
     cash: 0,
     card: 0,
@@ -79,6 +81,7 @@ const PaymentModal = ({
     }
 
     setActiveMethod("cash");
+    setPaymentState("idle");
     setDigitalProvider("click");
     setCashReceived(total);
     setSplitValues({
@@ -144,12 +147,24 @@ const PaymentModal = ({
     }
   };
 
-  const handleComplete = () => {
+  const handleComplete = async () => {
     if (!canComplete) {
       return;
     }
 
-    onComplete?.({
+    setPaymentState("processing");
+
+    await new Promise((resolve) => {
+      window.setTimeout(resolve, 360);
+    });
+
+    setPaymentState("success");
+
+    await new Promise((resolve) => {
+      window.setTimeout(resolve, 520);
+    });
+
+    await onComplete?.({
       method: activeMethod,
       total: Number(total),
       paidAmount:
@@ -339,17 +354,33 @@ const PaymentModal = ({
           <button
             className="pos-payment-modal__complete"
             type="button"
-            disabled={!canComplete}
+            disabled={!canComplete || paymentState !== "idle"}
             onClick={handleComplete}
           >
             <WalletCards size={18} />
 
             <span>
-              <strong>To'lovni tasdiqlash</strong>
+              <strong>
+                {paymentState === "processing"
+                  ? "Processing..."
+                  : paymentState === "success"
+                    ? "To'lov qabul qilindi"
+                    : "To'lovni tasdiqlash"}
+              </strong>
               <small>{formatMoney(total)}</small>
             </span>
           </button>
         </div>
+
+        {paymentState === "success" && (
+          <div className="pos-payment-modal__success" role="status">
+            <span>
+              <CheckCircle2 size={34} />
+            </span>
+            <strong>Payment successful</strong>
+            <small>Receipt preview tayyorlanmoqda</small>
+          </div>
+        )}
       </section>
     </div>
   );

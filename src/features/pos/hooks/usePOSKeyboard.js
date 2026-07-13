@@ -14,6 +14,7 @@ const usePOSKeyboard = ({
   onVoid,
   onReturn,
   onFocusSearch,
+  onShortcutFeedback,
 } = {}) => {
   useEffect(() => {
     if (!enabled) {
@@ -49,18 +50,21 @@ const usePOSKeyboard = ({
 
       if (event.key === "F2") {
         event.preventDefault();
+        onShortcutFeedback?.("F2", "Yangi savdo");
         onNewSale?.();
         return;
       }
 
       if (event.key === "F3") {
         event.preventDefault();
+        onShortcutFeedback?.("F3", "Qidiruv fokuslandi");
         onFocusSearch?.();
         return;
       }
 
       if (event.key === "F4") {
         event.preventDefault();
+        onShortcutFeedback?.("F4", "To'lov oynasi");
         onPayment?.();
         return;
       }
@@ -118,6 +122,7 @@ const usePOSKeyboard = ({
     onPayment,
     onPriceCheck,
     onReturn,
+    onShortcutFeedback,
     onVoid,
   ]);
 };

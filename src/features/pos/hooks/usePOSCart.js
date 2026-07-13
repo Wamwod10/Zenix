@@ -10,6 +10,7 @@ const createCartItem = (product, options = {}) => ({
   sku: product.sku,
   barcode: product.barcode ?? product.sku,
   category: product.category,
+  visual: product.visual || product.category,
   basePrice: Number(product.price) || 0,
   price: Number(options.price ?? product.price) || 0,
   quantity: Number(options.quantity) || 1,
