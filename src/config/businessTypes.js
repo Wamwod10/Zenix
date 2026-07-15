@@ -17,7 +17,7 @@ export const businessTypes = {
     title: "Savdo",
     description:
       "Do‘kon, minimarket, kiyim-kechak, texnika va umumiy savdo bizneslari.",
-    workspaceLabel: "Savdo workspace",
+    workspaceLabel: "Savdo paneli",
     primaryModule: MODULE_IDS.pos,
     modules: [
       MODULE_IDS.dashboard,
@@ -41,7 +41,7 @@ export const businessTypes = {
     id: BUSINESS_TYPE_IDS.food,
     title: "Ovqatlanish",
     description: "Kafe, restoran, fast food, oshxona va delivery bizneslari.",
-    workspaceLabel: "Restoran workspace",
+    workspaceLabel: "Restoran paneli",
     primaryModule: MODULE_IDS.pos,
     modules: [
       MODULE_IDS.dashboard,
@@ -68,7 +68,7 @@ export const businessTypes = {
     title: "Ishlab chiqarish",
     description:
       "Xomashyo, ishlab chiqarish jarayoni va tayyor mahsulot nazorati.",
-    workspaceLabel: "Production workspace",
+    workspaceLabel: "Ishlab chiqarish paneli",
     primaryModule: MODULE_IDS.production,
     modules: [
       MODULE_IDS.dashboard,
@@ -92,7 +92,7 @@ export const businessTypes = {
     id: BUSINESS_TYPE_IDS.pharmacy,
     title: "Apteka",
     description: "Dorilar, yaroqlilik muddati, savdo va ombor nazorati.",
-    workspaceLabel: "Pharmacy workspace",
+    workspaceLabel: "Apteka paneli",
     primaryModule: MODULE_IDS.pos,
     modules: [
       MODULE_IDS.dashboard,
