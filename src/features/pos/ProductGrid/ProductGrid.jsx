@@ -35,3 +35,4 @@ const ProductGrid = ({ products = [], loading = false, onAddToCart }) => {
 };
 
 export default ProductGrid;
+
