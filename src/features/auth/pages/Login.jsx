@@ -1,13 +1,18 @@
 import { Lock, Mail } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Button, Input, useNotification } from "../../../components/ui";
 import { useGlassFollow } from "../../../shared/hooks/useGlassFollow";
+import { getApiErrorMessage } from "../../../shared/services/api";
+import { useLoginMutation } from "../authApi";
 import "./Login.scss";
 
 export default function Login() {
   const { error } = useNotification();
+  const navigate = useNavigate();
+  const [login, { isLoading }] = useLoginMutation();
   const glassFollowRef = useGlassFollow();
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     const formData = new FormData(event.currentTarget);
@@ -26,6 +31,14 @@ export default function Login() {
 
     if (!password) {
       error("Parolni kiriting.");
+      return;
+    }
+
+    try {
+      await login({ email, password }).unwrap();
+      navigate("/dashboard");
+    } catch (requestError) {
+      error(getApiErrorMessage(requestError, "Kirish bajarilmadi."));
     }
   };
 
@@ -80,8 +93,8 @@ export default function Login() {
             <a href="/forgot-password">Parolni unutdingizmi?</a>
           </div>
 
-          <Button type="submit" fullWidth>
-            ZENIX ga kirish
+          <Button type="submit" fullWidth disabled={isLoading}>
+            {isLoading ? "Tekshirilmoqda..." : "ZENIX ga kirish"}
           </Button>
         </form>
 

@@ -14,7 +14,14 @@ const liveStatus = [
   { icon: Server, label: "Server", value: "99.9%" },
 ];
 
-const DashboardGreeting = () => {
+const DashboardGreeting = ({ summary }) => {
+  const userName = summary?.user?.fullName || "Akramov Akram";
+  const tenantName = summary?.tenant?.name || "ZENIX Workspace";
+  const city = summary?.tenant?.city || "Toshkent filiali";
+  const recommendations = summary?.stats?.lowStockCount
+    ? `${summary.stats.lowStockCount} ta risk`
+    : "3 ta muhim tavsiya";
+
   return (
     <section className="dashboard-greeting">
       <div className="dashboard-greeting__content">
@@ -23,11 +30,11 @@ const DashboardGreeting = () => {
           ZENIX Business OS
         </span>
 
-        <h1>Xush kelibsiz, Akramov Akram!</h1>
+        <h1>Xush kelibsiz, {userName}!</h1>
 
         <p>
-          Bugungi savdo, ombor, mijozlar va AI tavsiyalar bir joyda jamlandi.
-          ZENIX biznesingizdagi muhim o‘zgarishlarni kuzatmoqda.
+          {tenantName} uchun bugungi savdo, ombor, mijozlar va AI tavsiyalar
+          bir joyda jamlandi. ZENIX muhim o'zgarishlarni kuzatmoqda.
         </p>
 
         <div className="dashboard-greeting__live">
@@ -54,7 +61,7 @@ const DashboardGreeting = () => {
 
           <button type="button">
             <MapPin size={16} />
-            Toshkent filiali
+            {city}
           </button>
         </div>
 
@@ -65,7 +72,7 @@ const DashboardGreeting = () => {
 
           <div>
             <strong>AI kuzatuv</strong>
-            <p>3 ta muhim tavsiya va 2 ta risk aniqlandi.</p>
+            <p>{recommendations} va real-time monitoring faol.</p>
           </div>
         </div>
       </div>

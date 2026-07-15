@@ -159,6 +159,33 @@
   }
 }
 
+// POS polish: clearer cart rows, same structure.
+.pos-cart-item {
+  border-color: rgba(255, 255, 255, 0.9);
+
+  &:focus-within {
+    outline: 3px solid rgba(70, 120, 255, 0.2);
+    outline-offset: 2px;
+  }
+
+  &__controls button,
+  &__actions button {
+    transition:
+      transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+      background 180ms ease,
+      color 180ms ease,
+      border-color 180ms ease;
+
+    &:active:not(:disabled) {
+      transform: scale(0.94);
+    }
+  }
+
+  &__price strong {
+    color: rgba(5, 14, 35, 0.88);
+  }
+}
+
 @keyframes pos-cart-item-pop {
   from {
     opacity: 0;

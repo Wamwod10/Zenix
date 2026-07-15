@@ -1,7 +1,11 @@
 import { Boxes } from "lucide-react";
 import "./InventoryStatus.scss";
 
-const InventoryStatus = () => {
+const InventoryStatus = ({ stats }) => {
+  const total = Number(stats?.inventoryTotal ?? 1842);
+  const lowStock = Number(stats?.lowStockCount ?? 17);
+  const progress = total > 0 ? Math.max(8, Math.min(96, 100 - (lowStock / total) * 100)) : 0;
+
   return (
     <article className="zenix-dashboard__panel dashboard-widget dashboard-widget--blue inventory-status">
       <div className="zenix-dashboard__panel-head">
@@ -16,9 +20,9 @@ const InventoryStatus = () => {
       </div>
 
       <div className="dashboard-widget__body">
-        <strong>1 842</strong>
-        <p>17 ta mahsulot kam qolgan</p>
-        <span className="dashboard-widget__meter" style={{ "--widget-progress": "76%" }}>
+        <strong>{total.toLocaleString("ru-RU")}</strong>
+        <p>{lowStock} ta mahsulot kam qolgan</p>
+        <span className="dashboard-widget__meter" style={{ "--widget-progress": `${progress}%` }}>
           <i />
         </span>
       </div>

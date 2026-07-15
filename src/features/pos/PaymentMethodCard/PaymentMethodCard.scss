@@ -143,6 +143,27 @@
   }
 }
 
+// POS polish: clearer selected/keyboard states.
+.pos-payment-method {
+  &:focus-visible {
+    outline: 3px solid rgba(70, 120, 255, 0.24);
+    outline-offset: 3px;
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(-1px) scale(0.99);
+  }
+
+  &.is-active {
+    border-color: rgba(77, 112, 224, 0.38);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.92),
+      0 18px 38px rgba(43, 79, 188, 0.13),
+      0 0 0 1px rgba(77, 112, 224, 0.1),
+      0 0 28px rgba(92, 134, 245, 0.08);
+  }
+}
+
 @keyframes pos-payment-method-active {
   from {
     box-shadow:

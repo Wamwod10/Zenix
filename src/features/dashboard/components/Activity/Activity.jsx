@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import "./Activity.scss";
 
-const activityFeed = [
+const fallbackActivityFeed = [
   {
     icon: ClipboardCheck,
     title: "12 ta buyurtma yopildi",
@@ -34,7 +34,31 @@ const activityFeed = [
   },
 ];
 
-const Activity = () => {
+const actionLabels = {
+  AUTH_LOGIN: "Tizimga kirildi",
+  AUTH_REGISTER: "Yangi akkaunt yaratildi",
+  AUTH_VERIFY_EMAIL: "Email tasdiqlandi",
+  AUTH_RESEND_CODE: "Tasdiqlash kodi yuborildi",
+  POS_SALE_CREATED: "Yangi savdo yaratildi",
+  POS_SHIFT_OPENED: "Smena ochildi",
+};
+
+const toActivity = (items) => {
+  if (!items?.length) {
+    return fallbackActivityFeed;
+  }
+
+  return items.slice(0, 4).map((item, index) => ({
+    icon: [ClipboardCheck, Truck, ShieldCheck, Users][index % 4],
+    title: actionLabels[item.action] || item.action?.replaceAll("_", " ") || "Operatsiya",
+    text: item.userName || new Date(item.createdAt).toLocaleString("uz-UZ"),
+    tone: ["green", "blue", "gold", "cyan"][index % 4],
+  }));
+};
+
+const Activity = ({ items }) => {
+  const activityFeed = toActivity(items);
+
   return (
     <article className="zenix-dashboard__panel dashboard-activity">
       <div className="zenix-dashboard__panel-head">
@@ -58,7 +82,7 @@ const Activity = () => {
           return (
             <div
               className={`dashboard-activity__item dashboard-activity__item--${item.tone}`}
-              key={item.title}
+              key={`${item.title}-${index}`}
               style={{ "--item-index": index }}
             >
               <span>

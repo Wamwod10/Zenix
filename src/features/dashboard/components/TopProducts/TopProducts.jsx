@@ -1,14 +1,31 @@
 import { PackageCheck, Sparkles } from "lucide-react";
 import "./TopProducts.scss";
 
-const products = [
+const fallbackProducts = [
   { name: "Premium kofe", value: "3.2m", progress: 88, tone: "green" },
   { name: "Smart sensor", value: "2.7m", progress: 74, tone: "blue" },
   { name: "Office set", value: "1.9m", progress: 58, tone: "gold" },
   { name: "Cloud tarif", value: "1.4m", progress: 46, tone: "cyan" },
 ];
 
-const TopProducts = () => {
+const toProducts = (products) => {
+  if (!products?.length) {
+    return fallbackProducts;
+  }
+
+  const maxTotal = Math.max(...products.map((product) => Number(product.total || 0)), 1);
+
+  return products.map((product, index) => ({
+    name: product.name,
+    value: `${Number(product.total || 0).toLocaleString("ru-RU")} so'm`,
+    progress: Math.max(12, Math.round((Number(product.total || 0) / maxTotal) * 100)),
+    tone: ["green", "blue", "gold", "cyan"][index % 4],
+  }));
+};
+
+const TopProducts = ({ products }) => {
+  const items = toProducts(products);
+
   return (
     <article className="zenix-dashboard__panel top-products">
       <div className="zenix-dashboard__panel-head">
@@ -26,7 +43,7 @@ const TopProducts = () => {
       </div>
 
       <div className="top-products__list">
-        {products.map((product, index) => (
+        {items.map((product, index) => (
           <div
             className={`top-products__item top-products__item--${product.tone}`}
             key={product.name}

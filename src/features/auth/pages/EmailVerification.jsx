@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight, MailCheck, RotateCcw } from "lucide-react";
 import { Button, useNotification } from "../../../components/ui";
+import { getApiErrorMessage } from "../../../shared/services/api";
+import { useResendCodeMutation, useVerifyEmailMutation } from "../authApi";
 import "./EmailVerification.scss";
 
 const OTP_LENGTH = 6;
@@ -31,6 +33,8 @@ export default function EmailVerification() {
   const inputRefs = useRef([]);
   const navigate = useNavigate();
   const { error, success } = useNotification();
+  const [verifyEmail, { isLoading }] = useVerifyEmailMutation();
+  const [resendCode, { isLoading: isResending }] = useResendCodeMutation();
 
   const focusInput = useCallback((index) => {
     inputRefs.current[index]?.focus();
@@ -130,18 +134,22 @@ export default function EmailVerification() {
     applyDigits(getDigits(event.clipboardData.getData("text")), index);
   };
 
-  const handleResend = () => {
+  const handleResend = async () => {
     if (resendTime > 0) {
       return;
     }
 
-    console.log("Verification code resent");
-    success("Verification code resent");
-    setResendTime(RESEND_SECONDS);
-    resetOtp();
+    try {
+      const result = await resendCode({ email }).unwrap();
+      success(result?.devCode ? `Kod yuborildi: ${result.devCode}` : "Verification code resent");
+      setResendTime(RESEND_SECONDS);
+      resetOtp();
+    } catch (requestError) {
+      error(getApiErrorMessage(requestError, "Kodni qayta yuborib bo'lmadi."));
+    }
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     const firstEmptyIndex = otp.findIndex((digit) => !digit);
@@ -153,9 +161,13 @@ export default function EmailVerification() {
     }
 
     const code = otp.join("");
-    console.log("Verification code:", code);
-    sessionStorage.removeItem("zenix_pending_email");
-    navigate("/business-type");
+    try {
+      await verifyEmail({ email, code }).unwrap();
+      sessionStorage.removeItem("zenix_pending_email");
+      navigate("/business-type");
+    } catch (requestError) {
+      error(getApiErrorMessage(requestError, "Tasdiqlash kodi noto'g'ri."));
+    }
   };
 
   if (!email) {
@@ -214,15 +226,20 @@ export default function EmailVerification() {
             ))}
           </div>
 
-          <Button type="submit" fullWidth rightIcon={<ArrowRight size={18} />}>
-            Verify Email
+          <Button
+            type="submit"
+            fullWidth
+            disabled={isLoading}
+            rightIcon={<ArrowRight size={18} />}
+          >
+            {isLoading ? "Tekshirilmoqda..." : "Verify Email"}
           </Button>
         </form>
 
         <button
           className="verify-page__resend"
           type="button"
-          disabled={resendTime > 0}
+          disabled={resendTime > 0 || isResending}
           onClick={handleResend}
         >
           <RotateCcw size={16} />

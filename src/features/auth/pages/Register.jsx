@@ -10,6 +10,8 @@ import {
 } from "lucide-react";
 import { Button, Input, useNotification } from "../../../components/ui";
 import { useGlassFollow } from "../../../shared/hooks/useGlassFollow";
+import { getApiErrorMessage } from "../../../shared/services/api";
+import { useRegisterMutation } from "../authApi";
 import "./Register.scss";
 import "./Login.scss";
 
@@ -44,6 +46,7 @@ export default function Register() {
   const [form, setForm] = useState(initialForm);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [register, { isLoading }] = useRegisterMutation();
   const navigate = useNavigate();
   const { error } = useNotification();
   const glassFollowRef = useGlassFollow({
@@ -60,7 +63,7 @@ export default function Register() {
     }));
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     const values = {
@@ -95,8 +98,20 @@ export default function Register() {
       return;
     }
 
-    sessionStorage.setItem("zenix_pending_email", values.email);
-    navigate("/email-verification");
+    try {
+      const result = await register({
+        company: values.company,
+        owner: values.owner,
+        email: values.email,
+        phone: values.phone,
+        password: values.password,
+      }).unwrap();
+
+      sessionStorage.setItem("zenix_pending_email", result.email || values.email);
+      navigate("/email-verification");
+    } catch (requestError) {
+      error(getApiErrorMessage(requestError, "Ro'yxatdan o'tish bajarilmadi."));
+    }
   };
 
   return (
@@ -229,8 +244,8 @@ export default function Register() {
             <span>ZENIX shartlariga va maxfiylik siyosatiga roziman.</span>
           </label>
 
-          <Button type="submit" fullWidth>
-            Hisob yaratish
+          <Button type="submit" fullWidth disabled={isLoading}>
+            {isLoading ? "Yaratilmoqda..." : "Hisob yaratish"}
           </Button>
         </form>
 

@@ -1,7 +1,11 @@
 import { UserCheck } from "lucide-react";
 import "./EmployeeStatus.scss";
 
-const EmployeeStatus = () => {
+const EmployeeStatus = ({ employees }) => {
+  const total = Number(employees?.total ?? 21);
+  const active = Number(employees?.activeToday ?? 18);
+  const progress = total > 0 ? Math.round((active / total) * 100) : 0;
+
   return (
     <article className="zenix-dashboard__panel dashboard-widget dashboard-widget--green employee-status">
       <div className="zenix-dashboard__panel-head">
@@ -16,9 +20,11 @@ const EmployeeStatus = () => {
       </div>
 
       <div className="dashboard-widget__body">
-        <strong>18 / 21</strong>
-        <p>3 xodim tanaffusda</p>
-        <span className="dashboard-widget__meter" style={{ "--widget-progress": "86%" }}>
+        <strong>
+          {active} / {total}
+        </strong>
+        <p>{Math.max(total - active, 0)} xodim bugun hali faol emas</p>
+        <span className="dashboard-widget__meter" style={{ "--widget-progress": `${progress}%` }}>
           <i />
         </span>
       </div>

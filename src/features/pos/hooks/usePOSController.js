@@ -1,8 +1,13 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useDeferredValue, useMemo, useRef, useState } from "react";
 
 import { posCategories } from "../data/posCategories";
 import { posCustomers } from "../data/posCustomers";
 import { posProducts } from "../data/posProducts";
+import {
+  usePosCategoriesQuery,
+  usePosCustomersQuery,
+  usePosProductsQuery,
+} from "../posApi";
 import { paymentAdapter } from "../utils/posAdapters";
 import { formatMoney } from "../utils/posMoney";
 import { needsManagerApproval } from "../utils/posPermissions";
@@ -25,6 +30,41 @@ const paymentLabels = {
   debt: "Debt payment",
   advance: "Advance payment",
 };
+
+const adaptProduct = (product) => ({
+  id: product.id,
+  name: product.name,
+  sku: product.sku,
+  barcode: product.barcode || "",
+  category: product.category?.name || "Boshqa",
+  categoryId: product.categoryId,
+  price: Number(product.price || 0),
+  stock: Number(product.stock || 0),
+  favorite: Boolean(product.favorite),
+  visual: product.visual || "spark",
+  units: (product.units?.length ? product.units : [{ code: "piece", label: "Dona", multiplier: 1 }]).map((unit) => ({
+    id: unit.code || unit.id,
+    code: unit.code || unit.id,
+    label: unit.label,
+    multiplier: Number(unit.multiplier || 1),
+  })),
+  variants: (product.variants || []).map((variant) => ({
+    id: variant.code || variant.id,
+    code: variant.code || variant.id,
+    label: variant.label,
+    priceDelta: Number(variant.priceDelta || 0),
+  })),
+});
+
+const adaptCustomer = (customer) => ({
+  id: customer.id,
+  name: customer.name,
+  phone: customer.phone || "",
+  level: customer.level || "STANDARD",
+  orders: Number(customer.ordersCount || 0),
+  spent: Number(customer.totalSpent || 0),
+  bonus: Number(customer.bonus || 0),
+});
 
 const playSuccessBeep = () => {
   if (typeof window === "undefined") {
@@ -118,6 +158,16 @@ const buildRecommendation = ({ items, products, customer }) => {
 };
 
 const usePOSController = () => {
+  const { data: apiProducts = [] } = usePosProductsQuery(undefined, {
+    refetchOnMountOrArgChange: true,
+  });
+  const { data: apiCategories = [] } = usePosCategoriesQuery(undefined, {
+    refetchOnMountOrArgChange: true,
+  });
+  const { data: apiCustomers = [] } = usePosCustomersQuery(undefined, {
+    refetchOnMountOrArgChange: true,
+  });
+
   const searchInputRef = useRef(null);
   const barcodeInputRef = useRef(null);
 
@@ -129,6 +179,7 @@ const usePOSController = () => {
 
   const [activeCategory, setActiveCategory] = useState(posCategories[0]);
   const [searchQuery, setSearchQuery] = useState("");
+  const deferredSearchQuery = useDeferredValue(searchQuery);
   const [activeModal, setActiveModal] = useState(null);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [barcodeValue, setBarcodeValue] = useState("");
@@ -143,6 +194,22 @@ const usePOSController = () => {
   const [shortcutFeedback, setShortcutFeedback] = useState(null);
   const shortcutTimeoutRef = useRef(null);
 
+  const liveProducts = useMemo(
+    () => (apiProducts.length ? apiProducts.map(adaptProduct) : posProducts),
+    [apiProducts],
+  );
+  const liveCategories = useMemo(() => {
+    if (!apiCategories.length) {
+      return posCategories;
+    }
+
+    return ["Barchasi", ...apiCategories.map((category) => category.name)];
+  }, [apiCategories]);
+  const liveCustomers = useMemo(
+    () => (apiCustomers.length ? apiCustomers.map(adaptCustomer) : posCustomers),
+    [apiCustomers],
+  );
+
   const cart = usePOSCart({
     taxRate: settings.taxRate,
   });
@@ -150,16 +217,16 @@ const usePOSController = () => {
   const recentSales = useRecentSales();
 
   const filteredProducts = useMemo(() => {
-    const normalizedQuery = searchQuery.trim().toLowerCase();
+    const normalizedQuery = deferredSearchQuery.trim().toLowerCase();
 
-    return posProducts.filter((product) => {
+    return liveProducts.filter((product) => {
       const matchesCategory =
         activeCategory === "Barchasi" || product.category === activeCategory;
       const searchText = `${product.name} ${product.sku} ${product.barcode}`.toLowerCase();
 
       return matchesCategory && (!normalizedQuery || searchText.includes(normalizedQuery));
     });
-  }, [activeCategory, searchQuery]);
+  }, [activeCategory, deferredSearchQuery, liveProducts]);
 
   const todaySalesTotal = useMemo(() => {
     const todayKey = new Date().toISOString().slice(0, 10);
@@ -177,10 +244,10 @@ const usePOSController = () => {
     () =>
       buildRecommendation({
         items: cart.items,
-        products: posProducts,
+        products: liveProducts,
         customer: selectedCustomer,
       }),
-    [cart.items, selectedCustomer],
+    [cart.items, liveProducts, selectedCustomer],
   );
 
   const posMetrics = useMemo(
@@ -242,7 +309,7 @@ const usePOSController = () => {
   const handleBarcodeLookup = useCallback(
     (barcode) => {
       const normalizedBarcode = barcode.trim();
-      const product = posProducts.find(
+      const product = liveProducts.find(
         (item) =>
           item.barcode === normalizedBarcode ||
           item.sku.toLowerCase() === normalizedBarcode.toLowerCase(),
@@ -268,12 +335,12 @@ const usePOSController = () => {
         searchInputRef.current?.focus();
       }, 80);
     },
-    [handleProductSelect, notifications],
+    [handleProductSelect, liveProducts, notifications],
   );
 
   useBarcodeScanner({
     enabled: !activeModal,
-    products: posProducts,
+    products: liveProducts,
     onScan: (barcode) => handleBarcodeLookup(barcode),
     onMiss: (barcode) => {
       setBarcodeStatus({ type: "error", message: `${barcode} topilmadi` });
@@ -546,10 +613,10 @@ const usePOSController = () => {
       barcodeInputRef,
     },
     data: {
-      categories: posCategories,
-      customers: posCustomers,
+      categories: liveCategories,
+      customers: liveCustomers,
       products: filteredProducts,
-      allProducts: posProducts,
+      allProducts: liveProducts,
     },
     state: {
       activeCategory,

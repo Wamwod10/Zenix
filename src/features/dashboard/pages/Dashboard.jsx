@@ -9,29 +9,34 @@ import Activity from "../components/Activity/Activity";
 import InventoryStatus from "../components/InventoryStatus/InventoryStatus";
 import EmployeeStatus from "../components/EmployeeStatus/EmployeeStatus";
 import QuickActions from "../components/QuickActions/QuickActions";
+import { useDashboardSummaryQuery } from "../dashboardApi";
 
 const Dashboard = () => {
+  const { data: summary, isFetching } = useDashboardSummaryQuery(undefined, {
+    refetchOnMountOrArgChange: true,
+  });
+
   return (
-    <main className="zenix-dashboard">
-      <DashboardGreeting />
+    <main className={`zenix-dashboard ${isFetching ? "is-refreshing" : ""}`}>
+      <DashboardGreeting summary={summary} />
 
       <QuickActions />
 
-      <StatsGrid />
+      <StatsGrid stats={summary?.stats} />
 
       <RevenueChart />
 
-      <AIInsights />
+      <AIInsights stats={summary?.stats} />
 
       <section className="zenix-dashboard__analytics">
         <SalesChart />
-        <TopProducts />
-        <Activity />
+        <TopProducts products={summary?.topProducts} />
+        <Activity items={summary?.activity} />
       </section>
 
       <section className="zenix-dashboard__widgets">
-        <InventoryStatus />
-        <EmployeeStatus />
+        <InventoryStatus stats={summary?.stats} />
+        <EmployeeStatus employees={summary?.employees} />
       </section>
     </main>
   );

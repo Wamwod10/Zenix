@@ -57,3 +57,14 @@
     font-weight: 700;
   }
 }
+
+.pos-payment-button {
+  &:focus-visible {
+    outline: 3px solid rgba(70, 120, 255, 0.28);
+    outline-offset: 3px;
+  }
+
+  &:disabled {
+    filter: saturate(0.78);
+  }
+}
