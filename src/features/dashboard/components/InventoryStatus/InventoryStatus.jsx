@@ -1,10 +1,14 @@
 import { Boxes } from "lucide-react";
 import "./InventoryStatus.scss";
+// ✅ BACKEND INTEGRATION: ombor statistikasi (products/warehouse'dan)
+import { useDashboardSummaryQuery } from "../../dashboardApi";
 
-const InventoryStatus = ({ stats }) => {
-  const total = Number(stats?.inventoryTotal ?? 1842);
-  const lowStock = Number(stats?.lowStockCount ?? 17);
-  const progress = total > 0 ? Math.max(8, Math.min(96, 100 - (lowStock / total) * 100)) : 0;
+const InventoryStatus = () => {
+  const { data } = useDashboardSummaryQuery();
+
+  const total = data?.stats?.inventoryTotal ?? 0;
+  const lowStock = data?.stats?.lowStockCount ?? 0;
+  const progress = total > 0 ? Math.round(((total - lowStock) / total) * 100) : 0;
 
   return (
     <article className="zenix-dashboard__panel dashboard-widget dashboard-widget--blue inventory-status">
@@ -21,8 +25,15 @@ const InventoryStatus = ({ stats }) => {
 
       <div className="dashboard-widget__body">
         <strong>{total.toLocaleString("ru-RU")}</strong>
-        <p>{lowStock} ta mahsulot kam qolgan</p>
-        <span className="dashboard-widget__meter" style={{ "--widget-progress": `${progress}%` }}>
+        <p>
+          {total === 0
+            ? "Mahsulot qo'shilganda ko'rinadi"
+            : `${lowStock} ta mahsulot kam qolgan`}
+        </p>
+        <span
+          className="dashboard-widget__meter"
+          style={{ "--widget-progress": `${progress}%` }}
+        >
           <i />
         </span>
       </div>

@@ -1,57 +1,86 @@
+// ✅ BACKEND INTEGRATION: RTK Query bazaviy API
+// - Har so'rovga Authorization: Bearer <token> qo'shadi
+// - 401 kelsa refresh token bilan yangi access oladi va so'rovni takrorlaydi
+// - Refresh ham ishlamasa -> logout + /login ga yo'naltiradi
+
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { API_URL } from "../config/env";
+import { tokenStorage } from "./storage";
 
-const API_URL =
-  import.meta.env.VITE_API_URL?.replace(/\/$/, "") ||
-  "http://localhost:4000/api/v1";
+const rawBaseQuery = fetchBaseQuery({
+  baseUrl: API_URL,
+  prepareHeaders: (headers) => {
+    const token = tokenStorage.getAccess();
+    if (token) headers.set("Authorization", `Bearer ${token}`);
+    return headers;
+  },
+});
 
-export const tokenStorage = {
-  getAccessToken() {
-    return localStorage.getItem("zenix_access_token");
-  },
-  getRefreshToken() {
-    return localStorage.getItem("zenix_refresh_token");
-  },
-  setTokens(tokens) {
-    if (!tokens) {
-      return;
+// Bir vaqtda faqat bitta refresh so'rovi ketishi uchun
+let refreshPromise = null;
+
+async function baseQueryWithReauth(args, api, extraOptions) {
+  let result = await rawBaseQuery(args, api, extraOptions);
+
+  if (result.error?.status === 401) {
+    const refreshToken = tokenStorage.getRefresh();
+
+    if (!refreshToken) {
+      tokenStorage.clear();
+      return result;
     }
 
-    localStorage.setItem("zenix_access_token", tokens.accessToken);
-    localStorage.setItem("zenix_refresh_token", tokens.refreshToken);
-  },
-  clear() {
-    localStorage.removeItem("zenix_access_token");
-    localStorage.removeItem("zenix_refresh_token");
-  },
-};
+    if (!refreshPromise) {
+      refreshPromise = rawBaseQuery(
+        { url: "/auth/refresh", method: "POST", body: { refreshToken } },
+        api,
+        extraOptions,
+      ).finally(() => {
+        refreshPromise = null;
+      });
+    }
 
-export function unwrapApiResponse(response) {
-  return response?.data ?? response;
-}
+    const refreshResult = await refreshPromise;
 
-export function getApiErrorMessage(error, fallback = "So'rov bajarilmadi.") {
-  return (
-    error?.data?.error?.message ||
-    error?.data?.message ||
-    error?.error ||
-    fallback
-  );
+    if (refreshResult?.data?.data?.tokens) {
+      tokenStorage.save({ tokens: refreshResult.data.data.tokens });
+      // Asl so'rovni yangi token bilan takrorlaymiz
+      result = await rawBaseQuery(args, api, extraOptions);
+    } else {
+      tokenStorage.clear();
+      if (window.location.pathname !== "/login") {
+        window.location.href = "/login";
+      }
+    }
+  }
+
+  return result;
 }
 
 export const baseApi = createApi({
-  reducerPath: "baseApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl: API_URL,
-    prepareHeaders: (headers) => {
-      const token = tokenStorage.getAccessToken();
-
-      if (token) {
-        headers.set("authorization", `Bearer ${token}`);
-      }
-
-      return headers;
-    },
-  }),
-  tagTypes: ["Auth", "Dashboard", "POS"],
+  reducerPath: "api",
+  baseQuery: baseQueryWithReauth,
+  tagTypes: [
+    "Me",
+    "PosCategories",
+    "PosProducts",
+    "PosCustomers",
+    "PosSales",
+    "PosHeld",
+    "PosShift",
+    "PosSettings",
+    "PosPermissions",
+  ],
   endpoints: () => ({}),
 });
+
+// Backend xato formati: { success:false, error:{ code, message } }
+// Bu helper komponentlarda xabarni oson olish uchun
+export function getApiError(err) {
+  return {
+    code: err?.data?.error?.code ?? "NETWORK_ERROR",
+    message:
+      err?.data?.error?.message ??
+      "Server bilan aloqa yo'q. Backend ishlayotganini tekshiring.",
+  };
+}

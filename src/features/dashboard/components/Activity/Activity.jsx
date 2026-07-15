@@ -1,63 +1,49 @@
 import {
   Activity as ActivityIcon,
-  ClipboardCheck,
+  KeyRound,
+  MailCheck,
+  Settings2,
   ShieldCheck,
-  Truck,
-  Users,
+  UserPlus,
+  Wallet,
 } from "lucide-react";
 import "./Activity.scss";
+// ✅ BACKEND INTEGRATION: real faoliyat oqimi (audit_logs jadvalidan)
+import { useDashboardSummaryQuery } from "../../dashboardApi";
 
-const fallbackActivityFeed = [
-  {
-    icon: ClipboardCheck,
-    title: "12 ta buyurtma yopildi",
-    text: "Oxirgi 30 daqiqada",
-    tone: "green",
-  },
-  {
-    icon: Truck,
-    title: "2 ta yetkazma yo'lda",
-    text: "Toshkent filiali",
-    tone: "blue",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Risklar nazoratda",
-    text: "AI tekshiruv yakunlandi",
-    tone: "gold",
-  },
-  {
-    icon: Users,
-    title: "34 yangi mijoz",
-    text: "Bugungi segment",
-    tone: "cyan",
-  },
-];
-
+// Backend action kodlarini o'zbekcha matnga o'girish
 const actionLabels = {
-  AUTH_LOGIN: "Tizimga kirildi",
-  AUTH_REGISTER: "Yangi akkaunt yaratildi",
-  AUTH_VERIFY_EMAIL: "Email tasdiqlandi",
-  AUTH_RESEND_CODE: "Tasdiqlash kodi yuborildi",
-  POS_SALE_CREATED: "Yangi savdo yaratildi",
-  POS_SHIFT_OPENED: "Smena ochildi",
+  AUTH_REGISTER: { title: "Yangi akkaunt yaratildi", icon: UserPlus, tone: "green" },
+  AUTH_VERIFY_EMAIL: { title: "Email tasdiqlandi", icon: MailCheck, tone: "blue" },
+  AUTH_LOGIN: { title: "Tizimga kirildi", icon: KeyRound, tone: "cyan" },
+  AUTH_RESEND_CODE: { title: "Tasdiqlash kodi yuborildi", icon: MailCheck, tone: "gold" },
+  ONBOARDING_BUSINESS_TYPE: { title: "Biznes turi tanlandi", icon: Settings2, tone: "blue" },
+  ONBOARDING_BUSINESS_SETUP: { title: "Kompaniya ma'lumotlari saqlandi", icon: Settings2, tone: "green" },
+  ONBOARDING_PLAN_SELECTED: { title: "Tarif tanlandi", icon: ShieldCheck, tone: "gold" },
+  ONBOARDING_CARD_SAVED: { title: "To'lov kartasi qo'shildi", icon: Wallet, tone: "cyan" },
+  POS_SALE_CREATED: { title: "Yangi savdo", icon: Wallet, tone: "green" },
+  POS_RETURN_CREATED: { title: "Qaytarish rasmiylashtirildi", icon: ShieldCheck, tone: "gold" },
+  POS_SALE_VOIDED: { title: "Savdo bekor qilindi", icon: ShieldCheck, tone: "gold" },
+  POS_SHIFT_OPENED: { title: "Smena ochildi", icon: KeyRound, tone: "blue" },
+  POS_SHIFT_CLOSED: { title: "Smena yopildi", icon: KeyRound, tone: "cyan" },
 };
 
-const toActivity = (items) => {
-  if (!items?.length) {
-    return fallbackActivityFeed;
-  }
+function timeAgo(dateString) {
+  const diffMs = Date.now() - new Date(dateString).getTime();
+  const minutes = Math.floor(diffMs / 60000);
 
-  return items.slice(0, 4).map((item, index) => ({
-    icon: [ClipboardCheck, Truck, ShieldCheck, Users][index % 4],
-    title: actionLabels[item.action] || item.action?.replaceAll("_", " ") || "Operatsiya",
-    text: item.userName || new Date(item.createdAt).toLocaleString("uz-UZ"),
-    tone: ["green", "blue", "gold", "cyan"][index % 4],
-  }));
-};
+  if (minutes < 1) return "Hozirgina";
+  if (minutes < 60) return `${minutes} daqiqa oldin`;
 
-const Activity = ({ items }) => {
-  const activityFeed = toActivity(items);
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} soat oldin`;
+
+  return `${Math.floor(hours / 24)} kun oldin`;
+}
+
+const Activity = () => {
+  const { data } = useDashboardSummaryQuery();
+  const feed = data?.activity ?? [];
 
   return (
     <article className="zenix-dashboard__panel dashboard-activity">
@@ -76,21 +62,41 @@ const Activity = ({ items }) => {
       </div>
 
       <div className="dashboard-activity__list">
-        {activityFeed.map((item, index) => {
-          const Icon = item.icon;
+        {feed.length === 0 && (
+          <div className="dashboard-activity__item dashboard-activity__item--blue">
+            <span>
+              <ActivityIcon size={15} />
+            </span>
+            <div>
+              <strong>Hozircha faoliyat yo'q</strong>
+              <small>Amallar shu yerda ko'rinadi</small>
+            </div>
+          </div>
+        )}
+
+        {feed.slice(0, 6).map((item, index) => {
+          const meta = actionLabels[item.action] ?? {
+            title: item.action,
+            icon: ActivityIcon,
+            tone: "blue",
+          };
+          const Icon = meta.icon;
 
           return (
             <div
-              className={`dashboard-activity__item dashboard-activity__item--${item.tone}`}
-              key={`${item.title}-${index}`}
+              className={`dashboard-activity__item dashboard-activity__item--${meta.tone}`}
+              key={item.id}
               style={{ "--item-index": index }}
             >
               <span>
                 <Icon size={15} />
               </span>
               <div>
-                <strong>{item.title}</strong>
-                <small>{item.text}</small>
+                <strong>{meta.title}</strong>
+                <small>
+                  {item.userName ? `${item.userName} · ` : ""}
+                  {timeAgo(item.createdAt)}
+                </small>
               </div>
             </div>
           );
