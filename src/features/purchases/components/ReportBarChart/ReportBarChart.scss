@@ -1,0 +1,84 @@
+.report-bar-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  height: 180px;
+  padding-top: 8px;
+
+  &__empty {
+    margin: 0;
+    padding: 24px 0;
+    text-align: center;
+    font-size: 13px;
+    color: rgba(5, 14, 35, 0.48);
+  }
+
+  &__col {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+    height: 100%;
+    min-width: 0;
+
+    &--clickable {
+      cursor: pointer;
+
+      &:hover .report-bar-chart__fill {
+        filter: brightness(1.12);
+      }
+
+      &:hover .report-bar-chart__value {
+        color: #2436b8;
+      }
+    }
+  }
+
+  &__value {
+    font-size: 10.5px;
+    font-weight: 650;
+    color: rgba(5, 14, 35, 0.55);
+    white-space: nowrap;
+  }
+
+  &__track {
+    display: flex;
+    align-items: flex-end;
+    width: 100%;
+    max-width: 44px;
+    height: 100%;
+    border-radius: 10px 10px 4px 4px;
+    background: rgba(100, 116, 139, 0.08);
+    overflow: hidden;
+  }
+
+  &__fill {
+    width: 100%;
+    border-radius: 10px 10px 4px 4px;
+    background: linear-gradient(180deg, rgba(74, 103, 255, 0.78), rgba(74, 103, 255, 0.3));
+    transition: height 0.3s ease, filter 0.15s ease;
+  }
+
+  &__label {
+    font-size: 11px;
+    color: rgba(5, 14, 35, 0.45);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+
+  &--success &__fill {
+    background: linear-gradient(180deg, rgba(22, 163, 74, 0.78), rgba(22, 163, 74, 0.28));
+  }
+
+  &--warning &__fill {
+    background: linear-gradient(180deg, rgba(217, 119, 6, 0.78), rgba(217, 119, 6, 0.26));
+  }
+
+  &--danger &__fill {
+    background: linear-gradient(180deg, rgba(220, 38, 38, 0.78), rgba(220, 38, 38, 0.26));
+  }
+}

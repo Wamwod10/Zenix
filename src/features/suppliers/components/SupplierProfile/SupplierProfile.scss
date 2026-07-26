@@ -1,0 +1,672 @@
+// Point: Suppliers moduli ichidagi qo'lda yozilgan input maydonlari
+// Purchases'dagi PurchaseTextField bilan bir xil "canonical" retsept (46px
+// balandlik, 15px radius, hover/fokus/o'tish) ga moslashtirildi — shu bitta
+// %-placeholder'dan Sozlamalar maydonlari VA inline "yangi kategoriya"
+// inputi bir xil ishlatadi (kod dublikatsiyasi yo'q, ikkalasi ham piksel
+// darajasida bir xil ko'rinadi).
+%supplier-profile-canonical-input {
+  appearance: none;
+  -webkit-appearance: none;
+  height: 46px;
+  padding: 0 14px;
+  border-radius: 15px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-soft);
+  color: var(--color-text);
+  font-size: 13.5px;
+  outline: none;
+  color-scheme: light;
+  transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    margin: 0;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
+  &:hover {
+    border-color: rgba(74, 103, 255, 0.28);
+    background: var(--color-bg-muted);
+  }
+
+  &:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-soft);
+  }
+}
+
+.supplier-profile {
+  display: grid;
+  gap: 18px;
+
+  &__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    border-radius: 22px;
+    border: 1px solid rgba(255, 255, 255, 0.82);
+    background:
+      radial-gradient(circle at 10% 0%, rgba(255, 255, 255, 0.5), transparent 13rem),
+      linear-gradient(145deg, rgba(255, 255, 255, 0.38), rgba(255, 255, 255, 0.12)),
+      rgba(255, 255, 255, 0.08);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.86),
+      0 16px 44px rgba(64, 86, 136, 0.08);
+  }
+
+  &__head-main {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    h2 {
+      margin: 0 0 6px;
+      font-size: 19px;
+      font-weight: 700;
+      color: var(--color-text);
+    }
+  }
+
+  &__avatar {
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    flex-shrink: 0;
+    border-radius: 18px;
+    background:
+      linear-gradient(135deg, rgba(74, 103, 255, 0.92), rgba(142, 96, 128, 0.88));
+    color: #fff;
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  &__head-side {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  &__score {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 700;
+
+    &--high {
+      color: rgba(21, 128, 61, 0.82);
+      background: rgba(22, 163, 74, 0.08);
+    }
+
+    &--mid {
+      color: rgba(180, 83, 9, 0.86);
+      background: rgba(217, 119, 6, 0.08);
+    }
+
+    &--low {
+      color: rgba(185, 28, 28, 0.82);
+      background: rgba(220, 38, 38, 0.07);
+    }
+  }
+
+  &__tabs {
+    display: flex;
+    gap: 7px;
+    padding: 7px;
+    border-radius: 18px;
+    border: 1px solid rgba(100, 116, 139, 0.12);
+    background: rgba(255, 255, 255, 0.42);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+    width: fit-content;
+  }
+
+  &__tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 14px;
+    border: none;
+    border-radius: 12px;
+    background: transparent;
+    color: var(--color-text-soft);
+    font-size: 13px;
+    font-weight: 650;
+    cursor: pointer;
+    transition: background 160ms ease, color 160ms ease;
+
+    &:hover {
+      color: var(--color-text);
+    }
+
+    &:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 3px var(--color-primary-soft);
+    }
+
+    &--active {
+      background: rgba(255, 255, 255, 0.72);
+      color: #2436b8;
+      box-shadow: 0 10px 24px rgba(64, 86, 136, 0.08);
+    }
+  }
+
+  &__overview {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+
+  &__card {
+    border-radius: 22px;
+    border: 1px solid rgba(255, 255, 255, 0.82);
+    background:
+      linear-gradient(145deg, rgba(255, 255, 255, 0.36), rgba(255, 255, 255, 0.1)),
+      rgba(255, 255, 255, 0.08);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.82),
+      0 16px 42px rgba(64, 86, 136, 0.075);
+    backdrop-filter: blur(24px) saturate(165%);
+    -webkit-backdrop-filter: blur(24px) saturate(165%);
+
+    h3 {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin: 0 0 14px;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--color-text);
+
+      svg {
+        color: var(--color-primary);
+      }
+    }
+  }
+
+  &__empty-hint {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: 12.5px;
+  }
+
+  &__card--wide {
+    grid-column: 1 / -1;
+  }
+
+  // UI fix: "Kompaniya va kontakt" kartasi shared Card'ning standart 22px
+  // padding'i bilan chap chetga nisbatan boshqa sahifalardagi (Modal,
+  // Dashboard, POS) 24px "generous" padding standartiga qaraganda torroq
+  // ko'rinardi. Bu yerda ZENIX'da allaqachon keng qo'llanilgan 24px qiymati
+  // qo'llaniladi — shared Card komponentiga tegilmaydi, faqat shu bitta
+  // kartochka uchun kengroq ichki bo'shliq beriladi. Ikkita klassni birga
+  // (`&__card.&__card--contact`) ishlatib specifiklik `.ui-card--padded`
+  // (22px) dan ATAYLAB balandroq qilindi — aks holda ikkalasi ham bitta
+  // klass bo'lgani uchun qaysi qoida g'alaba qilishi CSS yuklanish tartibiga
+  // bog'liq bo'lib qolar edi (beqaror natija).
+  &__card.supplier-profile__card--contact {
+    padding: 24px;
+  }
+
+  &__settings-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 16px;
+
+    @media (max-width: 720px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  // 8px label bo'shlig'i bilan "canonical" maydon — input retsepti yuqoridagi
+  // %supplier-profile-canonical-input'dan meros olinadi (qayta yozilmaydi).
+  &__field {
+    display: grid;
+    gap: 8px;
+
+    span {
+      font-size: 13px;
+      font-weight: 650;
+      letter-spacing: -0.01em;
+      color: var(--color-text-soft);
+    }
+
+    input {
+      @extend %supplier-profile-canonical-input;
+    }
+  }
+
+  &__field-label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 11.5px;
+    font-weight: 650;
+    color: var(--color-text-muted);
+  }
+
+  &__field-hint {
+    margin: -6px 0 12px;
+    color: var(--color-text-muted);
+    font-size: 12px;
+  }
+
+  &__settings-categories {
+    padding-top: 14px;
+    border-top: 1px dashed rgba(100, 116, 139, 0.18);
+  }
+
+  &__chip-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  &__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 13px;
+    border-radius: 999px;
+    border: 1px solid rgba(100, 116, 139, 0.16);
+    background: rgba(255, 255, 255, 0.48);
+    color: rgba(5, 14, 35, 0.64);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+      border-color 160ms ease,
+      background 160ms ease,
+      color 160ms ease;
+
+    &:hover {
+      border-color: rgba(74, 103, 255, 0.28);
+      background: rgba(74, 103, 255, 0.05);
+    }
+
+    &--active {
+      border-color: rgba(74, 103, 255, 0.28);
+      background: rgba(74, 103, 255, 0.08);
+      color: #2436b8;
+    }
+  }
+
+  // "Boshqa" chipi bosilganda ochiladigan inline forma — modal yo'q. Input
+  // yuqoridagi %supplier-profile-canonical-input bilan bir xil (46px,
+  // radius, hover/fokus), Saqlash/Bekor qilish esa mavjud shared `Button`
+  // komponentini (primary/ghost) qayta ishlatadi — yangi rang/soya yo'q.
+  &__chip-form {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    input {
+      @extend %supplier-profile-canonical-input;
+      width: 200px;
+      max-width: 46vw;
+    }
+  }
+
+  &__chip-action {
+    flex-shrink: 0;
+  }
+
+  &__products-tab {
+    display: grid;
+    gap: 16px;
+  }
+
+  &__products-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+
+    h3 {
+      margin: 0 0 4px;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--color-text);
+    }
+
+    p {
+      margin: 0;
+    }
+  }
+
+  &__products-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  &__stat-good {
+    color: var(--color-success) !important;
+  }
+
+  &__stat-bad {
+    color: var(--color-danger) !important;
+  }
+
+
+  &__rows {
+    display: grid;
+    gap: 13px;
+
+    div {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      color: var(--color-text-soft);
+      font-size: 13.5px;
+
+      svg {
+        flex-shrink: 0;
+        color: var(--color-text-muted);
+      }
+    }
+  }
+
+  &__credit {
+    display: grid;
+    gap: 8px;
+    margin-bottom: 16px;
+
+    small {
+      color: var(--color-text-muted);
+      font-size: 12px;
+    }
+  }
+
+  &__credit-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+    color: var(--color-text-soft);
+
+    strong {
+      color: var(--color-text);
+    }
+  }
+
+  &__credit-bar {
+    height: 8px;
+    border-radius: 999px;
+    background: rgba(100, 116, 139, 0.1);
+    overflow: hidden;
+  }
+
+  &__credit-fill {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, rgba(74, 103, 255, 0.72), rgba(22, 163, 74, 0.58));
+
+    &--danger {
+      background: linear-gradient(90deg, rgba(220, 38, 38, 0.58), rgba(217, 119, 6, 0.5));
+    }
+  }
+
+  &__meta-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+
+    div {
+      display: grid;
+      gap: 3px;
+    }
+
+    span {
+      font-size: 11.5px;
+      color: var(--color-text-muted);
+    }
+
+    strong {
+      font-size: 13.5px;
+      color: var(--color-text);
+    }
+  }
+
+  &__meta-grid--stats {
+    grid-template-columns: repeat(3, 1fr);
+
+    @media (max-width: 480px) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  &__history {
+    display: grid;
+    gap: 8px;
+  }
+
+  &__history-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 11px 13px;
+    border-radius: 14px;
+    border: 1px solid rgba(100, 116, 139, 0.1);
+    background: rgba(255, 255, 255, 0.44);
+  }
+
+  &__history-primary {
+    display: grid;
+    gap: 2px;
+
+    strong {
+      font-size: 13.5px;
+      color: var(--color-text);
+    }
+
+    small {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11.5px;
+      color: var(--color-text-muted);
+    }
+  }
+
+  &__history-money {
+    font-weight: 650;
+    color: var(--color-text);
+  }
+
+  &__invoice-status {
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 650;
+    white-space: nowrap;
+
+    &--info {
+      color: rgba(36, 54, 184, 0.84);
+      background: rgba(74, 103, 255, 0.08);
+    }
+
+    &--success {
+      color: rgba(21, 128, 61, 0.82);
+      background: rgba(22, 163, 74, 0.08);
+    }
+
+    &--warning {
+      color: rgba(180, 83, 9, 0.86);
+      background: rgba(217, 119, 6, 0.08);
+    }
+
+    &--danger {
+      color: rgba(185, 28, 28, 0.82);
+      background: rgba(220, 38, 38, 0.07);
+    }
+
+    &--neutral {
+      color: var(--color-text-muted);
+      background: var(--color-bg-muted);
+    }
+  }
+
+  &__notes {
+    display: grid;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  &__note {
+    padding: 10px 14px;
+    border-radius: 13px;
+    background: rgba(217, 119, 6, 0.045);
+    border: 1px solid rgba(217, 119, 6, 0.12);
+
+    p {
+      margin: 0 0 4px;
+      font-size: 13.5px;
+      color: var(--color-text);
+    }
+
+    small {
+      font-size: 11.5px;
+      color: var(--color-text-muted);
+    }
+  }
+
+  &__note-form {
+    display: flex;
+    gap: 8px;
+
+    // Radius/hover/fokus — Suppliers.scss'dagi umumiy input qoidasidan
+    // meros qilinadi (canonical 46px/15px retsept); bu yerda faqat
+    // joylashuv uchun zarur bo'lgan xususiyatlar qoladi (kod dublikatsiyasi
+    // va ikki qatlamli fokus halqasi oldini olish uchun).
+    input {
+      flex: 1;
+      height: 46px;
+      padding: 0 14px;
+      border: 1px solid var(--color-border);
+      background: var(--color-bg-soft);
+      color: var(--color-text);
+      font-size: 13.5px;
+      color-scheme: light;
+    }
+
+    button {
+      display: grid;
+      place-items: center;
+      width: 46px;
+      height: 46px;
+      border: none;
+      border-radius: 15px;
+      background: linear-gradient(135deg, #4a67ff, #3048e6);
+      color: #fff;
+      cursor: pointer;
+      transition: filter 150ms ease, box-shadow 150ms ease;
+
+      &:hover {
+        filter: brightness(1.05);
+        box-shadow: 0 8px 20px rgba(74, 103, 255, 0.28);
+      }
+    }
+  }
+
+  &__note-issue-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(180, 83, 9, 0.86);
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+
+    input[type="checkbox"] {
+      flex: none;
+      width: 15px;
+      height: 15px;
+      padding: 0;
+      border-radius: 4px;
+      accent-color: #d97706;
+    }
+  }
+
+  &__note-issue {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 4px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: rgba(220, 38, 38, 0.1);
+    color: rgba(185, 28, 28, 0.86);
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+
+    &--warning {
+      background: rgba(217, 119, 6, 0.12);
+      color: rgba(180, 83, 9, 0.9);
+    }
+
+    &--success {
+      background: rgba(22, 163, 74, 0.12);
+      color: rgba(21, 128, 61, 0.9);
+    }
+
+    &--neutral {
+      background: rgba(100, 116, 139, 0.14);
+      color: rgba(71, 85, 105, 0.9);
+    }
+  }
+
+  &__claim {
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  &__claim-status {
+    max-width: 220px;
+  }
+
+  &__claim-resolution {
+    margin: 0;
+    font-size: 12.5px;
+    color: var(--color-text-muted);
+  }
+
+  &__archived-banner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    border-radius: 13px;
+    background: rgba(220, 38, 38, 0.08);
+    color: rgba(185, 28, 28, 0.9);
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+}
+
+@media (max-width: 780px) {
+  .supplier-profile__overview {
+    grid-template-columns: 1fr;
+  }
+
+  .supplier-profile__tabs {
+    width: 100%;
+    overflow-x: auto;
+  }
+}

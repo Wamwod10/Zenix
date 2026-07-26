@@ -1,0 +1,120 @@
+.purchase-invoices-table {
+  &__row {
+    grid-template-columns: 1.6fr 1.2fr 1fr 1fr 1.1fr 1.2fr 90px;
+
+    @media (max-width: 960px) {
+      grid-template-columns: 1.6fr 1fr 1.2fr 90px;
+
+      span:nth-child(2),
+      span:nth-child(4),
+      span:nth-child(5) {
+        display: none;
+      }
+    }
+  }
+
+  &__mismatch {
+    color: #b91c1c;
+    font-weight: 600;
+
+    svg {
+      vertical-align: -1px;
+    }
+  }
+
+  &__overdue {
+    color: #b91c1c !important;
+    font-weight: 600;
+  }
+
+  &__chevron--open svg {
+    transform: rotate(180deg);
+  }
+
+  // Point 14: uch tomonlama solishtirish (Three-Way Matching) tafsiloti
+  &__detail {
+    display: grid;
+    gap: 8px;
+    margin-left: 14px;
+    padding: 14px;
+    border-radius: 14px;
+    border: 1px dashed rgba(74, 103, 255, 0.18);
+    background: rgba(74, 103, 255, 0.03);
+  }
+
+  &__detail-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    color: rgba(5, 14, 35, 0.7);
+  }
+
+  &__detail-empty {
+    margin: 0;
+    font-size: 12.5px;
+    color: rgba(5, 14, 35, 0.5);
+  }
+
+  &__match-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+
+    @media (max-width: 900px) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    > div {
+      display: grid;
+      gap: 3px;
+      padding: 9px 11px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.5);
+      border: 1px solid rgba(100, 116, 139, 0.1);
+
+      span {
+        font-size: 10.5px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        color: rgba(5, 14, 35, 0.48);
+      }
+
+      strong {
+        font-size: 13px;
+        color: rgba(5, 14, 35, 0.84);
+      }
+    }
+  }
+
+  // 3 pog'onali rang: yashil (mos) / to'q sariq (kichik farq) / qizil (katta farq)
+  &__match-cell {
+    &--good {
+      border-color: rgba(22, 163, 74, 0.3) !important;
+      background: rgba(22, 163, 74, 0.06) !important;
+
+      strong {
+        color: #15803d !important;
+      }
+    }
+
+    &--warn {
+      border-color: rgba(217, 119, 6, 0.32) !important;
+      background: rgba(217, 119, 6, 0.06) !important;
+
+      strong {
+        color: #b45309 !important;
+      }
+    }
+
+    &--bad {
+      border-color: rgba(220, 38, 38, 0.32) !important;
+      background: rgba(220, 38, 38, 0.06) !important;
+
+      strong {
+        color: #b91c1c !important;
+      }
+    }
+  }
+}

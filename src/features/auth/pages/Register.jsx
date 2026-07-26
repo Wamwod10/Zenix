@@ -1,23 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  Building2,
-  Eye,
-  Lock,
-  Mail,
-  Phone,
-  User,
-} from "lucide-react";
+import { Building2, Eye, Lock, Mail, Phone, User } from "lucide-react";
 import { Button, Input, useNotification } from "../../../components/ui";
 import { useGlassFollow } from "../../../shared/hooks/useGlassFollow";
-<<<<<<< HEAD:src/features/auth/pages/Register.jsx
-import { getApiErrorMessage } from "../../../shared/services/api";
-import { useRegisterMutation } from "../authApi";
-=======
-// ✅ BACKEND INTEGRATION: register mutation va xato helper
-import { useRegisterMutation } from "../authApi";
 import { getApiError } from "../../../shared/services/api";
->>>>>>> d6b99a90462b6f5577d34dbe8eb51623ebd2e0a4:frontend/src/features/auth/pages/Register.jsx
+import { useRegisterMutation } from "../authApi";
 import "./Register.scss";
 import "./Login.scss";
 
@@ -55,8 +42,6 @@ export default function Register() {
   const [register, { isLoading }] = useRegisterMutation();
   const navigate = useNavigate();
   const { error, success } = useNotification();
-  // ✅ BACKEND INTEGRATION: POST /auth/register
-  const [registerUser, { isLoading }] = useRegisterMutation();
   const glassFollowRef = useGlassFollow({
     activationPaddingX: 280,
     activationPaddingY: 170,
@@ -106,15 +91,8 @@ export default function Register() {
       return;
     }
 
-<<<<<<< HEAD:src/features/auth/pages/Register.jsx
     try {
-      const result = await register({
-=======
-    // ✅ BACKEND INTEGRATION: backend'ga yuboramiz
-    // Muvaffaqiyat: tenant + owner yaratiladi, emailga OTP ketadi
-    try {
-      const data = await registerUser({
->>>>>>> d6b99a90462b6f5577d34dbe8eb51623ebd2e0a4:frontend/src/features/auth/pages/Register.jsx
+      const data = await register({
         company: values.company,
         owner: values.owner,
         email: values.email,
@@ -122,23 +100,15 @@ export default function Register() {
         password: values.password,
       }).unwrap();
 
-<<<<<<< HEAD:src/features/auth/pages/Register.jsx
-      sessionStorage.setItem("zenix_pending_email", result.email || values.email);
-      navigate("/email-verification");
-    } catch (requestError) {
-      error(getApiErrorMessage(requestError, "Ro'yxatdan o'tish bajarilmadi."));
-=======
-      // DEV rejimda backend OTP kodni devCode sifatida qaytaradi
-      if (data.devCode) {
+      if (data?.devCode) {
         success(`[DEV] Tasdiqlash kodi: ${data.devCode}`);
       }
 
-      sessionStorage.setItem("zenix_pending_email", values.email);
+      sessionStorage.setItem("zenix_pending_email", data?.email || values.email);
       navigate("/email-verification");
     } catch (err) {
       const apiError = getApiError(err);
 
-      // Email ro'yxatdan o'tgan lekin tasdiqlanmagan -> verification sahifasiga
       if (apiError.code === "EMAIL_PENDING_VERIFICATION") {
         sessionStorage.setItem("zenix_pending_email", values.email);
         error(apiError.message);
@@ -147,7 +117,6 @@ export default function Register() {
       }
 
       error(apiError.message);
->>>>>>> d6b99a90462b6f5577d34dbe8eb51623ebd2e0a4:frontend/src/features/auth/pages/Register.jsx
     }
   };
 
@@ -176,7 +145,7 @@ export default function Register() {
 
           <p>
             Bir necha daqiqada ZENIX Workspace yarating. Savdo, CRM, ombor va AI
-            yordamchingiz birinchi kundanoq tayyor bo‘ladi.
+            yordamchingiz birinchi kundanoq tayyor bo'ladi.
           </p>
         </div>
 
@@ -224,7 +193,7 @@ export default function Register() {
             name="password"
             type={showPassword ? "text" : "password"}
             value={form.password}
-            placeholder="••••••••"
+            placeholder="********"
             leftIcon={<Lock size={18} />}
             onChange={handleChange}
             rightIcon={
@@ -233,7 +202,7 @@ export default function Register() {
                 className={`register-page__password-toggle ${
                   showPassword ? "register-page__password-toggle--visible" : ""
                 }`}
-                aria-label={showPassword ? "Parolni yashirish" : "Parolni ko‘rsatish"}
+                aria-label={showPassword ? "Parolni yashirish" : "Parolni ko'rsatish"}
                 onClick={() => setShowPassword((visible) => !visible)}
               >
                 <Eye size={18} />
@@ -247,7 +216,7 @@ export default function Register() {
             name="confirmPassword"
             type={showConfirmPassword ? "text" : "password"}
             value={form.confirmPassword}
-            placeholder="••••••••"
+            placeholder="********"
             leftIcon={<Lock size={18} />}
             onChange={handleChange}
             rightIcon={
@@ -261,7 +230,7 @@ export default function Register() {
                 aria-label={
                   showConfirmPassword
                     ? "Tasdiqlash parolini yashirish"
-                    : "Tasdiqlash parolini ko‘rsatish"
+                    : "Tasdiqlash parolini ko'rsatish"
                 }
                 onClick={() => setShowConfirmPassword((visible) => !visible)}
               >
@@ -281,10 +250,6 @@ export default function Register() {
             <span>ZENIX shartlariga va maxfiylik siyosatiga roziman.</span>
           </label>
 
-<<<<<<< HEAD:src/features/auth/pages/Register.jsx
-=======
-          {/* ✅ BACKEND INTEGRATION: so'rov ketayotganda tugma bloklanadi */}
->>>>>>> d6b99a90462b6f5577d34dbe8eb51623ebd2e0a4:frontend/src/features/auth/pages/Register.jsx
           <Button type="submit" fullWidth disabled={isLoading}>
             {isLoading ? "Yaratilmoqda..." : "Hisob yaratish"}
           </Button>

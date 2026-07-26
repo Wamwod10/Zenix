@@ -116,7 +116,7 @@ export const businessTypes = {
     id: BUSINESS_TYPE_IDS.education,
     title: "Ta'lim",
     description: "O‘quv markazi, kurs, bog‘cha va ta’lim xizmatlari.",
-    workspaceLabel: "Education workspace",
+    workspaceLabel: "Ta'lim paneli",
     primaryModule: MODULE_IDS.students,
     modules: [
       MODULE_IDS.dashboard,
@@ -140,7 +140,7 @@ export const businessTypes = {
     id: BUSINESS_TYPE_IDS.service,
     title: "Xizmat",
     description: "Servis, xizmat ko‘rsatish, buyurtma va mijoz ishlari.",
-    workspaceLabel: "Service workspace",
+    workspaceLabel: "Xizmat paneli",
     primaryModule: MODULE_IDS.orders,
     modules: [
       MODULE_IDS.dashboard,
@@ -165,7 +165,7 @@ export const businessTypes = {
     id: BUSINESS_TYPE_IDS.hotel,
     title: "Mehmonxona",
     description: "Xonalar, bronlar, mijozlar, to‘lovlar va xizmatlar.",
-    workspaceLabel: "Hotel workspace",
+    workspaceLabel: "Mehmonxona paneli",
     primaryModule: MODULE_IDS.bookings,
     modules: [
       MODULE_IDS.dashboard,
@@ -189,7 +189,7 @@ export const businessTypes = {
     id: BUSINESS_TYPE_IDS.clinic,
     title: "Klinika",
     description: "Bemorlar, shifokorlar, xizmatlar, dorilar va moliya.",
-    workspaceLabel: "Clinic workspace",
+    workspaceLabel: "Klinika paneli",
     primaryModule: MODULE_IDS.patients,
     modules: [
       MODULE_IDS.dashboard,

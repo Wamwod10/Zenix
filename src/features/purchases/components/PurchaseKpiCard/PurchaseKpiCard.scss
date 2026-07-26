@@ -1,0 +1,109 @@
+.purchase-kpi-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 22px;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.82);
+  background:
+    radial-gradient(circle at 15% 0%, rgba(255, 255, 255, 0.48), transparent 12rem),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.38), rgba(255, 255, 255, 0.12)),
+    rgba(255, 255, 255, 0.08);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.86),
+    0 16px 42px rgba(64, 86, 136, 0.08);
+  backdrop-filter: blur(24px) saturate(170%);
+  -webkit-backdrop-filter: blur(24px) saturate(170%);
+  transition:
+    transform 240ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 240ms ease,
+    box-shadow 240ms ease,
+    background 240ms ease;
+
+  &:hover {
+    border-color: rgba(255, 255, 255, 0.96);
+    background:
+      radial-gradient(circle at 15% 0%, rgba(255, 255, 255, 0.56), transparent 12rem),
+      linear-gradient(145deg, rgba(255, 255, 255, 0.46), rgba(255, 255, 255, 0.16)),
+      rgba(255, 255, 255, 0.1);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.94),
+      0 22px 56px rgba(64, 86, 136, 0.12);
+  }
+
+  // Quick-filter: karta <button> sifatida render qilinganda brauzer default
+  // ko'rinishi (font, matn tekislash, kursor) tozalanadi — vizual natija
+  // oddiy <article> bilan bir xil qoladi, faqat bosish mumkin bo'ladi.
+  &--clickable {
+    width: 100%;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  // Tanlangan (aktiv) filtr kartasi — glass fon ustiga aniq border/highlight,
+  // translateY yoki boshqa siljish YO'Q (faqat border/fon/soft glow).
+  &--active {
+    border-color: rgba(74, 103, 255, 0.55);
+    background:
+      radial-gradient(circle at 15% 0%, rgba(74, 103, 255, 0.16), transparent 12rem),
+      linear-gradient(145deg, rgba(74, 103, 255, 0.12), rgba(255, 255, 255, 0.18)),
+      rgba(74, 103, 255, 0.06);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.9),
+      0 0 0 3px var(--color-primary-soft),
+      0 18px 46px rgba(64, 86, 136, 0.14);
+  }
+
+  &__icon {
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
+    border-radius: 14px;
+    color: #2436b8;
+    background: rgba(74, 103, 255, 0.09);
+  }
+
+  &--warning &__icon {
+    color: #b45309;
+    background: rgba(217, 119, 6, 0.08);
+  }
+
+  &--danger &__icon {
+    color: #b91c1c;
+    background: rgba(220, 38, 38, 0.07);
+  }
+
+  &--success &__icon {
+    color: #15803d;
+    background: rgba(22, 163, 74, 0.08);
+  }
+
+  &__body {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  &__label {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: rgba(5, 14, 35, 0.56);
+  }
+
+  &__value {
+    font-size: 20px;
+    font-weight: 700;
+    color: rgba(5, 14, 35, 0.88);
+    letter-spacing: -0.02em;
+  }
+
+  &__hint {
+    font-size: 12px;
+    color: rgba(5, 14, 35, 0.48);
+  }
+}

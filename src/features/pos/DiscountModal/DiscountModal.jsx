@@ -106,10 +106,10 @@ const DiscountModal = ({
           <div>
             <span className="pos-discount-modal__eyebrow">
               <BadgePercent size={14} />
-              Order discount
+              Buyurtma chegirmasi
             </span>
             <h2 id="discount-modal-title">Chegirma qo'llash</h2>
-            <p>Foiz yoki aniq summa kiriting. 15% dan yuqori chegirma manager approval uchun belgilanadi.</p>
+            <p>Foiz yoki aniq summa kiriting. 15% dan yuqori chegirma rahbar tasdig'ini talab qiladi.</p>
           </div>
 
           <button
@@ -182,7 +182,7 @@ const DiscountModal = ({
         </label>
 
         <div className="pos-discount-modal__preview">
-          <span>Subtotal: {formatMoney(subtotal)}</span>
+          <span>Oraliq summa: {formatMoney(subtotal)}</span>
           <strong>Chegirma: {formatMoney(preview)}</strong>
           {maxExceeded && <small>Chegirma limiti oshib ketdi.</small>}
         </div>

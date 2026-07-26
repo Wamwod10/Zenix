@@ -30,21 +30,21 @@ const POSReports = ({ open = false, sales = [], returns = [], shift, onClose }) 
           <div>
             <span>
               <BarChart3 size={14} />
-              POS reports
+              POS hisobotlari
             </span>
             <h2 id="pos-reports-title">POS hisobotlari</h2>
-            <p>Shift, sales, return va net sales ko'rsatkichlari.</p>
+            <p>Smena, savdo, qaytarish va sof savdo ko'rsatkichlari.</p>
           </div>
-          <button type="button" aria-label="Reports oynasini yopish" onClick={onClose}>
+          <button type="button" aria-label="Hisobotlar oynasini yopish" onClick={onClose}>
             <X size={18} />
           </button>
         </div>
 
         <div className="pos-reports__grid">
-          <article><span>Gross sales</span><strong>{formatMoney(grossSales)}</strong></article>
-          <article><span>Refunds</span><strong>{formatMoney(refunds)}</strong></article>
-          <article><span>Net sales</span><strong>{formatMoney(grossSales - refunds)}</strong></article>
-          <article><span>Shift</span><strong>{shift?.status || "closed"}</strong></article>
+          <article><span>Yalpi savdo</span><strong>{formatMoney(grossSales)}</strong></article>
+          <article><span>Qaytarilgan summa</span><strong>{formatMoney(refunds)}</strong></article>
+          <article><span>Sof savdo</span><strong>{formatMoney(grossSales - refunds)}</strong></article>
+          <article><span>Smena</span><strong>{shift?.status === "open" ? "Ochiq" : "Yopiq"}</strong></article>
         </div>
 
         <div className="pos-reports__history">
@@ -52,7 +52,7 @@ const POSReports = ({ open = false, sales = [], returns = [], shift, onClose }) 
             <article key={report.id}>
               <span>{report.type}</span>
               <strong>{formatMoney(report.grossSales)}</strong>
-              <small>{report.saleCount} sales</small>
+              <small>{report.saleCount} ta savdo</small>
             </article>
           ))}
         </div>

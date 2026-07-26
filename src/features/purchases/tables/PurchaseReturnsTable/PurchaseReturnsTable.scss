@@ -1,0 +1,109 @@
+.purchase-returns-table {
+  &__row {
+    grid-template-columns: 1.5fr 1.2fr 1fr 1fr 1.2fr 0.9fr 120px;
+
+    @media (max-width: 960px) {
+      grid-template-columns: 1.5fr 1fr 1.2fr 120px;
+
+      span:nth-child(2),
+      span:nth-child(3),
+      span:nth-child(6) {
+        display: none;
+      }
+    }
+  }
+
+  &__group {
+    display: grid;
+    gap: 4px;
+  }
+
+  &__chevron--open svg {
+    transform: rotate(180deg);
+  }
+
+  &__reject-reason {
+    display: block;
+    margin-top: 4px;
+    font-size: 11px;
+    color: rgba(185, 28, 28, 0.82);
+  }
+
+  &__detail {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 12px;
+    margin-left: 14px;
+    padding: 14px;
+    border-radius: 14px;
+    border: 1px dashed rgba(74, 103, 255, 0.18);
+    background: rgba(74, 103, 255, 0.03);
+
+    @media (max-width: 720px) {
+      grid-template-columns: 1fr;
+    }
+
+    strong {
+      font-size: 12.5px;
+      color: rgba(5, 14, 35, 0.7);
+    }
+  }
+
+  &__items,
+  &__timeline {
+    display: grid;
+    gap: 8px;
+    align-content: start;
+  }
+
+  &__item {
+    display: grid;
+    grid-template-columns: 1.6fr 0.8fr 1fr;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.46);
+    border: 1px solid rgba(100, 116, 139, 0.1);
+    font-size: 12.5px;
+    color: rgba(5, 14, 35, 0.75);
+
+    span:last-child {
+      text-align: right;
+      font-weight: 600;
+    }
+  }
+
+  &__note {
+    margin: 0;
+    font-size: 12px;
+    color: rgba(5, 14, 35, 0.55);
+  }
+
+  &__event {
+    display: grid;
+    gap: 2px;
+    padding: 9px 12px;
+    border-radius: 12px;
+    border-left: 3px solid;
+    background: rgba(255, 255, 255, 0.46);
+    font-size: 12.5px;
+    color: rgba(5, 14, 35, 0.78);
+
+    small {
+      font-size: 11px;
+      color: rgba(5, 14, 35, 0.48);
+    }
+
+    &--warning {
+      border-color: rgba(217, 119, 6, 0.58);
+    }
+
+    &--success {
+      border-color: rgba(22, 163, 74, 0.55);
+    }
+
+    &--danger {
+      border-color: rgba(220, 38, 38, 0.52);
+    }
+  }
+}

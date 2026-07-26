@@ -1,17 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { ArrowRight, MailCheck, RotateCcw } from "lucide-react";
-import { Button, useNotification } from "../../../components/ui";
-<<<<<<< HEAD:src/features/auth/pages/EmailVerification.jsx
-import { getApiErrorMessage } from "../../../shared/services/api";
-import { useResendCodeMutation, useVerifyEmailMutation } from "../authApi";
-=======
-// ✅ BACKEND INTEGRATION: redux + auth API
 import { useDispatch } from "react-redux";
-import { setCredentials } from "../authSlice";
-import { useVerifyEmailMutation, useResendCodeMutation } from "../authApi";
+import { useNavigate } from "react-router-dom";
+import { Button, useNotification } from "../../../components/ui";
 import { getApiError } from "../../../shared/services/api";
->>>>>>> d6b99a90462b6f5577d34dbe8eb51623ebd2e0a4:frontend/src/features/auth/pages/EmailVerification.jsx
+import { useResendCodeMutation, useVerifyEmailMutation } from "../authApi";
+import { setCredentials } from "../authSlice";
 import "./EmailVerification.scss";
 
 const OTP_LENGTH = 6;
@@ -39,15 +33,10 @@ export default function EmailVerification() {
   const [otp, setOtp] = useState(createEmptyOtp);
   const [resendTime, setResendTime] = useState(RESEND_SECONDS);
   const inputRefs = useRef([]);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const { error, success } = useNotification();
-<<<<<<< HEAD:src/features/auth/pages/EmailVerification.jsx
-  const [verifyEmail, { isLoading }] = useVerifyEmailMutation();
-=======
-  const dispatch = useDispatch();
-  // ✅ BACKEND INTEGRATION: POST /auth/verify-email va /auth/resend-code
   const [verifyEmail, { isLoading: isVerifying }] = useVerifyEmailMutation();
->>>>>>> d6b99a90462b6f5577d34dbe8eb51623ebd2e0a4:frontend/src/features/auth/pages/EmailVerification.jsx
   const [resendCode, { isLoading: isResending }] = useResendCodeMutation();
 
   const focusInput = useCallback((index) => {
@@ -148,30 +137,15 @@ export default function EmailVerification() {
     applyDigits(getDigits(event.clipboardData.getData("text")), index);
   };
 
-<<<<<<< HEAD:src/features/auth/pages/EmailVerification.jsx
-  const handleResend = async () => {
-    if (resendTime > 0) {
-=======
-  // ✅ BACKEND INTEGRATION: kodni qayta yuborish (backend'da ham 60s cooldown bor)
   const handleResend = async () => {
     if (resendTime > 0 || isResending) {
->>>>>>> d6b99a90462b6f5577d34dbe8eb51623ebd2e0a4:frontend/src/features/auth/pages/EmailVerification.jsx
       return;
     }
 
     try {
-<<<<<<< HEAD:src/features/auth/pages/EmailVerification.jsx
-      const result = await resendCode({ email }).unwrap();
-      success(result?.devCode ? `Kod yuborildi: ${result.devCode}` : "Verification code resent");
-      setResendTime(RESEND_SECONDS);
-      resetOtp();
-    } catch (requestError) {
-      error(getApiErrorMessage(requestError, "Kodni qayta yuborib bo'lmadi."));
-=======
       const data = await resendCode({ email }).unwrap();
 
-      // DEV rejimda backend yangi OTP kodni devCode sifatida qaytaradi
-      if (data.devCode) {
+      if (data?.devCode) {
         success(`[DEV] Yangi kod: ${data.devCode}`);
       } else {
         success("Yangi tasdiqlash kodi yuborildi.");
@@ -181,7 +155,6 @@ export default function EmailVerification() {
       resetOtp();
     } catch (err) {
       error(getApiError(err).message);
->>>>>>> d6b99a90462b6f5577d34dbe8eb51623ebd2e0a4:frontend/src/features/auth/pages/EmailVerification.jsx
     }
   };
 
@@ -197,29 +170,17 @@ export default function EmailVerification() {
     }
 
     const code = otp.join("");
-<<<<<<< HEAD:src/features/auth/pages/EmailVerification.jsx
-    try {
-      await verifyEmail({ email, code }).unwrap();
-      sessionStorage.removeItem("zenix_pending_email");
-      navigate("/business-type");
-    } catch (requestError) {
-      error(getApiErrorMessage(requestError, "Tasdiqlash kodi noto'g'ri."));
-=======
 
-    // ✅ BACKEND INTEGRATION: OTP tekshirish -> akkaunt faollashadi, tokenlar keladi
     try {
       const data = await verifyEmail({ email, code }).unwrap();
 
-      // Tokenlar va user localStorage + redux'ga saqlanadi
       dispatch(setCredentials({ user: data.user, tokens: data.tokens }));
-
       sessionStorage.removeItem("zenix_pending_email");
       success("Email tasdiqlandi!");
       navigate("/business-type");
     } catch (err) {
       const apiError = getApiError(err);
 
-      // Allaqachon tasdiqlangan bo'lsa -> login sahifasiga
       if (apiError.code === "ALREADY_VERIFIED") {
         error(apiError.message);
         navigate("/login");
@@ -228,7 +189,6 @@ export default function EmailVerification() {
 
       error(apiError.message);
       resetOtp();
->>>>>>> d6b99a90462b6f5577d34dbe8eb51623ebd2e0a4:frontend/src/features/auth/pages/EmailVerification.jsx
     }
   };
 
@@ -288,16 +248,6 @@ export default function EmailVerification() {
             ))}
           </div>
 
-<<<<<<< HEAD:src/features/auth/pages/EmailVerification.jsx
-          <Button
-            type="submit"
-            fullWidth
-            disabled={isLoading}
-            rightIcon={<ArrowRight size={18} />}
-          >
-            {isLoading ? "Tekshirilmoqda..." : "Verify Email"}
-=======
-          {/* ✅ BACKEND INTEGRATION: tekshirish paytida tugma bloklanadi */}
           <Button
             type="submit"
             fullWidth
@@ -305,7 +255,6 @@ export default function EmailVerification() {
             rightIcon={<ArrowRight size={18} />}
           >
             {isVerifying ? "Tekshirilmoqda..." : "Verify Email"}
->>>>>>> d6b99a90462b6f5577d34dbe8eb51623ebd2e0a4:frontend/src/features/auth/pages/EmailVerification.jsx
           </Button>
         </form>
 

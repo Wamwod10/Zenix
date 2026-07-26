@@ -44,7 +44,7 @@ const Header = () => {
       <div className="zenix-header__actions">
         <div className="zenix-header__status" aria-label="Workspace status">
           <i />
-          <span>Live</span>
+          <span>Faol</span>
         </div>
 
         <button className="zenix-header__ai" type="button">
@@ -69,7 +69,7 @@ const Header = () => {
 
           <span className="zenix-header__user">
             <strong>Shamshod</strong>
-            <small>Owner</small>
+            <small>Egasi</small>
           </span>
 
           <ChevronDown size={16} />

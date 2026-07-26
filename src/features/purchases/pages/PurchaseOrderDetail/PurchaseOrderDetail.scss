@@ -1,0 +1,524 @@
+.po-detail {
+  display: grid;
+  gap: 18px;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  &__title {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+    h1 {
+      margin: 0;
+      font-size: 21px;
+      font-weight: 700;
+      color: rgba(5, 14, 35, 0.88);
+      letter-spacing: -0.02em;
+    }
+
+    p {
+      margin: 2px 0 0;
+      font-size: 13px;
+      color: rgba(5, 14, 35, 0.55);
+    }
+  }
+
+  &__back {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border: 1px solid rgba(100, 116, 139, 0.2);
+    border-radius: 13px;
+    background: rgba(255, 255, 255, 0.6);
+    color: rgba(5, 14, 35, 0.65);
+    cursor: pointer;
+
+    &:hover {
+      color: #2436b8;
+      border-color: rgba(74, 103, 255, 0.4);
+    }
+  }
+
+  &__actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  &__status-rule {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 14px 16px;
+    border-radius: 18px;
+    border: 1px solid rgba(100, 116, 139, 0.14);
+    background:
+      linear-gradient(145deg, rgba(255, 255, 255, 0.58), rgba(255, 255, 255, 0.28)),
+      rgba(255, 255, 255, 0.24);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.82),
+      0 12px 34px rgba(64, 86, 136, 0.06);
+
+    strong {
+      display: block;
+      font-size: 13.5px;
+      color: rgba(5, 14, 35, 0.84);
+    }
+
+    p {
+      margin: 4px 0 0;
+      font-size: 12.5px;
+      line-height: 1.45;
+      color: rgba(5, 14, 35, 0.58);
+    }
+
+    ul {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 6px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      max-width: 560px;
+    }
+
+    li {
+      padding: 5px 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(100, 116, 139, 0.13);
+      background: rgba(255, 255, 255, 0.45);
+      font-size: 11px;
+      font-weight: 650;
+      color: rgba(5, 14, 35, 0.48);
+
+      &.is-active {
+        color: #2436b8;
+        border-color: rgba(74, 103, 255, 0.28);
+        background: rgba(74, 103, 255, 0.085);
+      }
+    }
+
+    &--success {
+      border-color: rgba(22, 163, 74, 0.18);
+    }
+
+    &--warning {
+      border-color: rgba(217, 119, 6, 0.2);
+    }
+
+    &--info {
+      border-color: rgba(74, 103, 255, 0.18);
+    }
+
+    @media (max-width: 820px) {
+      display: grid;
+
+      ul {
+        justify-content: flex-start;
+      }
+    }
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: 1.7fr 1fr;
+    gap: 14px;
+    align-items: start;
+
+    @media (max-width: 1080px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &__panel--tabbed {
+    gap: 16px;
+  }
+
+  &__tab-panel {
+    display: grid;
+  }
+
+  &__payment-summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 12px;
+
+    div {
+      display: grid;
+      gap: 3px;
+      padding: 12px 13px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.42);
+      border: 1px solid rgba(100, 116, 139, 0.1);
+
+      span {
+        font-size: 11px;
+        font-weight: 600;
+        color: rgba(5, 14, 35, 0.48);
+      }
+
+      strong {
+        font-size: 13px;
+        color: rgba(5, 14, 35, 0.84);
+      }
+    }
+  }
+
+  &__payment-paid {
+    color: rgba(21, 128, 61, 0.82) !important;
+  }
+
+  &__payment-due {
+    color: rgba(185, 28, 28, 0.8) !important;
+  }
+
+  &__invoice-list,
+  &__history {
+    display: grid;
+    gap: 8px;
+  }
+
+  &__invoice-group {
+    display: grid;
+    gap: 6px;
+  }
+
+  &__invoice,
+  &__history-item {
+    display: grid;
+    gap: 12px;
+    align-items: center;
+    width: 100%;
+    padding: 12px 13px;
+    border-radius: 14px;
+    border: 1px solid rgba(100, 116, 139, 0.1);
+    background:
+      linear-gradient(145deg, rgba(255, 255, 255, 0.56), rgba(255, 255, 255, 0.3)),
+      rgba(255, 255, 255, 0.36);
+  }
+
+  &__history-item {
+    grid-template-columns: 1.4fr 1fr auto;
+  }
+
+  &__invoice {
+    grid-template-columns: 1.4fr 1fr auto auto;
+    font: inherit;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.16s ease, background 0.16s ease;
+
+    &:hover {
+      border-color: rgba(74, 103, 255, 0.22);
+    }
+  }
+
+  &__invoice-chevron {
+    color: rgba(5, 14, 35, 0.35);
+    transition: transform 0.18s ease;
+
+    &--open {
+      transform: rotate(180deg);
+    }
+  }
+
+  &__history-item {
+    cursor: pointer;
+    transition:
+      border-color 0.16s ease,
+      transform 0.16s ease,
+      background 0.16s ease,
+      box-shadow 0.16s ease;
+
+    &:hover {
+      border-color: rgba(74, 103, 255, 0.24);
+      background:
+        linear-gradient(145deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.42)),
+        rgba(255, 255, 255, 0.42);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.86),
+        0 14px 34px rgba(64, 86, 136, 0.08);
+    }
+  }
+
+  &__side {
+    display: grid;
+    gap: 14px;
+  }
+
+  &__panel {
+    display: grid;
+    gap: 14px;
+    align-content: start;
+    padding: 20px;
+    border-radius: 22px;
+    border: 1px solid rgba(255, 255, 255, 0.88);
+    background:
+      linear-gradient(145deg, rgba(255, 255, 255, 0.32), rgba(255, 255, 255, 0.1)),
+      rgba(255, 255, 255, 0.07);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.86),
+      0 16px 44px rgba(64, 86, 136, 0.08);
+    backdrop-filter: blur(24px) saturate(170%);
+    -webkit-backdrop-filter: blur(24px) saturate(170%);
+
+    h3 {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      margin: 0;
+      font-size: 14px;
+      font-weight: 700;
+      color: rgba(5, 14, 35, 0.82);
+
+      small {
+        font-size: 11.5px;
+        font-weight: 500;
+        color: rgba(5, 14, 35, 0.45);
+      }
+    }
+  }
+
+  &__items {
+    display: grid;
+    gap: 7px;
+  }
+
+  &__item {
+    display: grid;
+    grid-template-columns: 1.8fr 1fr 0.9fr 1.2fr 1fr;
+    gap: 12px;
+    align-items: center;
+    padding: 12px 13px;
+    border-radius: 14px;
+    border: 1px solid rgba(100, 116, 139, 0.1);
+    background:
+      linear-gradient(145deg, rgba(255, 255, 255, 0.58), rgba(255, 255, 255, 0.32)),
+      rgba(255, 255, 255, 0.36);
+    font-size: 13px;
+    color: rgba(5, 14, 35, 0.78);
+
+    &--head {
+      background: transparent;
+      border: none;
+      padding-top: 0;
+      padding-bottom: 0;
+      font-size: 11.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: rgba(5, 14, 35, 0.45);
+    }
+
+    @media (max-width: 720px) {
+      grid-template-columns: 1.6fr 1fr 1fr;
+
+      span:nth-child(3),
+      span:nth-child(4) {
+        display: none;
+      }
+    }
+  }
+
+  &__base-qty {
+    display: block;
+    font-size: 11px;
+    color: rgba(5, 14, 35, 0.45);
+  }
+
+  &__totals {
+    display: grid;
+    gap: 8px;
+    padding: 15px;
+    border-radius: 16px;
+    background: rgba(74, 103, 255, 0.045);
+    border: 1px solid rgba(74, 103, 255, 0.13);
+
+    div {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: rgba(5, 14, 35, 0.62);
+
+      strong {
+        color: rgba(5, 14, 35, 0.84);
+      }
+    }
+  }
+
+  &__totals-grand {
+    padding-top: 8px;
+    border-top: 1px solid rgba(74, 103, 255, 0.18);
+
+    strong {
+      font-size: 16px;
+      color: #2436b8 !important;
+    }
+  }
+
+  &__totals-base {
+    padding-top: 6px;
+    border-top: 1px dashed rgba(74, 103, 255, 0.18);
+
+    strong {
+      color: #15803d !important;
+    }
+  }
+
+  &__terms {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+
+    @media (max-width: 720px) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    div {
+      display: grid;
+      gap: 3px;
+      padding: 12px 13px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.42);
+      border: 1px solid rgba(100, 116, 139, 0.1);
+
+      span {
+        font-size: 11px;
+        font-weight: 600;
+        color: rgba(5, 14, 35, 0.48);
+      }
+
+      strong {
+        font-size: 12.5px;
+        color: rgba(5, 14, 35, 0.82);
+      }
+    }
+  }
+
+  &__notes {
+    display: grid;
+    gap: 8px;
+    max-height: 220px;
+    overflow-y: auto;
+  }
+
+  &__note {
+    display: grid;
+    gap: 4px;
+    padding: 12px 13px;
+    border-radius: 14px;
+    border: 1px solid rgba(100, 116, 139, 0.1);
+    background: rgba(255, 255, 255, 0.42);
+
+    p {
+      margin: 0;
+      font-size: 13px;
+      color: rgba(5, 14, 35, 0.8);
+    }
+
+    small {
+      font-size: 11px;
+      color: rgba(5, 14, 35, 0.45);
+    }
+
+    &--supplier {
+      border-color: rgba(74, 103, 255, 0.16);
+      background: rgba(74, 103, 255, 0.045);
+    }
+  }
+
+  &__note-form {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+
+    // Bu ixcham bir qatorli asboblar paneli — hint/label uchun joy shart
+    // emas, shu sababli reusable maydonlarning har doim band qilinadigan
+    // hint qatori shu yerda yashiriladi (Task 1: forma joylashuvi tuzatishi
+    // faqat haqiqiy formalarga tegishli, ixcham panelga emas).
+    .purchase-select-field__message,
+    .purchase-text-field__message {
+      display: none;
+    }
+
+    .po-detail__note-type {
+      flex: 0 0 168px;
+    }
+
+    .purchase-text-field {
+      flex: 1;
+    }
+
+    > .purchase-btn {
+      flex-shrink: 0;
+      padding: 0;
+      width: 44px;
+      height: 46px;
+      display: grid;
+      place-items: center;
+    }
+  }
+
+  &__related {
+    display: grid;
+    gap: 8px;
+  }
+
+  &__related-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 13px;
+    border-radius: 14px;
+    border: 1px solid rgba(100, 116, 139, 0.1);
+    background: rgba(255, 255, 255, 0.42);
+    font-size: 13px;
+    color: rgba(5, 14, 35, 0.78);
+
+    svg {
+      color: #2436b8;
+      flex-shrink: 0;
+    }
+
+    span {
+      flex: 1;
+    }
+
+    small {
+      font-size: 11.5px;
+      color: rgba(5, 14, 35, 0.45);
+    }
+  }
+
+  &__empty {
+    margin: 0;
+    font-size: 13px;
+    color: rgba(5, 14, 35, 0.5);
+  }
+
+  &__missing {
+    display: grid;
+    justify-items: start;
+    gap: 12px;
+    padding: 32px;
+
+    p {
+      margin: 0;
+      font-size: 14px;
+      color: rgba(5, 14, 35, 0.6);
+    }
+  }
+}

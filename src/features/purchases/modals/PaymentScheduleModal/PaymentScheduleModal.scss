@@ -1,0 +1,123 @@
+.payment-schedule {
+  &__empty {
+    margin: 0;
+    padding: 16px;
+    color: var(--color-text-muted);
+    font-size: 13.5px;
+    text-align: center;
+  }
+
+  &__invoice {
+    display: grid;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: 16px;
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-soft);
+
+    & + & {
+      margin-top: 12px;
+    }
+  }
+
+  &__row {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(120px, 1fr));
+    gap: 12px 16px;
+  }
+
+  &__field {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+
+    small {
+      color: var(--color-text-muted);
+      font-size: 11.5px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+
+    strong {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--color-text);
+      font-size: 13.5px;
+      font-weight: 650;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  &__installments {
+    display: grid;
+    gap: 8px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--color-border);
+  }
+
+  &__installments-title {
+    color: var(--color-text-soft);
+    font-size: 12.5px;
+    font-weight: 650;
+  }
+
+  &__installment-list {
+    display: grid;
+    gap: 6px;
+  }
+
+  &__installment {
+    display: grid;
+    grid-template-columns: 90px 1fr 1fr 140px;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: 12px;
+    background: var(--color-bg-muted);
+    font-size: 13px;
+    color: var(--color-text);
+
+    &-status {
+      justify-self: end;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 11.5px;
+      font-weight: 650;
+      white-space: nowrap;
+
+      &--info {
+        color: rgba(36, 54, 184, 0.82);
+        background: rgba(74, 103, 255, 0.08);
+      }
+
+      &--success {
+        color: rgba(21, 128, 61, 0.82);
+        background: rgba(22, 163, 74, 0.08);
+      }
+
+      &--danger {
+        color: rgba(185, 28, 28, 0.82);
+        background: rgba(220, 38, 38, 0.07);
+      }
+    }
+  }
+}
+
+@media (max-width: 720px) {
+  .payment-schedule__row {
+    grid-template-columns: repeat(2, minmax(120px, 1fr));
+  }
+
+  .payment-schedule__installment {
+    grid-template-columns: 70px 1fr 1fr;
+
+    &-status {
+      grid-column: 1 / -1;
+      justify-self: start;
+    }
+  }
+}

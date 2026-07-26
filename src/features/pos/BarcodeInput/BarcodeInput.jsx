@@ -33,8 +33,8 @@ const BarcodeInput = forwardRef(
             type="text"
             inputMode="numeric"
             value={localValue}
-            placeholder="Manual barcode..."
-            aria-label="Barcode kiritish"
+            placeholder="Shtrix-kodni qo'lda kiriting..."
+            aria-label="Shtrix-kod kiritish"
             onChange={(event) => {
               setLocalValue(event.target.value);
               onChange?.(event.target.value);

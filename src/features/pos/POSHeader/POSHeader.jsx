@@ -12,7 +12,7 @@ import "./POSHeader.scss";
 const liveStatus = [
   {
     icon: Clock3,
-    label: "Shift: 09:00 - 23:00",
+    label: "Smena: 09:00 - 23:00",
     tone: "success",
   },
   {
@@ -39,7 +39,7 @@ const POSHeader = ({
       <div className="pos-header__content">
         <span className="pos-header__eyebrow">
           <Zap size={14} />
-          Retail POS Workspace
+          Chakana savdo POS paneli
         </span>
 
         <h1>Tezkor savdo oynasi</h1>
@@ -75,12 +75,12 @@ const POSHeader = ({
         <div className="pos-header__buttons">
           <button type="button" onClick={onOpenHeldOrders}>
             <ArchiveRestore size={15} />
-            Hold ({heldCount})
+            Saqlangan ({heldCount})
           </button>
 
           <button type="button" onClick={onOpenRecentSales}>
             <ReceiptText size={15} />
-            Recent ({recentCount})
+            So'nggi ({recentCount})
           </button>
         </div>
       </div>

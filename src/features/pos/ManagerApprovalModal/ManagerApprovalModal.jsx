@@ -43,18 +43,18 @@ const ManagerApprovalModal = ({ open = false, request = null, onClose, onApprove
           <div>
             <span>
               <ShieldCheck size={14} />
-              Manager approval
+              Rahbar tasdig'i
             </span>
             <h2 id="manager-approval-title">{request.title}</h2>
             <p>{request.message}</p>
           </div>
-          <button type="button" aria-label="Approval oynasini yopish" onClick={onClose}>
+          <button type="button" aria-label="Tasdiqlash oynasini yopish" onClick={onClose}>
             <X size={18} />
           </button>
         </div>
 
         <label className="pos-manager-approval__field">
-          <span>Manager PIN</span>
+          <span>Rahbar PIN kodi</span>
           <input
             type="password"
             inputMode="numeric"

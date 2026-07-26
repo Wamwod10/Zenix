@@ -1,0 +1,16 @@
+.budget-manager {
+  &__list {
+    display: grid;
+    gap: 14px;
+  }
+
+  &__empty {
+    margin: 0;
+    padding: 28px;
+    text-align: center;
+    font-size: 13px;
+    color: rgba(5, 14, 35, 0.5);
+    border: 1px dashed rgba(100, 116, 139, 0.24);
+    border-radius: 16px;
+  }
+}

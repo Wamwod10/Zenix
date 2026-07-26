@@ -82,7 +82,7 @@ const HoldSaleModal = ({
             </span>
 
             <div>
-              <span>Temporary order</span>
+              <span>Vaqtinchalik saqlash</span>
               <h2 id="hold-sale-title">Savdoni vaqtincha saqlash</h2>
             </div>
           </div>
@@ -105,7 +105,7 @@ const HoldSaleModal = ({
 
           <div>
             <span>Mijoz</span>
-            <strong>{customer?.name || "Walk-in customer"}</strong>
+            <strong>{customer?.name || "Nomsiz mijoz"}</strong>
           </div>
 
           <div>

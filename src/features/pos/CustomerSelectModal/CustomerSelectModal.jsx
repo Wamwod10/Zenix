@@ -132,7 +132,7 @@ const CustomerSelectModal = ({
           <div>
             <span className="pos-customer-modal__eyebrow">
               <UserRound size={14} />
-              Customer profile
+              Mijoz profili
             </span>
 
             <h2 id="customer-select-title">Mijozni tanlash</h2>
@@ -232,7 +232,7 @@ const CustomerSelectModal = ({
           </span>
 
           <div>
-            <strong>Walk-in customer</strong>
+            <strong>Nomsiz mijoz</strong>
             <small>Mijoz profilini savdoga biriktirmaslik</small>
           </div>
 
@@ -263,7 +263,7 @@ const CustomerSelectModal = ({
 
             {draftCustomer
               ? `${draftCustomer.name}ni tanlash`
-              : "Walk-in customer"}
+              : "Nomsiz mijoz"}
           </button>
         </div>
       </section>

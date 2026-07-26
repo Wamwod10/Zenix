@@ -26,37 +26,37 @@ const POSSettings = ({ open = false, settings, onClose, onChange, onReset }) => 
           <div>
             <span>
               <Settings size={14} />
-              POS settings
+              POS sozlamalari
             </span>
             <h2 id="pos-settings-title">POS sozlamalari</h2>
-            <p>Frontend mock settings keyinchalik backend configga ulanadi.</p>
+            <p>Frontend sinov sozlamalari keyinchalik backend sozlamalariga ulanadi.</p>
           </div>
-          <button type="button" aria-label="Settings oynasini yopish" onClick={onClose}>
+          <button type="button" aria-label="Sozlamalar oynasini yopish" onClick={onClose}>
             <X size={18} />
           </button>
         </div>
 
         <div className="pos-settings__grid">
           <label>
-            <span>Tax rate</span>
+            <span>Soliq foizi</span>
             <input type="number" min="0" step="0.01" value={safeSettings.taxRate} onChange={(event) => onChange?.({ taxRate: Number(event.target.value) || 0 })} />
           </label>
           <label>
-            <span>Manager discount %</span>
+            <span>Rahbar chegirma foizi</span>
             <input type="number" min="0" max="100" value={safeSettings.requireManagerForDiscountPercent} onChange={(event) => onChange?.({ requireManagerForDiscountPercent: Number(event.target.value) || 0 })} />
           </label>
           <label>
-            <span>Receipt copies</span>
+            <span>Chek nusxalari</span>
             <input type="number" min="1" max="3" value={safeSettings.receiptCopies} onChange={(event) => onChange?.({ receiptCopies: Number(event.target.value) || 1 })} />
           </label>
         </div>
 
         <div className="pos-settings__toggles">
           {[
-            ["allowManualPrice", "Manual price"],
-            ["allowItemDiscount", "Item discount"],
-            ["requireManagerForVoid", "Void approval"],
-            ["offlineQueueEnabled", "Offline queue"],
+            ["allowManualPrice", "Qo'lda narx"],
+            ["allowItemDiscount", "Mahsulot chegirmasi"],
+            ["requireManagerForVoid", "Bekor qilish tasdig'i"],
+            ["offlineQueueEnabled", "Oflayn navbat"],
           ].map(([key, label]) => (
             <button
               type="button"
@@ -71,7 +71,7 @@ const POSSettings = ({ open = false, settings, onClose, onChange, onReset }) => 
         </div>
 
         <div className="pos-settings__footer">
-          <button type="button" onClick={onReset}>Default</button>
+          <button type="button" onClick={onReset}>Standart</button>
           <button type="button" onClick={onClose}>Saqlash</button>
         </div>
       </section>

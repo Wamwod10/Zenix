@@ -1,0 +1,151 @@
+.supplier-products {
+  display: grid;
+  gap: 8px;
+
+  &__row {
+    display: grid;
+    grid-template-columns: 1.6fr 0.9fr 1.1fr 1fr 1.1fr 0.8fr 0.9fr 0.6fr;
+    gap: 12px;
+    align-items: center;
+    padding: 12px 14px;
+    border-radius: 15px;
+    border: 1px solid rgba(100, 116, 139, 0.1);
+    background:
+      linear-gradient(145deg, rgba(255, 255, 255, 0.56), rgba(255, 255, 255, 0.32)),
+      rgba(255, 255, 255, 0.36);
+    font-size: 12.5px;
+    color: var(--color-text);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.68);
+
+    &--head {
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      padding-top: 2px;
+      padding-bottom: 2px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--color-text-muted);
+    }
+  }
+
+  &__primary {
+    display: grid;
+    gap: 3px;
+    min-width: 0;
+
+    strong {
+      font-size: 13px;
+      font-weight: 650;
+      color: var(--color-text);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    small {
+      font-size: 11px;
+      color: var(--color-text-muted);
+    }
+  }
+
+  &__sku {
+    color: var(--color-text-muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  &__money {
+    font-weight: 600;
+    color: var(--color-text);
+    white-space: nowrap;
+  }
+
+  &__date {
+    color: var(--color-text-soft);
+    white-space: nowrap;
+  }
+
+  &__diff {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 650;
+    color: var(--color-text-muted);
+
+    &--up {
+      color: rgba(185, 28, 28, 0.82);
+    }
+
+    &--down {
+      color: rgba(21, 128, 61, 0.82);
+    }
+  }
+
+  &__badge {
+    justify-self: start;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 650;
+    white-space: nowrap;
+
+    &--success {
+      color: rgba(21, 128, 61, 0.82);
+      background: rgba(22, 163, 74, 0.08);
+    }
+
+    &--warning {
+      color: rgba(180, 83, 9, 0.86);
+      background: rgba(217, 119, 6, 0.08);
+    }
+
+    &--danger {
+      color: rgba(185, 28, 28, 0.82);
+      background: rgba(220, 38, 38, 0.07);
+    }
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  &__unlink {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border: 1px solid rgba(100, 116, 139, 0.16);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.5);
+    color: var(--color-text-muted);
+    cursor: pointer;
+    transition:
+      color 160ms ease,
+      border-color 160ms ease,
+      background 160ms ease;
+
+    &:hover {
+      color: var(--color-danger);
+      border-color: rgba(220, 38, 38, 0.28);
+      background: rgba(220, 38, 38, 0.06);
+    }
+  }
+}
+
+// Purchases jadvallari bilan bir xil retsept: eng muhim bo'lmagan ustunlar
+// (SKU, Oxirgi xarid sanasi, Farq) yashiriladi — sarlavha va grid saqlanadi,
+// belgisiz bir ustunga siqilish o'rniga.
+@media (max-width: 960px) {
+  .supplier-products__row {
+    grid-template-columns: 1.5fr 1.1fr 1.1fr 0.9fr 50px;
+
+    span:nth-child(2),
+    span:nth-child(4),
+    span:nth-child(6) {
+      display: none;
+    }
+  }
+}

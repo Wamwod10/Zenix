@@ -1,0 +1,220 @@
+.supplier-table {
+  display: grid;
+  gap: 8px;
+
+  &__row {
+    display: grid;
+    grid-template-columns: 1.8fr 1.3fr 0.7fr 0.9fr 1fr 0.9fr 104px;
+    gap: 12px;
+
+    &--selectable {
+      grid-template-columns: 28px 1.8fr 1.3fr 0.7fr 0.9fr 1fr 0.9fr 104px;
+    }
+
+    &--archived {
+      opacity: 0.72;
+    }
+    align-items: center;
+    padding: 13px 15px;
+    border-radius: 16px;
+    border: 1px solid rgba(100, 116, 139, 0.1);
+    background:
+      linear-gradient(145deg, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.34)),
+      rgba(255, 255, 255, 0.36);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.74),
+      0 10px 28px rgba(64, 86, 136, 0.045);
+    backdrop-filter: blur(22px) saturate(160%);
+    -webkit-backdrop-filter: blur(22px) saturate(160%);
+    font-size: 13px;
+    color: var(--color-text);
+    transition:
+      border-color 160ms ease,
+      box-shadow 160ms ease,
+      transform 160ms ease,
+      background 160ms ease;
+
+    &--head {
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      padding-top: 2px;
+      padding-bottom: 2px;
+      font-size: 11.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--color-text-muted);
+    }
+
+    &--clickable {
+      cursor: pointer;
+
+      &:hover {
+        border-color: rgba(74, 103, 255, 0.24);
+        background:
+          linear-gradient(145deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.42)),
+          rgba(255, 255, 255, 0.42);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.86),
+          0 14px 34px rgba(64, 86, 136, 0.08);
+      }
+    }
+  }
+
+  &__primary {
+    display: grid;
+    gap: 5px;
+    min-width: 0;
+
+    strong {
+      font-size: 13.5px;
+      font-weight: 650;
+      color: var(--color-text);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  &__contact {
+    display: grid;
+    min-width: 0;
+
+    small {
+      font-size: 12px;
+      color: var(--color-text-muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  &__score {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 2px;
+    width: fit-content;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 700;
+
+    small {
+      font-size: 10px;
+      font-weight: 600;
+      opacity: 0.7;
+    }
+
+    &--high {
+      color: rgba(21, 128, 61, 0.82);
+      background: rgba(22, 163, 74, 0.08);
+    }
+
+    &--mid {
+      color: rgba(180, 83, 9, 0.86);
+      background: rgba(217, 119, 6, 0.08);
+    }
+
+    &--low {
+      color: rgba(185, 28, 28, 0.82);
+      background: rgba(220, 38, 38, 0.07);
+    }
+  }
+
+  &__leadtime {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--color-text-soft);
+    font-weight: 600;
+  }
+
+  &__money {
+    font-weight: 650;
+    color: var(--color-text);
+    white-space: nowrap;
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+
+    button {
+      display: grid;
+      place-items: center;
+      width: 30px;
+      height: 30px;
+      border: 1px solid rgba(100, 116, 139, 0.16);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.58);
+      color: rgba(5, 14, 35, 0.62);
+      cursor: pointer;
+      transition:
+        color 150ms ease,
+        border-color 150ms ease,
+        background 150ms ease,
+        transform 150ms ease;
+
+      &:hover {
+        color: #2436b8;
+        border-color: rgba(74, 103, 255, 0.3);
+        background: rgba(74, 103, 255, 0.07);
+        box-shadow: 0 8px 20px rgba(74, 103, 255, 0.14);
+      }
+    }
+  }
+
+  &__select {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: #4a67ff;
+      cursor: pointer;
+    }
+  }
+
+  &__archived-tag {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: rgba(100, 116, 139, 0.14);
+    color: rgba(71, 85, 105, 0.9);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+}
+
+// Purchases jadvallari bilan bir xil retsept: kichik ekranda ustunlar
+// belgisiz "1 ustunga siqilish" o'rniga eng muhim bo'lmagan ustunlar
+// (Kontakt, Yetkazish) yashiriladi — sarlavha va grid tuzilishi saqlanadi,
+// shu bilan qiymatlar hech qachon yorliqsiz qolmaydi.
+@media (max-width: 900px) {
+  .supplier-table__row {
+    grid-template-columns: 1.7fr 0.8fr 1fr 0.9fr 70px;
+
+    span:nth-child(2),
+    span:nth-child(4) {
+      display: none;
+    }
+
+    &--selectable {
+      grid-template-columns: 22px 1.7fr 0.8fr 1fr 0.9fr 70px;
+
+      span:nth-child(3),
+      span:nth-child(5) {
+        display: none;
+      }
+    }
+  }
+}

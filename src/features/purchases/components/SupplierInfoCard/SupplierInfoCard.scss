@@ -1,0 +1,103 @@
+.supplier-info-card {
+  display: grid;
+  gap: 12px;
+
+  &__head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+
+    strong {
+      display: block;
+      font-size: 14px;
+      color: rgba(5, 14, 35, 0.86);
+    }
+
+    small {
+      font-size: 12px;
+      color: rgba(5, 14, 35, 0.5);
+    }
+  }
+
+  &__score {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 11px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+
+    &--high {
+      color: #15803d;
+      background: rgba(22, 163, 74, 0.12);
+    }
+
+    &--mid {
+      color: #b45309;
+      background: rgba(217, 119, 6, 0.12);
+    }
+
+    &--low {
+      color: #b91c1c;
+      background: rgba(220, 38, 38, 0.12);
+    }
+  }
+
+  &__rows {
+    display: grid;
+    gap: 7px;
+
+    div {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      font-size: 13px;
+      color: rgba(5, 14, 35, 0.7);
+
+      svg {
+        flex-shrink: 0;
+        color: #2436b8;
+      }
+    }
+  }
+
+  &__credit {
+    display: grid;
+    gap: 6px;
+    padding: 12px;
+    border-radius: 14px;
+    background: rgba(74, 103, 255, 0.05);
+    border: 1px solid rgba(74, 103, 255, 0.14);
+
+    small {
+      font-size: 11.5px;
+      color: rgba(5, 14, 35, 0.5);
+    }
+  }
+
+  &__credit-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    span {
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(5, 14, 35, 0.55);
+    }
+
+    strong {
+      font-size: 12.5px;
+      color: rgba(5, 14, 35, 0.82);
+    }
+  }
+
+  &__empty {
+    margin: 0;
+    font-size: 13px;
+    color: rgba(5, 14, 35, 0.5);
+  }
+}

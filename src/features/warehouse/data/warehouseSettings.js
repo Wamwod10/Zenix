@@ -1,0 +1,18 @@
+export const defaultWarehouseSettings = {
+  costingMethod: "average",
+  negativeStock: false,
+  expiryWarningDays: 30,
+  reservationTimeoutHours: 48,
+  minStockDefault: 10,
+  maxStockDefault: 120,
+  reorderAuto: true,
+  barcodeFormat: "EAN-13",
+  labelSize: "58x40",
+  batchTracking: true,
+  serialTracking: true,
+  imeiTracking: true,
+  binLocation: true,
+  twoStepTransfer: true,
+  lowStockNotifications: true,
+  approvalForWriteOff: true,
+};

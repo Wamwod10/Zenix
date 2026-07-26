@@ -1,3 +1,7 @@
+# Root-only generated files
+/package-lock.json
+/vercel.json
+
 # Dependencies
 node_modules/
 

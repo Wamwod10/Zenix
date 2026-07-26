@@ -1,0 +1,155 @@
+.crm-customer-profile-tabs {
+  position: sticky;
+  top: 10px;
+  z-index: 7;
+  min-width: 0;
+  padding: 6px;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: 17px;
+  background: color-mix(in srgb, var(--color-surface-solid) 78%, transparent);
+  box-shadow:
+    0 14px 38px rgba(15, 23, 42, 0.07),
+    inset 0 1px 0 rgba(255, 255, 255, 0.34);
+  backdrop-filter: blur(22px) saturate(165%);
+
+  &__scroll {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 4px;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  &__tab {
+    position: relative;
+    display: inline-flex;
+    min-height: 42px;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 0 12px;
+    border: 1px solid transparent;
+    border-radius: 12px;
+    background: transparent;
+    color: var(--color-text-muted);
+    font: inherit;
+    font-size: 0.72rem;
+    font-weight: 590;
+    line-height: 1;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+      color 180ms ease,
+      border-color 180ms ease,
+      background-color 180ms ease,
+      box-shadow 180ms ease,
+      transform 180ms ease;
+
+    svg {
+      width: 16px;
+      height: 16px;
+      flex: 0 0 auto;
+      stroke-width: 1.8;
+    }
+
+    small {
+      display: inline-flex;
+      min-width: 21px;
+      height: 21px;
+      align-items: center;
+      justify-content: center;
+      padding: 0 6px;
+      border-radius: 999px;
+      background: var(--color-surface-muted);
+      color: var(--color-text-muted);
+      font-size: 0.62rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      transition:
+        color 180ms ease,
+        background-color 180ms ease;
+    }
+
+    &:hover:not(:disabled) {
+      background: color-mix(
+        in srgb,
+        var(--color-surface-muted) 66%,
+        transparent
+      );
+      color: var(--color-text);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 1px;
+    }
+
+    &:active:not(:disabled) {
+      transform: scale(0.98);
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    &--active {
+      border-color: color-mix(
+        in srgb,
+        var(--color-primary) 18%,
+        var(--color-border)
+      );
+      background: linear-gradient(
+        135deg,
+        color-mix(
+          in srgb,
+          var(--color-primary-soft) 82%,
+          var(--color-surface-solid)
+        ),
+        color-mix(in srgb, var(--color-surface-solid) 66%, transparent)
+      );
+      color: var(--color-primary);
+      box-shadow:
+        0 8px 20px color-mix(in srgb, var(--color-primary) 9%, transparent),
+        inset 0 1px 0 rgba(255, 255, 255, 0.38);
+
+      small {
+        background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+        color: var(--color-primary);
+      }
+    }
+  }
+}
+
+[data-theme="dark"] {
+  .crm-customer-profile-tabs {
+    box-shadow:
+      0 18px 44px rgba(0, 0, 0, 0.22),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+}
+
+@media (max-width: 680px) {
+  .crm-customer-profile-tabs {
+    top: 6px;
+    border-radius: 15px;
+
+    &__tab {
+      min-height: 44px;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .crm-customer-profile-tabs__tab {
+    transition-duration: 0.01ms;
+  }
+}

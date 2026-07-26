@@ -22,7 +22,7 @@ const CartItem = ({ item, onDecrease, onIncrease, onRemove, onEdit }) => {
         <span>{item.sku} · {formatMoney(item.price)}</span>
         {meta.length > 0 && <small>{meta.join(" · ")}</small>}
         {itemDiscount > 0 && (
-          <small>Item discount: -{formatMoney(itemDiscount)}</small>
+          <small>Mahsulot chegirmasi: -{formatMoney(itemDiscount)}</small>
         )}
       </div>
 
@@ -49,7 +49,7 @@ const CartItem = ({ item, onDecrease, onIncrease, onRemove, onEdit }) => {
         </div>
 
         <div className="pos-cart-item__price">
-          <span>Subtotal</span>
+          <span>Oraliq summa</span>
           <strong>{formatMoney(lineTotal)}</strong>
         </div>
 

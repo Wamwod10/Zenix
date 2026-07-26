@@ -65,7 +65,7 @@ const AIInsights = () => {
 
           <div>
             <strong>ZENIX AI</strong>
-            <small>Real-time monitoring</small>
+            <small>Real vaqtda kuzatuv</small>
           </div>
         </div>
 
@@ -79,7 +79,7 @@ const AIInsights = () => {
         <div>
           <span className="ai-insights__eyebrow">
             <Sparkles size={14} />
-            Smart tavsiyalar
+            Aqlli tavsiyalar
           </span>
 
           <h3>AI biznesingizni kuzatmoqda</h3>
@@ -91,7 +91,7 @@ const AIInsights = () => {
         </p>
       </div>
 
-      <div className="ai-insights__metrics" aria-label="AI monitoring holati">
+      <div className="ai-insights__metrics" aria-label="AI kuzatuv holati">
         {aiMetrics.map((metric) => {
           const Icon = metric.icon;
 

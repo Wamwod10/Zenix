@@ -51,7 +51,7 @@ const Activity = () => {
         <div className="zenix-dashboard__panel-title">
           <span>
             <ActivityIcon size={14} />
-            Live activity
+            Jonli faoliyat
           </span>
           <h3>Operatsiyalar oqimi</h3>
         </div>

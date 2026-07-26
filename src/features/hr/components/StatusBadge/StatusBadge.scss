@@ -1,0 +1,42 @@
+.hr-status {
+  min-height: 25px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  padding: 0 9px;
+  border: 1px solid rgba(255, 255, 255, 0.66);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+  color: rgba(15, 23, 42, 0.56);
+  font-size: 11px;
+  font-weight: 820;
+  line-height: 1;
+  white-space: nowrap;
+
+  &--active,
+  &--approved,
+  &--paid,
+  &--completed,
+  &--normal {
+    color: rgba(31, 153, 112, 0.9);
+  }
+
+  &--leave,
+  &--pending,
+  &--calculated,
+  &--warning,
+  &--in-progress {
+    color: rgba(210, 124, 36, 0.92);
+  }
+
+  &--sick,
+  &--late,
+  &--critical,
+  &--expired,
+  &--rejected,
+  &--terminated {
+    color: rgba(210, 72, 82, 0.9);
+  }
+}

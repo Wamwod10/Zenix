@@ -1,0 +1,205 @@
+// Dropdown layer tuzatishlari — Purchases'dagi bilan bir xil qoidalar
+// (shared Dropdown'ga tegmasdan, sahifa doirasida override).
+.suppliers-page,
+.supplier-details-page {
+  .ui-dropdown__menu {
+    top: calc(100% + 8px);
+    bottom: auto;
+    z-index: 140;
+    overflow: hidden auto;
+    border-radius: 18px;
+    background:
+      linear-gradient(180deg, rgba(250, 252, 255, 0.97), rgba(242, 246, 253, 0.95));
+    border: 1px solid rgba(255, 255, 255, 0.85);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.96),
+      0 24px 64px rgba(69, 91, 140, 0.24);
+    backdrop-filter: blur(28px) saturate(190%);
+    -webkit-backdrop-filter: blur(28px) saturate(190%);
+  }
+
+  .ui-dropdown--open {
+    z-index: 140;
+  }
+
+  .ui-dropdown__option:hover {
+    transform: none;
+  }
+
+  .ui-dropdown__control {
+    min-height: 46px;
+    padding: 0 14px;
+    border: 1px solid var(--color-border);
+    border-radius: 15px;
+    background: var(--color-bg-soft);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+    transition:
+      border-color 180ms ease,
+      box-shadow 180ms ease,
+      background 180ms ease;
+
+    &:hover {
+      border-color: rgba(74, 103, 255, 0.28);
+      background: var(--color-bg-muted);
+    }
+  }
+
+  .ui-dropdown--open .ui-dropdown__control,
+  .ui-dropdown__control:focus-within {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-soft);
+  }
+
+  // Input birligi: bir xil hover / ios-glow focus, brauzer outline yo'q.
+  // Bugfix: Purchases'dan qayta ishlatilgan maxsus field komponentlari
+  // (PurchaseTextField/PurchaseDateField/PurchaseTextarea) o'z fokus
+  // uslubiga ega — ularning ichki elementlari bu yerda istisno qilinadi,
+  // aks holda ikkita glow halqasi ustma-ust chizilardi ("qalin/ikki
+  // qatlamli fokus" ko'rinishi).
+  input:not([type="checkbox"]):not([type="radio"]):not(.purchase-text-field__field):not(.purchase-date-field__field):not(.purchase-textarea__field),
+  select,
+  textarea:not(.purchase-textarea__field) {
+    appearance: none;
+    -webkit-appearance: none;
+    accent-color: #4a67ff;
+    font-family: inherit;
+    font-size: 13.5px;
+    border-radius: 15px;
+    transition:
+      border-color 180ms ease,
+      box-shadow 180ms ease,
+      background 180ms ease;
+
+    &:hover {
+      border-color: rgba(74, 103, 255, 0.26);
+    }
+
+    &:focus,
+    &:focus-visible {
+      outline: none;
+      border-color: rgba(74, 103, 255, 0.46);
+      box-shadow: 0 0 0 3px var(--color-primary-soft);
+    }
+  }
+
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
+
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    margin: 0;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+}
+
+.suppliers-page {
+  display: grid;
+  gap: 18px;
+  padding: 2px 0 0;
+
+  &__stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+  }
+
+  // Quick-filter: StatCard (Dashboard komponenti, o'zgartirilmaydi) tashqi
+  // <button> bilan o'raladi — brauzer default ko'rinishi to'liq tozalanadi,
+  // shu sabab ichkaridagi StatCard vizual jihatdan HECH QANDAY o'zgarishsiz
+  // qoladi. Aktiv holat shu o'ram atrofida yumshoq border/glow bilan
+  // ko'rsatiladi (translateY yoki boshqa siljish yo'q).
+  &__stat-trigger {
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: none;
+    background: none;
+    text-align: left;
+    cursor: pointer;
+    border-radius: 22px;
+    transition: box-shadow 200ms ease, transform 200ms ease;
+
+    &:hover {
+      filter: brightness(1.02);
+    }
+
+    &--active {
+      box-shadow: 0 0 0 3px var(--color-primary-soft, rgba(74, 103, 255, 0.16));
+      border-radius: 22px;
+    }
+  }
+
+  // Bulk actions (Enterprise): jadval ustida tanlanganlar soni + amallar —
+  // faqat kamida bitta qator tanlanganda ko'rinadi.
+  &__bulk-bar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 10px 16px;
+    border-radius: 15px;
+    border: 1px solid rgba(74, 103, 255, 0.22);
+    background: rgba(74, 103, 255, 0.06);
+    font-size: 13px;
+    font-weight: 650;
+    color: var(--color-text);
+
+    span {
+      margin-right: 4px;
+    }
+  }
+
+  &__pagination {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 10px 4px 2px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: rgba(5, 14, 35, 0.54);
+
+    button {
+      padding: 8px 14px;
+      border: 1px solid rgba(100, 116, 139, 0.18);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.58);
+      font-size: 12.5px;
+      font-weight: 650;
+      color: rgba(5, 14, 35, 0.68);
+      cursor: pointer;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+      transition:
+        border-color 160ms ease,
+        color 160ms ease,
+        background 160ms ease,
+        transform 160ms ease;
+
+      &:not(:disabled):hover {
+        border-color: rgba(74, 103, 255, 0.3);
+        background: rgba(74, 103, 255, 0.06);
+        color: #2436b8;
+        box-shadow: 0 8px 20px rgba(74, 103, 255, 0.14);
+      }
+
+      &:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+    }
+  }
+}
+
+@media (max-width: 1080px) {
+  .suppliers-page__stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 560px) {
+  .suppliers-page__stats {
+    grid-template-columns: 1fr;
+  }
+}

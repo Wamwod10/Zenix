@@ -1,0 +1,501 @@
+// Ixcham (table-ichida joylashgan) inputlar uchun YAGONA retsept —
+// avval bu yerda 4 xil radius (10/10/11/12px) va hardcoded ranglar bilan
+// 4 marta takrorlangan edi (qator/batch/landed-cost/hujjat maydonlari) —
+// endi hammasi shu bitta %-placeholder'dan meros oladi (DRY + vizual bir xillik).
+%receive-goods-compact-input {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-bg-soft);
+  color: var(--color-text);
+  outline: none;
+  color-scheme: light;
+  transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+
+  &::placeholder {
+    color: var(--color-text-muted);
+  }
+
+  &:hover {
+    border-color: rgba(74, 103, 255, 0.28);
+    background: var(--color-bg-muted);
+  }
+
+  &:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-soft);
+  }
+
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    margin: 0;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+}
+
+.receive-goods {
+  // UI fix: Ombor va Barcode/SKU maydonlari orasidagi masofa dizayn
+  // tizimiga muvofiq 16px (ilgari 12px edi).
+  &__top {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+
+    @media (max-width: 640px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  // Barcode maydoni endi ASL PurchaseTextField komponentidan render qilinadi
+  // (ilgari xom JSX .purchase-text-field class'larini qo'lda takrorlar edi) —
+  // shu sabab Ombor selectori (PurchaseSelectField) bilan label/control
+  // balandligi, radius va spacing PIKSEL darajasida KAFOLATLANGAN bir xil.
+  // Bu yerda faqat grid ustunidagi joylashuv saqlanadi.
+  &__barcode {
+    display: flex;
+    align-self: stretch;
+
+    .purchase-text-field {
+      width: 100%;
+    }
+  }
+
+  &__section-title {
+    display: block;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: rgba(5, 14, 35, 0.6);
+  }
+
+  &__table {
+    display: grid;
+    gap: 6px;
+  }
+
+  &__row {
+    display: grid;
+    grid-template-columns: 2fr 0.8fr 0.8fr 1fr 1fr 1fr;
+    gap: 10px;
+    align-items: center;
+    padding: 10px 12px;
+    border-radius: 14px;
+    background:
+      linear-gradient(145deg, rgba(255, 255, 255, 0.56), rgba(255, 255, 255, 0.32)),
+      rgba(255, 255, 255, 0.36);
+    border: 1px solid rgba(100, 116, 139, 0.1);
+    font-size: 13px;
+    color: rgba(5, 14, 35, 0.78);
+
+    &--head {
+      background: transparent;
+      border: none;
+      padding-top: 0;
+      padding-bottom: 0;
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(5, 14, 35, 0.5);
+    }
+
+    &--over {
+      border-color: rgba(220, 38, 38, 0.4);
+      background: rgba(220, 38, 38, 0.05);
+    }
+
+    input {
+      @extend %receive-goods-compact-input;
+      padding: 8px 10px;
+      font-size: 13px;
+    }
+  }
+
+  &__name {
+    display: grid;
+    justify-items: start;
+
+    small {
+      font-size: 11.5px;
+      color: rgba(5, 14, 35, 0.45);
+    }
+  }
+
+  &__line-wrap {
+    display: grid;
+    gap: 4px;
+  }
+
+  &__batch-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0;
+    border: none;
+    background: none;
+    font-size: 11px;
+    font-weight: 650;
+    color: #2436b8;
+    cursor: pointer;
+    text-align: left;
+
+    svg {
+      transition: transform 0.18s ease;
+    }
+
+    &--open svg {
+      transform: rotate(180deg);
+    }
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  &__batch {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    padding: 10px 12px;
+    margin-left: 12px;
+    border-radius: 12px;
+    border: 1px dashed rgba(74, 103, 255, 0.2);
+    background: rgba(74, 103, 255, 0.035);
+
+    @media (max-width: 640px) {
+      grid-template-columns: 1fr;
+    }
+
+    label {
+      display: grid;
+      gap: 4px;
+
+      span {
+        font-size: 11px;
+        font-weight: 600;
+        color: rgba(5, 14, 35, 0.5);
+      }
+
+      input {
+        @extend %receive-goods-compact-input;
+        padding: 7px 9px;
+        font-size: 12.5px;
+      }
+    }
+  }
+
+  &__damaged-action {
+    margin-left: 12px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(217, 119, 6, 0.2);
+    background: rgba(217, 119, 6, 0.055);
+  }
+
+  &__landed {
+    display: grid;
+    gap: 10px;
+    padding: 12px;
+    border-radius: 14px;
+    border: 1px solid rgba(100, 116, 139, 0.1);
+    background: rgba(255, 255, 255, 0.36);
+  }
+
+  &__landed-title {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: rgba(5, 14, 35, 0.6);
+  }
+
+  // PDF 56 (Enterprise): dinamik xarajat qatorlari — foydalanuvchi faqat
+  // kerakli turlarni (Freight/Customs/Insurance/... 10 tur) qo'shadi, o'chirib
+  // tashlaydi. Attachments ro'yxati bilan bir xil interaksiya andozasi.
+  &__cost-list {
+    display: grid;
+    gap: 8px;
+  }
+
+  &__cost-row {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr auto;
+    gap: 10px;
+    align-items: end;
+
+    @media (max-width: 640px) {
+      grid-template-columns: 1fr 1fr auto;
+    }
+  }
+
+  &__cost-amount {
+    display: grid;
+    gap: 4px;
+
+    span {
+      font-size: 11px;
+      font-weight: 600;
+      color: rgba(5, 14, 35, 0.5);
+    }
+
+    input {
+      @extend %receive-goods-compact-input;
+      padding: 8px 10px;
+      font-size: 12.5px;
+    }
+  }
+
+  &__cost-remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    border: 1px solid rgba(220, 38, 38, 0.2);
+    background: rgba(220, 38, 38, 0.06);
+    color: #b91c1c;
+    cursor: pointer;
+    transition: background 160ms ease, opacity 160ms ease;
+
+    &:hover:not(:disabled) {
+      background: rgba(220, 38, 38, 0.12);
+    }
+
+    &:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+  }
+
+  &__cost-add {
+    display: inline-flex;
+    align-items: center;
+    justify-self: start;
+    gap: 6px;
+    padding: 8px 12px;
+    border-radius: 12px;
+    border: 1px dashed rgba(74, 103, 255, 0.32);
+    background: rgba(74, 103, 255, 0.05);
+    color: #2436b8;
+    font-size: 12.5px;
+    font-weight: 650;
+    cursor: pointer;
+    transition: background 160ms ease;
+
+    &:hover {
+      background: rgba(74, 103, 255, 0.1);
+    }
+  }
+
+  // Og'irlik/hajm/qo'lda taqsimlash — mahsulot bo'yicha qo'shimcha maydonlar,
+  // faqat tegishli usul tanlanganda ko'rinadi.
+  &__basis-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px dashed rgba(74, 103, 255, 0.2);
+    background: rgba(74, 103, 255, 0.035);
+
+    @media (max-width: 640px) {
+      grid-template-columns: 1fr;
+    }
+
+    label {
+      display: grid;
+      gap: 4px;
+
+      span {
+        font-size: 11px;
+        font-weight: 600;
+        color: rgba(5, 14, 35, 0.5);
+      }
+
+      input {
+        @extend %receive-goods-compact-input;
+        padding: 7px 9px;
+        font-size: 12.5px;
+      }
+    }
+  }
+
+  &__basis-title {
+    grid-column: 1 / -1;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: rgba(5, 14, 35, 0.55);
+  }
+
+  // Taqsimlash natijasi — mahsulot bo'yicha jonli oldindan ko'rish jadvali.
+  &__allocation {
+    display: grid;
+    gap: 8px;
+    padding-top: 4px;
+  }
+
+  &__allocation-table {
+    display: grid;
+    gap: 6px;
+  }
+
+  &__allocation-row {
+    display: grid;
+    grid-template-columns: 1.8fr 0.7fr 1fr 1fr 1.1fr;
+    gap: 10px;
+    align-items: center;
+    padding: 9px 12px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.42);
+    border: 1px solid rgba(100, 116, 139, 0.1);
+    font-size: 12.5px;
+    color: rgba(5, 14, 35, 0.78);
+
+    &--head {
+      background: transparent;
+      border: none;
+      padding-top: 0;
+      padding-bottom: 0;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: rgba(5, 14, 35, 0.45);
+    }
+
+    strong {
+      color: #2436b8;
+    }
+
+    @media (max-width: 720px) {
+      grid-template-columns: 1.6fr 1fr 1fr;
+
+      span:nth-child(2),
+      span:nth-child(4) {
+        display: none;
+      }
+    }
+  }
+
+  // UI fix: "Taqsimlash usuli" dropdown — ikonka + matn qatori (options.label
+  // ichida ishlatiladi, ham yopiq trigger'da, ham ochiq ro'yxatda). Ikonka
+  // va matn orasidagi bo'shliq 8px'dan 10px'ga oshirildi — boshqa ZENIX
+  // maydonlaridagi ikonka/matn spacing bilan bir xil bo'lishi uchun.
+  &__method-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    line-height: 1.2;
+
+    svg {
+      flex-shrink: 0;
+      color: var(--color-primary);
+    }
+  }
+
+  // UI fix: shared Dropdown'ning umumiy ko'rinishi allaqachon tizimga mos
+  // (46px trigger, 15px/18px radius, fade+scale ochilish animatsiyasi, thin
+  // scrollbar). Foydalanuvchi ikonka+matn "siqilgan" ko'rinishini va yetarsiz
+  // padding'ni ko'rsatdi — trigger balandligi (46px) O'ZGARTIRILMAY, faqat
+  // ichki chap/o'ng padding va vertikal markazlash kengaytirildi, item'lar
+  // esa kattaroq padding bilan ancha bo'shliqli qilindi.
+  &__landed-method {
+    .ui-dropdown__control {
+      padding: 0 44px 0 16px;
+    }
+
+    .ui-dropdown__value {
+      display: flex;
+      align-items: center;
+      min-height: 100%;
+    }
+
+    .ui-dropdown__menu {
+      display: grid;
+      gap: 8px;
+      padding: 9px;
+    }
+
+    .ui-dropdown__option {
+      min-height: 46px;
+      padding: 12px 14px;
+    }
+
+    // Pixel fix: PurchaseSelectField har doim (bo'sh bo'lsa ham) hint qatorini
+    // render qiladi — bu qatorda esa hint/xato hech qachon ishlatilmaydi.
+    // `&__landed-grid`dagi `align-items: end` shu bo'sh qator tagiga emas,
+    // aynan dropdown control'ning pastki chetiga tekislanishi uchun yashiramiz
+    // (aks holda control qo'shni oddiy inputlardan bir necha piksel yuqorida
+    // ko'rinardi).
+    .purchase-select-field__message {
+      display: none;
+    }
+  }
+
+  &__landed-total {
+    display: grid;
+    gap: 4px;
+
+    span {
+      font-size: 11px;
+      font-weight: 600;
+      color: rgba(5, 14, 35, 0.5);
+    }
+
+    strong {
+      font-size: 13.5px;
+      color: #2436b8;
+    }
+
+    small {
+      font-size: 11px;
+      font-weight: 600;
+      color: rgba(5, 14, 35, 0.46);
+    }
+  }
+
+  &__summary {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 10px;
+    padding: 12px;
+    border-radius: 14px;
+    border: 1px solid rgba(74, 103, 255, 0.18);
+    background: rgba(74, 103, 255, 0.06);
+
+    @media (max-width: 720px) {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    div {
+      display: grid;
+      gap: 3px;
+    }
+
+    span {
+      font-size: 10.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: rgba(5, 14, 35, 0.48);
+    }
+
+    strong {
+      font-size: 13px;
+      color: rgba(5, 14, 35, 0.84);
+    }
+  }
+
+  &__summary-bad {
+    color: #b91c1c !important;
+  }
+
+  &__summary-warn {
+    color: #b45309 !important;
+  }
+
+  &__attachments {
+    display: grid;
+    gap: 8px;
+  }
+
+}

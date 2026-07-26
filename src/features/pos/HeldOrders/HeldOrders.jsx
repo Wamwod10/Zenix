@@ -44,7 +44,7 @@ const HeldOrders = ({
     }
 
     return orders.filter((order) => {
-      const customerName = order.customer?.name || "Walk-in customer";
+      const customerName = order.customer?.name || "Nomsiz mijoz";
 
       return (
         order.orderNumber.toLowerCase().includes(normalized) ||
@@ -80,7 +80,7 @@ const HeldOrders = ({
           <div>
             <span className="pos-held-orders__eyebrow">
               <ArchiveRestore size={14} />
-              Suspended orders
+              To'xtatilgan savdolar
             </span>
 
             <h2 id="held-orders-title">Saqlangan savdolar</h2>
@@ -103,7 +103,7 @@ const HeldOrders = ({
           <input
             type="search"
             value={query}
-            placeholder="Order, mijoz yoki izoh..."
+            placeholder="Buyurtma, mijoz yoki izoh..."
             onChange={(event) => setQuery(event.target.value)}
           />
         </label>

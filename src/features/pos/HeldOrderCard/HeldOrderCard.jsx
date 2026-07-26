@@ -43,7 +43,7 @@ const HeldOrderCard = ({ order, onResume, onDelete }) => {
       <div className="pos-held-order-card__meta">
         <span>
           <UserRound size={14} />
-          {order.customer?.name || "Walk-in customer"}
+          {order.customer?.name || "Nomsiz mijoz"}
         </span>
 
         <span>

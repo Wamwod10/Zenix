@@ -1,1 +1,0 @@
-﻿import "./Payments.scss";

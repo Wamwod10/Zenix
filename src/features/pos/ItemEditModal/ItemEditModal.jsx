@@ -75,19 +75,19 @@ const ItemEditModal = ({ open = false, item = null, onClose, onSave }) => {
           <div>
             <span className="pos-item-edit__eyebrow">
               <PencilLine size={14} />
-              Cart line
+              Savat qatori
             </span>
             <h2 id="item-edit-title">{item.name}</h2>
             <p>{item.sku}</p>
           </div>
-          <button type="button" aria-label="Cart line oynasini yopish" onClick={onClose}>
+          <button type="button" aria-label="Savat qatorini yopish" onClick={onClose}>
             <X size={18} />
           </button>
         </div>
 
         <div className="pos-item-edit__fields">
           <label>
-            <span>Quantity</span>
+            <span>Miqdor</span>
             <input
               type="number"
               min="0.001"
@@ -98,7 +98,7 @@ const ItemEditModal = ({ open = false, item = null, onClose, onSave }) => {
             />
           </label>
           <label>
-            <span>Manual price</span>
+            <span>Qo'lda kiritilgan narx</span>
             <input
               type="number"
               min="0"
@@ -112,7 +112,7 @@ const ItemEditModal = ({ open = false, item = null, onClose, onSave }) => {
         <div className="pos-item-edit__discount">
           <span>
             <BadgePercent size={14} />
-            Item discount
+            Mahsulot chegirmasi
           </span>
           <div>
             <button
@@ -142,8 +142,8 @@ const ItemEditModal = ({ open = false, item = null, onClose, onSave }) => {
         </div>
 
         <div className="pos-item-edit__summary">
-          <span>Line subtotal: {formatMoney(lineSubtotal)}</span>
-          <strong>Discount: {formatMoney(discountAmount)}</strong>
+          <span>Qator summasi: {formatMoney(lineSubtotal)}</span>
+          <strong>Chegirma: {formatMoney(discountAmount)}</strong>
         </div>
 
         <div className="pos-item-edit__footer">

@@ -1,0 +1,119 @@
+.journal-form {
+  display: grid;
+  gap: 12px;
+
+  &__meta {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 9px;
+  }
+
+  label {
+    display: grid;
+    gap: 6px;
+    color: rgba(15, 23, 42, 0.42);
+    font-size: 11px;
+    font-weight: 760;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  input,
+  select,
+  textarea {
+    width: 100%;
+    min-height: 42px;
+    padding: 0 12px;
+    border: 1px solid rgba(255, 255, 255, 0.68);
+    border-radius: 15px;
+    outline: 0;
+    color: rgba(5, 14, 35, 0.82);
+    background: rgba(255, 255, 255, 0.16);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 560;
+  }
+
+  textarea {
+    min-height: 72px;
+    padding: 10px 12px;
+    resize: vertical;
+  }
+
+  &__wide {
+    grid-column: 1 / -1;
+  }
+
+  &__rows {
+    display: grid;
+    gap: 8px;
+  }
+
+  &__row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 140px 140px 38px;
+    gap: 8px;
+  }
+
+  button {
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 12px;
+    border: 1px solid rgba(255, 255, 255, 0.72);
+    border-radius: 14px;
+    color: rgba(43, 79, 188, 0.82);
+    background: rgba(255, 255, 255, 0.16);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 760;
+
+    &:disabled {
+      opacity: 0.48;
+      cursor: not-allowed;
+    }
+
+    &.is-primary {
+      color: rgba(255, 255, 255, 0.94);
+      background:
+        linear-gradient(180deg, rgba(92, 134, 245, 0.88), rgba(43, 79, 188, 0.9)),
+        rgba(43, 79, 188, 0.88);
+    }
+  }
+
+  &__footer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  &__footer span {
+    color: rgba(15, 23, 42, 0.52);
+    font-size: 12px;
+    font-weight: 760;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .is-balanced {
+    color: rgba(31, 153, 112, 0.9);
+  }
+
+  .is-unbalanced {
+    color: rgba(210, 72, 82, 0.9);
+  }
+}
+
+@media (max-width: 760px) {
+  .journal-form {
+    &__meta,
+    &__row {
+      grid-template-columns: 1fr;
+    }
+  }
+}

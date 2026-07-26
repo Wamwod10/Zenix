@@ -84,7 +84,7 @@ export const MODULE_IDS = {
 export const modules = {
   [MODULE_IDS.dashboard]: {
     id: MODULE_IDS.dashboard,
-    title: "Dashboard",
+    title: "Boshqaruv paneli",
     description: "Biznes holatini real vaqt rejimida ko‘rish.",
     route: "/dashboard",
     icon: LayoutDashboard,
@@ -131,7 +131,7 @@ export const modules = {
     id: MODULE_IDS.inventory,
     title: "Ombor",
     description: "Qoldiq, kirim, chiqim va ombor harakatlari.",
-    route: "/inventory",
+    route: "/warehouse",
     icon: Warehouse,
     category: MODULE_CATEGORIES.operations,
     permission: "inventory.view",

@@ -12,7 +12,7 @@ const CustomerCard = ({ customer, onClick }) => {
       </span>
 
       <span className="pos-customer-card__content">
-        <strong>{hasCustomer ? customer.name : "Walk-in customer"}</strong>
+        <strong>{hasCustomer ? customer.name : "Nomsiz mijoz"}</strong>
 
         <small>
           {hasCustomer

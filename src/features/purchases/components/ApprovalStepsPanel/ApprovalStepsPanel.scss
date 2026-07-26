@@ -1,0 +1,104 @@
+.approval-steps {
+  display: grid;
+  gap: 14px;
+
+  &__list {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  &__item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 11px 13px;
+    border-radius: 15px;
+    border: 1px solid rgba(100, 116, 139, 0.1);
+    background: rgba(255, 255, 255, 0.36);
+    color: rgba(5, 14, 35, 0.55);
+
+    &--approved {
+      color: rgba(21, 128, 61, 0.82);
+      border-color: rgba(22, 163, 74, 0.14);
+      background: rgba(22, 163, 74, 0.045);
+    }
+
+    &--rejected {
+      color: rgba(185, 28, 28, 0.82);
+      border-color: rgba(220, 38, 38, 0.14);
+      background: rgba(220, 38, 38, 0.045);
+    }
+
+    &--active {
+      border-color: rgba(74, 103, 255, 0.22);
+      background: rgba(74, 103, 255, 0.05);
+      color: rgba(36, 54, 184, 0.84);
+    }
+
+    svg {
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+  }
+
+  &__meta {
+    display: grid;
+    gap: 2px;
+
+    strong {
+      font-size: 13px;
+      font-weight: 600;
+      color: rgba(5, 14, 35, 0.82);
+    }
+
+    small {
+      font-size: 12px;
+      color: rgba(5, 14, 35, 0.5);
+    }
+  }
+
+  &__actions {
+    display: flex;
+    gap: 10px;
+  }
+
+  &__approve,
+  &__reject {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 16px;
+    border-radius: 12px;
+    border: none;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: box-shadow 0.15s ease, filter 0.15s ease;
+
+    &:hover {
+      filter: brightness(1.04);
+      box-shadow: 0 12px 28px rgba(64, 86, 136, 0.18);
+    }
+  }
+
+  &__approve {
+    color: #ffffff;
+    background: linear-gradient(135deg, rgba(22, 163, 74, 0.88), rgba(21, 128, 61, 0.9));
+    box-shadow: 0 10px 24px rgba(22, 163, 74, 0.2);
+  }
+
+  &__reject {
+    color: rgba(185, 28, 28, 0.82);
+    background: rgba(220, 38, 38, 0.065);
+    border: 1px solid rgba(220, 38, 38, 0.15);
+  }
+
+  &__empty {
+    margin: 0;
+    font-size: 13px;
+    color: rgba(5, 14, 35, 0.5);
+  }
+}

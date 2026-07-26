@@ -12,7 +12,7 @@ const POSNotifications = ({ notifications = [], onDismiss }) => {
       {notifications.map((notification) => (
         <article className={`pos-notifications__item is-${notification.tone}`} key={notification.id}>
           <span>{notification.message}</span>
-          <button type="button" aria-label="Notificationni yopish" onClick={() => onDismiss?.(notification.id)}>
+          <button type="button" aria-label="Bildirishnomani yopish" onClick={() => onDismiss?.(notification.id)}>
             <X size={14} />
           </button>
         </article>

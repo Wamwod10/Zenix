@@ -32,7 +32,7 @@ const TopProducts = ({ products }) => {
         <div className="zenix-dashboard__panel-title">
           <span>
             <Sparkles size={14} />
-            Top products
+            Eng ko'p sotilganlar
           </span>
           <h3>Eng faol mahsulotlar</h3>
         </div>

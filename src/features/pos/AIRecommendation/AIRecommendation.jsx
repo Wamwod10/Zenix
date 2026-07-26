@@ -3,7 +3,7 @@ import { BadgePercent, Bot, Sparkles } from "lucide-react";
 import "./AIRecommendation.scss";
 
 const AIRecommendation = ({
-  title = "AI Recommendation",
+  title = "AI tavsiyasi",
   message,
   actionLabel = "Tavsiya qo'llash",
   disabled = false,

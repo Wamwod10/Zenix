@@ -96,31 +96,31 @@ const POSInsightsPanel = ({
     (product) => Number(product.stock) > 0 && Number(product.stock) <= 6,
   ).length;
   const bundleLabel = cartItems.length
-    ? `${cartItems[0].category || "POS"} bundle`
-    : "Bundle kutmoqda";
+    ? `${cartItems[0].category || "Savat"} to'plami`
+    : "To'plam kutmoqda";
 
   return (
-    <section className="pos-insights-panel" aria-label="POS intelligence">
+    <section className="pos-insights-panel" aria-label="POS tahlili">
       <div className="pos-insights-panel__shift">
         <article>
-          <span>Today's Sales</span>
+          <span>Bugungi savdo</span>
           <strong>{formatMoney(todaySalesTotal)}</strong>
         </article>
         <article>
-          <span>Cash in Drawer</span>
+          <span>Kassadagi naqd</span>
           <strong>{formatMoney(cashInDrawer)}</strong>
         </article>
         <article>
-          <span>Orders Count</span>
+          <span>Buyurtmalar soni</span>
           <strong>{todaySales.length}</strong>
         </article>
         <article>
-          <span>Average Check</span>
+          <span>O'rtacha chek</span>
           <strong>{formatMoney(averageCheck)}</strong>
         </article>
         <article>
-          <span>Shift Timer</span>
-          <strong>{shift?.status === "open" ? timerLabel : "Closed"}</strong>
+          <span>Smena vaqti</span>
+          <strong>{shift?.status === "open" ? timerLabel : "Yopiq"}</strong>
         </article>
       </div>
 
@@ -131,23 +131,23 @@ const POSInsightsPanel = ({
               <Bot size={15} />
               POS AI
             </span>
-            <small>{lowStockCount} low-stock alert</small>
+            <small>{lowStockCount} ta kam qoldiq ogohlantirishi</small>
           </div>
 
           <div className="pos-insights-panel__cards">
             <article>
               <ShoppingBasket size={16} />
-              <span>Bundle</span>
+              <span>To'plam</span>
               <strong>{bundleLabel}</strong>
             </article>
             <article>
               <Sparkles size={16} />
-              <span>Cross Sell</span>
-              <strong>{recommendation?.title || "AI Recommendation"}</strong>
+              <span>Qo'shimcha taklif</span>
+              <strong>{recommendation?.title || "AI tavsiyasi"}</strong>
             </article>
             <article>
               <PackageCheck size={16} />
-              <span>Low Stock</span>
+              <span>Kam qoldiq</span>
               <strong>{lowStockCount ? `${lowStockCount} mahsulot` : "Barqaror"}</strong>
             </article>
           </div>
@@ -167,7 +167,7 @@ const POSInsightsPanel = ({
           <div className="pos-insights-panel__head">
             <span>
               <Flame size={15} />
-              Hot Products
+              Ommabop mahsulotlar
             </span>
           </div>
 
@@ -186,9 +186,9 @@ const POSInsightsPanel = ({
           <div className="pos-insights-panel__head">
             <span>
               <ReceiptText size={15} />
-              Recent Sales
+              So'nggi savdolar
             </span>
-            <button type="button" onClick={onOpenRecentSales}>Open</button>
+            <button type="button" onClick={onOpenRecentSales}>Ochish</button>
           </div>
 
           <div className="pos-insights-panel__recent-list">

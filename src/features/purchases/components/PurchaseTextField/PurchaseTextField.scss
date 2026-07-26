@@ -1,0 +1,129 @@
+.purchase-text-field {
+  display: grid;
+  gap: 8px;
+
+  &__label {
+    color: var(--color-text-soft);
+    font-size: 13px;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+  }
+
+  &__control {
+    min-height: 46px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 14px;
+    background: var(--color-bg-soft);
+    border: 1px solid var(--color-border);
+    border-radius: 15px;
+    transition:
+      border-color 180ms ease,
+      box-shadow 180ms ease,
+      background 180ms ease;
+  }
+
+  &__field {
+    width: 100%;
+    min-width: 0;
+    height: 44px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--color-text);
+    font-family: inherit;
+    font-size: 13.5px;
+    font-variant-numeric: tabular-nums;
+    // Brauzer avtomatik to'ldirish (autofill) va OS qorong'i rejimida native
+    // kursor/tanlash rangi Liquid Glass fondan "sakrab chiqmasligi" uchun.
+    color-scheme: light;
+
+    outline: none;
+    box-shadow: none;
+    appearance: none;
+    -webkit-appearance: none;
+
+    &::placeholder {
+      color: var(--color-text-muted);
+    }
+
+    &:focus,
+    &:focus-visible {
+      outline: none;
+      box-shadow: none;
+    }
+
+    &[type="number"] {
+      -moz-appearance: textfield;
+    }
+
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button {
+      margin: 0;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+
+    // Chrome/Edge avtomatik to'ldirish fonini majburan sariq/ko'k qilib
+    // qo'yadi — shisha fonga mos, shaffof ko'rinishga qaytariladi.
+    &:-webkit-autofill,
+    &:-webkit-autofill:hover,
+    &:-webkit-autofill:focus {
+      -webkit-text-fill-color: var(--color-text);
+      -webkit-box-shadow: 0 0 0 1000px var(--color-bg-soft) inset;
+      transition: background-color 999999s ease-in-out 0s;
+    }
+  }
+
+  &__icon {
+    display: inline-flex;
+    flex-shrink: 0;
+    color: var(--color-text-muted);
+  }
+
+  &__message {
+    margin: 0;
+    min-height: 1.4em;
+    color: var(--color-text-muted);
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  &:hover {
+    .purchase-text-field__control {
+      border-color: rgba(74, 103, 255, .28);
+      background: var(--color-bg-muted);
+    }
+  }
+
+  &:focus-within {
+    .purchase-text-field__control {
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px var(--color-primary-soft);
+    }
+  }
+
+  &--error {
+    .purchase-text-field__control {
+      border-color: var(--color-danger);
+      box-shadow: 0 0 0 3px rgba(220, 38, 38, .08);
+    }
+
+    .purchase-text-field__message {
+      color: var(--color-danger);
+    }
+  }
+
+  &:has(.purchase-text-field__field:disabled) {
+    .purchase-text-field__control {
+      opacity: .55;
+      background: var(--color-bg-muted);
+      cursor: not-allowed;
+    }
+
+    .purchase-text-field__field {
+      cursor: not-allowed;
+    }
+  }
+}

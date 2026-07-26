@@ -12,7 +12,7 @@ const OrderSummary = ({
   return (
     <div className="pos-order-summary">
       <div>
-        <span>Subtotal</span>
+        <span>Oraliq summa</span>
         <strong>{formatMoney(subtotal)}</strong>
       </div>
 
@@ -27,7 +27,7 @@ const OrderSummary = ({
       </div>
 
       <div>
-        <span>Service fee</span>
+        <span>Xizmat haqi</span>
         <strong>{formatMoney(serviceFee)}</strong>
       </div>
 

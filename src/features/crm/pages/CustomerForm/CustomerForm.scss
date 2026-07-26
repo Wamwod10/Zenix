@@ -1,0 +1,250 @@
+.crm-customer-form-page {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  gap: 14px;
+  padding-bottom: 30px;
+  isolation: isolate;
+
+  &::before,
+  &::after {
+    position: fixed;
+    z-index: -1;
+    border-radius: 50%;
+    filter: blur(24px);
+    pointer-events: none;
+    content: "";
+  }
+
+  &::before {
+    top: 12%;
+    right: 3%;
+    width: 290px;
+    height: 290px;
+    background: radial-gradient(
+      circle,
+      color-mix(in srgb, var(--color-primary) 6%, transparent),
+      transparent 70%
+    );
+  }
+
+  &::after {
+    bottom: 3%;
+    left: 20%;
+    width: 230px;
+    height: 230px;
+    background: radial-gradient(
+      circle,
+      rgba(142, 96, 128, 0.05),
+      transparent 72%
+    );
+  }
+
+  &__back {
+    display: inline-flex;
+    min-height: 42px;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 0 12px;
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--color-surface-solid) 62%, transparent);
+    color: var(--color-text-soft);
+    font-size: 0.71rem;
+    font-weight: 620;
+    line-height: 1;
+    text-decoration: none;
+    transition:
+      color 180ms ease,
+      border-color 180ms ease,
+      background-color 180ms ease,
+      transform 180ms ease;
+
+    svg {
+      width: 16px;
+      height: 16px;
+      stroke-width: 1.9;
+    }
+
+    &:hover {
+      border-color: var(--color-border-strong);
+      background: var(--color-surface-muted);
+      color: var(--color-text);
+      transform: translateX(-2px);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 2px;
+    }
+  }
+
+  &__loading {
+    display: grid;
+    gap: 14px;
+  }
+
+  &__skeleton {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    background: linear-gradient(
+      145deg,
+      var(--color-surface),
+      color-mix(in srgb, var(--color-surface-muted) 70%, transparent)
+    );
+
+    &::after {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        105deg,
+        transparent 20%,
+        rgba(255, 255, 255, 0.3) 42%,
+        transparent 64%
+      );
+      content: "";
+      transform: translateX(-100%);
+      animation: crm-customer-form-page-shimmer 1.5s infinite;
+    }
+
+    &--header {
+      min-height: 132px;
+      border-radius: 22px;
+    }
+
+    &--content {
+      min-height: 620px;
+      border-radius: 21px;
+    }
+  }
+
+  &__state-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    button,
+    a {
+      display: inline-flex;
+      min-height: 43px;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 0 14px;
+      border: 1px solid var(--color-border);
+      border-radius: 12px;
+      background: var(--color-surface-muted);
+      color: var(--color-text-soft);
+      font: inherit;
+      font-size: 0.7rem;
+      font-weight: 630;
+      line-height: 1;
+      text-decoration: none;
+      cursor: pointer;
+      transition:
+        color 180ms ease,
+        border-color 180ms ease,
+        background-color 180ms ease,
+        transform 180ms ease;
+
+      svg {
+        width: 16px;
+        height: 16px;
+        stroke-width: 1.9;
+      }
+
+      &:hover {
+        border-color: var(--color-border-strong);
+        background: var(--color-surface-solid);
+        color: var(--color-text);
+        transform: translateY(-1px);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--color-primary);
+        outline-offset: 2px;
+      }
+    }
+
+    button {
+      border-color: transparent;
+      background: var(--color-primary);
+      color: var(--color-text-inverse);
+
+      &:hover {
+        border-color: transparent;
+        background: var(--color-primary-hover);
+        color: var(--color-text-inverse);
+      }
+    }
+  }
+}
+
+[data-theme="dark"] {
+  .crm-customer-form-page {
+    &__skeleton::after {
+      background: linear-gradient(
+        105deg,
+        transparent 20%,
+        rgba(255, 255, 255, 0.06) 42%,
+        transparent 64%
+      );
+    }
+  }
+}
+
+@keyframes crm-customer-form-page-shimmer {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@media (max-width: 720px) {
+  .crm-customer-form-page {
+    gap: 11px;
+    padding-bottom: 20px;
+
+    &__back {
+      width: 100%;
+      min-height: 44px;
+    }
+
+    &__state-actions {
+      align-items: stretch;
+      flex-direction: column;
+
+      button,
+      a {
+        width: 100%;
+      }
+    }
+
+    &__skeleton {
+      &--header {
+        min-height: 150px;
+        border-radius: 18px;
+      }
+
+      &--content {
+        min-height: 680px;
+        border-radius: 18px;
+      }
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .crm-customer-form-page {
+    &__back,
+    &__state-actions button,
+    &__state-actions a,
+    &__skeleton::after {
+      animation-duration: 0.01ms;
+      transition-duration: 0.01ms;
+    }
+  }
+}

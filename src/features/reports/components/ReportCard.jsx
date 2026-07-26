@@ -1,1 +1,0 @@
-﻿import "./ReportCard.scss";

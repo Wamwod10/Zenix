@@ -1,0 +1,86 @@
+.notification-filters {
+  display: grid;
+  gap: 8px;
+  padding: 10px 14px 12px;
+  border-bottom: 1px solid rgba(100, 116, 139, 0.12);
+
+  &__search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 38px;
+    padding: 0 12px;
+    border-radius: 12px;
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-soft);
+    color: rgba(5, 14, 35, 0.4);
+
+    input {
+      flex: 1;
+      height: 100%;
+      border: none;
+      background: transparent;
+      color: var(--color-text);
+      font-size: 12.5px;
+      outline: none;
+    }
+  }
+
+  &__row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+
+    select {
+      height: 34px;
+      padding: 0 8px;
+      border-radius: 10px;
+      border: 1px solid var(--color-border);
+      background: var(--color-bg-soft);
+      color: var(--color-text);
+      font-size: 11.5px;
+      appearance: none;
+      -webkit-appearance: none;
+      cursor: pointer;
+
+      &:hover {
+        border-color: rgba(74, 103, 255, 0.28);
+      }
+
+      &:focus,
+      &:focus-visible {
+        outline: none;
+        border-color: rgba(74, 103, 255, 0.46);
+        box-shadow: 0 0 0 3px var(--color-primary-soft);
+      }
+    }
+
+    &--dates {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+
+      label {
+        display: grid;
+        gap: 3px;
+        font-size: 10.5px;
+        color: rgba(5, 14, 35, 0.44);
+      }
+
+      input[type="date"] {
+        height: 34px;
+        padding: 0 8px;
+        border-radius: 10px;
+        border: 1px solid var(--color-border);
+        background: var(--color-bg-soft);
+        color: var(--color-text);
+        font-size: 11.5px;
+        color-scheme: light;
+      }
+    }
+  }
+
+  @media (max-width: 420px) {
+    &__row {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+}

@@ -1,0 +1,138 @@
+.purchase-date-field {
+  display: grid;
+  gap: 8px;
+
+  &__label {
+    color: var(--color-text-soft);
+    font-size: 13px;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+  }
+
+  &__control {
+    min-height: 46px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 14px;
+    background: var(--color-bg-soft);
+    border: 1px solid var(--color-border);
+    border-radius: 15px;
+    transition:
+      border-color 180ms ease,
+      box-shadow 180ms ease,
+      background 180ms ease;
+  }
+
+  &__icon {
+    flex-shrink: 0;
+    color: var(--color-text-muted);
+  }
+
+  &__field {
+    width: 100%;
+    min-width: 0;
+    height: 44px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--color-text);
+    font-family: inherit;
+    font-size: 13.5px;
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+
+    outline: none;
+    box-shadow: none;
+    appearance: none;
+    -webkit-appearance: none;
+    // OS/brauzer qorong'i rejimida native sana segmentlari va taqvim
+    // popup'i qorong'i (dark) UA temasiga o'tib ketishining oldini oladi —
+    // shu tufayli maydon boshqa Liquid Glass kontrollerdan "yot" ko'rinardi.
+    color-scheme: light;
+
+    &:focus,
+    &:focus-visible,
+    &:active {
+      outline: none;
+      border: none;
+      box-shadow: none;
+    }
+
+    // Ikkita taqvim belgisi muammosi: brauzerning o'z native picker
+    // tugmasi (o'ng chetda) bizning chap tomondagi lucide <Calendar/>
+    // ikonkamiz bilan birga ikkita turli uslubdagi belgi hosil qilardi.
+    // Native tugma o'zining tabiiy o'lchami/joyida qoladi (sana
+    // segmentlarini qo'lda bosib tahrirlash imkoniyati saqlanadi), lekin
+    // ko'rinmas qilinadi — yagona ko'rinadigan belgi endi bizning
+    // Liquid Glass ikonkamiz bo'ladi.
+    &::-webkit-calendar-picker-indicator {
+      cursor: pointer;
+      opacity: 0;
+    }
+
+    &::-webkit-datetime-edit {
+      padding: 0;
+      color: var(--color-text);
+    }
+
+    &::-webkit-datetime-edit-fields-wrapper {
+      padding: 0;
+    }
+
+    // Bo'sh/hali tanlanmagan segmentlar (kun/oy/yil) — boshqa maydonlardagi
+    // placeholder rangi bilan bir xil (matn/asosiy rangdan farqli, xira).
+    &::-webkit-datetime-edit-text,
+    &::-webkit-datetime-edit-month-field,
+    &::-webkit-datetime-edit-day-field,
+    &::-webkit-datetime-edit-year-field {
+      color: var(--color-text);
+    }
+  }
+
+  &__message {
+    margin: 0;
+    min-height: 1.4em;
+    color: var(--color-text-muted);
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  &:hover {
+    .purchase-date-field__control {
+      border-color: rgba(74,103,255,.28);
+      background: var(--color-bg-muted);
+    }
+  }
+
+  &:focus-within {
+    .purchase-date-field__control {
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px var(--color-primary-soft);
+    }
+  }
+
+  &--error {
+    .purchase-date-field__control {
+      border-color: var(--color-danger);
+      box-shadow: 0 0 0 3px rgba(220,38,38,.08);
+    }
+
+    .purchase-date-field__message {
+      color: var(--color-danger);
+    }
+  }
+
+  &:has(.purchase-date-field__field:disabled) {
+    .purchase-date-field__control {
+      opacity: .55;
+      background: var(--color-bg-muted);
+      cursor: not-allowed;
+    }
+
+    .purchase-date-field__field,
+    .purchase-date-field__icon {
+      cursor: not-allowed;
+    }
+  }
+}

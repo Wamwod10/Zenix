@@ -50,13 +50,13 @@ const RevenueChart = () => {
         <div>
           <span className="revenue-atelier__eyebrow">
             <CircleDollarSign size={14} />
-            Revenue cockpit
+            Daromad nazorati
           </span>
           <h3>Daromad holati</h3>
           <p>Bugungi biznes ritmi, tushum sifati va target bosimi.</p>
         </div>
 
-        <div className="revenue-atelier__actions" aria-label="Revenue timeframe">
+        <div className="revenue-atelier__actions" aria-label="Daromad davri">
           <button className="is-active" type="button">
             12 oy
           </button>
@@ -68,16 +68,16 @@ const RevenueChart = () => {
       </div>
 
       <div className="revenue-atelier__body">
-        <div className="revenue-atelier__orb" aria-label="Revenue health 86%">
+        <div className="revenue-atelier__orb" aria-label="Daromad holati 86%">
           <span className="revenue-atelier__orb-ring" />
           <span className="revenue-atelier__orb-glow" />
           <div>
-            <small>Revenue health</small>
+            <small>Daromad holati</small>
             <strong>86%</strong>
-            <em>premium momentum</em>
+            <em>ijobiy dinamika</em>
             <button type="button">
               <Sparkles size={12} />
-              AI Analysis
+              AI tahlili
             </button>
           </div>
         </div>

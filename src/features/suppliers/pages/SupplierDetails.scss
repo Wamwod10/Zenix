@@ -1,0 +1,14 @@
+.supplier-details-page {
+  display: grid;
+  gap: 18px;
+  padding: 2px 0 0;
+}
+
+.supplier-details__back-button {
+  span {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+  }
+}
+

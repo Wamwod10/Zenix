@@ -1,0 +1,205 @@
+// Xaridlar moduli jadval primitivlari (barcha table komponentlar uchun).
+
+.purchase-table {
+  display: grid;
+  gap: 7px;
+
+  &__row {
+    display: grid;
+    gap: 12px;
+    align-items: center;
+    padding: 12px 15px;
+    border-radius: 15px;
+    border: 1px solid rgba(100, 116, 139, 0.1);
+    background:
+      linear-gradient(145deg, rgba(255, 255, 255, 0.58), rgba(255, 255, 255, 0.34)),
+      rgba(255, 255, 255, 0.36);
+    font-size: 13px;
+    color: rgba(5, 14, 35, 0.78);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.72),
+      0 10px 28px rgba(64, 86, 136, 0.045);
+    transition:
+      border-color 0.16s ease,
+      background 0.16s ease,
+      box-shadow 0.16s ease;
+
+    &--head {
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      padding-top: 2px;
+      padding-bottom: 2px;
+      font-size: 11.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: rgba(5, 14, 35, 0.45);
+    }
+
+    &--clickable {
+      cursor: pointer;
+
+      &:hover {
+        border-color: rgba(74, 103, 255, 0.24);
+        background:
+          linear-gradient(145deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.42)),
+          rgba(255, 255, 255, 0.42);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.86),
+          0 14px 34px rgba(64, 86, 136, 0.08);
+      }
+    }
+
+    &--selected {
+      border-color: rgba(74, 103, 255, 0.28);
+      background:
+        linear-gradient(145deg, rgba(74, 103, 255, 0.1), rgba(255, 255, 255, 0.42)),
+        rgba(255, 255, 255, 0.42);
+    }
+  }
+
+  &__primary {
+    display: grid;
+    min-width: 0;
+
+    strong {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: rgba(5, 14, 35, 0.86);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    small {
+      font-size: 11.5px;
+      color: rgba(5, 14, 35, 0.48);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  &__money {
+    font-weight: 600;
+    color: rgba(5, 14, 35, 0.84);
+    white-space: nowrap;
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+
+    button {
+      display: grid;
+      place-items: center;
+      width: 30px;
+      height: 30px;
+      border: 1px solid rgba(100, 116, 139, 0.18);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.58);
+      color: rgba(5, 14, 35, 0.6);
+      cursor: pointer;
+      transition:
+        color 0.15s ease,
+        border-color 0.15s ease,
+        background 0.15s ease,
+        transform 0.15s ease;
+
+      &:hover {
+        color: #2436b8;
+        border-color: rgba(74, 103, 255, 0.3);
+        background: rgba(74, 103, 255, 0.07);
+        box-shadow: 0 8px 20px rgba(74, 103, 255, 0.14);
+      }
+
+      &:disabled {
+        opacity: 0.35;
+        cursor: not-allowed;
+      }
+    }
+  }
+
+  &__checkbox {
+    width: 16px;
+    height: 16px;
+    accent-color: #4a67ff;
+    cursor: pointer;
+  }
+
+  &__empty {
+    padding: 32px;
+    border-radius: 18px;
+    border: 1px dashed rgba(100, 116, 139, 0.18);
+    background: rgba(255, 255, 255, 0.34);
+    text-align: center;
+    font-size: 13px;
+    color: rgba(5, 14, 35, 0.5);
+  }
+
+  &__pagination {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 10px 4px 2px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: rgba(5, 14, 35, 0.5);
+
+    button {
+      padding: 7px 14px;
+      border: 1px solid rgba(100, 116, 139, 0.2);
+      border-radius: 11px;
+      background: rgba(255, 255, 255, 0.62);
+      font-size: 12.5px;
+      font-weight: 650;
+      color: rgba(5, 14, 35, 0.72);
+      cursor: pointer;
+      transition:
+        border-color 0.15s ease,
+        color 0.15s ease,
+        background 0.15s ease,
+        transform 0.15s ease;
+
+      &:not(:disabled):hover {
+        border-color: rgba(74, 103, 255, 0.32);
+        color: #2436b8;
+        background: rgba(74, 103, 255, 0.07);
+        box-shadow: 0 8px 20px rgba(74, 103, 255, 0.14);
+      }
+
+      &:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+    }
+  }
+
+  &__progress {
+    display: grid;
+    gap: 4px;
+    min-width: 90px;
+
+    small {
+      font-size: 11px;
+      color: rgba(5, 14, 35, 0.5);
+    }
+  }
+
+  &__progress-bar {
+    height: 7px;
+    border-radius: 999px;
+    background: rgba(100, 116, 139, 0.1);
+    overflow: hidden;
+
+    span {
+      display: block;
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(74, 103, 255, 0.74), rgba(22, 163, 74, 0.68));
+    }
+  }
+}

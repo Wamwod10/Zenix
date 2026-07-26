@@ -1,0 +1,33 @@
+.quality-inspections-page {
+  display: grid;
+  gap: 16px;
+
+  &__kpi {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+
+    @media (max-width: 1080px) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    @media (max-width: 560px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &__filters {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    justify-content: flex-end;
+
+    .purchase-select-field {
+      min-width: 220px;
+    }
+
+    .purchase-select-field__message {
+      display: none;
+    }
+  }
+}

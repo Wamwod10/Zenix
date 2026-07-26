@@ -1,0 +1,154 @@
+.zenix-purchases {
+  display: grid;
+  padding: 16px;
+  gap: 16px;
+
+  &__tabs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  &__tabs-spacer {
+    flex: 1;
+    min-width: 8px;
+  }
+
+  &__tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 16px;
+    border-radius: 999px;
+    border: 1px solid rgba(100, 116, 139, 0.18);
+    background: rgba(255, 255, 255, 0.45);
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(5, 14, 35, 0.6);
+    text-decoration: none;
+    transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+
+    &:hover {
+      color: #2436b8;
+      background: rgba(255, 255, 255, 0.6);
+      border-color: rgba(74, 103, 255, 0.35);
+    }
+
+    &--active {
+      color: #ffffff;
+      border-color: transparent;
+      background: linear-gradient(135deg, #4a67ff, #3048e6);
+      box-shadow: 0 10px 26px rgba(74, 103, 255, 0.3);
+    }
+  }
+
+  &__content {
+    display: grid;
+    gap: 16px;
+  }
+
+  // ---------------------------------------------------------------------
+  // Dropdown layer tuzatishlari (modul bo'ylab, shared Dropdown'ga tegmasdan):
+  // - menyu HAR DOIM input ostida ochiladi va barcha kontentdan yuqorida
+  // - shisha fon quyuqlashtirildi — orqadagi qatorlar ko'rinmaydi
+  // - ochiq holatda yuqori z-index; option hoverida siljish yo'q
+  // ---------------------------------------------------------------------
+  .ui-dropdown__menu {
+    top: calc(100% + 8px);
+    bottom: auto;
+    z-index: 140;
+    overflow: hidden auto;
+    border-radius: 18px;
+    background:
+      linear-gradient(180deg, rgba(250, 252, 255, 0.97), rgba(242, 246, 253, 0.95));
+    border: 1px solid rgba(255, 255, 255, 0.85);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.96),
+      0 24px 64px rgba(69, 91, 140, 0.24);
+    backdrop-filter: blur(28px) saturate(190%);
+    -webkit-backdrop-filter: blur(28px) saturate(190%);
+  }
+
+  .ui-dropdown--open {
+    z-index: 140;
+  }
+
+  .ui-dropdown__option:hover {
+    transform: none;
+  }
+
+  .ui-dropdown__control {
+    min-height: 46px;
+    padding: 0 14px;
+    border: 1px solid var(--color-border);
+    border-radius: 15px;
+    background: var(--color-bg-soft);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+    transition:
+      border-color 180ms ease,
+      box-shadow 180ms ease,
+      background 180ms ease;
+
+    &:hover {
+      border-color: rgba(74, 103, 255, 0.28);
+      background: var(--color-bg-muted);
+    }
+  }
+
+  .ui-dropdown--open .ui-dropdown__control,
+  .ui-dropdown__control:focus-within {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-soft);
+  }
+
+  // ---------------------------------------------------------------------
+  // Input birligi: modul ichidagi RAW (o'ralmagan) input/select/textarea
+  // uchun bir xil hover / ios-glow focus (brauzer default outline yo'q).
+  // Maxsus field komponentlari (PurchaseTextField/PurchaseDateField/
+  // PurchaseTextarea) O'Z FOKUS/HOVER USLUBIGA EGA — shu sabab ularning
+  // ichki <input>/<textarea> elementlari BU YERDA ISTISNO qilinadi.
+  // Bugfix: avval bu qoida __field elementlarni ham ushlab olardi va CSS
+  // specifiklik bo'yicha komponent stilidan G'OLIB chiqardi — natijada
+  // input ustida IKKINCHI (qattiq kodlangan, token'siz) glow chizilardi,
+  // wrapper'ning o'z fokus halqasi bilan qo'shilib "ikki bosqichli
+  // chegara / qalin fokus halqasi" ko'rinishini berardi (masalan sana
+  // maydonida yaqqol sezilardi).
+  // ---------------------------------------------------------------------
+  input:not([type="checkbox"]):not([type="radio"]):not(.purchase-text-field__field):not(.purchase-date-field__field):not(.purchase-textarea__field),
+  select,
+  textarea:not(.purchase-textarea__field) {
+    appearance: none;
+    -webkit-appearance: none;
+    accent-color: #4a67ff;
+    font-family: inherit;
+    font-size: 13.5px;
+    border-radius: 15px;
+    transition:
+      border-color 180ms ease,
+      box-shadow 180ms ease,
+      background 180ms ease;
+
+    &:hover {
+      border-color: rgba(74, 103, 255, 0.26);
+    }
+
+    &:focus,
+    &:focus-visible {
+      outline: none;
+      border-color: rgba(74, 103, 255, 0.46);
+      box-shadow: 0 0 0 3px var(--color-primary-soft);
+    }
+  }
+
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
+
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    margin: 0;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+}

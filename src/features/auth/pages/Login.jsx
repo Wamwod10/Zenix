@@ -1,30 +1,19 @@
 import { Lock, Mail } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-<<<<<<< HEAD:src/features/auth/pages/Login.jsx
-import { Button, Input, useNotification } from "../../../components/ui";
-import { useGlassFollow } from "../../../shared/hooks/useGlassFollow";
-import { getApiErrorMessage } from "../../../shared/services/api";
-import { useLoginMutation } from "../authApi";
-=======
-// ✅ BACKEND INTEGRATION: redux + auth API
 import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { Button, Input, useNotification } from "../../../components/ui";
 import { useGlassFollow } from "../../../shared/hooks/useGlassFollow";
-import { setCredentials } from "../authSlice";
-import { useLoginMutation } from "../authApi";
 import { getApiError } from "../../../shared/services/api";
->>>>>>> d6b99a90462b6f5577d34dbe8eb51623ebd2e0a4:frontend/src/features/auth/pages/Login.jsx
+import { useLoginMutation } from "../authApi";
+import { setCredentials } from "../authSlice";
 import "./Login.scss";
 
 export default function Login() {
   const { error } = useNotification();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [login, { isLoading }] = useLoginMutation();
   const glassFollowRef = useGlassFollow();
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
-  // ✅ BACKEND INTEGRATION: POST /auth/login
-  const [login, { isLoading }] = useLoginMutation();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -48,24 +37,13 @@ export default function Login() {
       return;
     }
 
-<<<<<<< HEAD:src/features/auth/pages/Login.jsx
-    try {
-      await login({ email, password }).unwrap();
-      navigate("/dashboard");
-    } catch (requestError) {
-      error(getApiErrorMessage(requestError, "Kirish bajarilmadi."));
-=======
-    // ✅ BACKEND INTEGRATION: backend'ga yuboramiz
     try {
       const data = await login({ email, password }).unwrap();
-
-      // Tokenlar va user localStorage + redux'ga saqlanadi
       dispatch(setCredentials({ user: data.user, tokens: data.tokens }));
       navigate("/dashboard");
     } catch (err) {
       const apiError = getApiError(err);
 
-      // Email tasdiqlanmagan -> verification sahifasiga yo'naltiramiz
       if (apiError.code === "EMAIL_NOT_VERIFIED") {
         sessionStorage.setItem("zenix_pending_email", email);
         error(apiError.message);
@@ -74,7 +52,6 @@ export default function Login() {
       }
 
       error(apiError.message);
->>>>>>> d6b99a90462b6f5577d34dbe8eb51623ebd2e0a4:frontend/src/features/auth/pages/Login.jsx
     }
   };
 
@@ -116,7 +93,7 @@ export default function Login() {
             label="Parol"
             name="password"
             type="password"
-            placeholder="••••••••"
+            placeholder="********"
             leftIcon={<Lock size={18} />}
           />
 
@@ -129,31 +106,25 @@ export default function Login() {
             <a href="/forgot-password">Parolni unutdingizmi?</a>
           </div>
 
-<<<<<<< HEAD:src/features/auth/pages/Login.jsx
-          <Button type="submit" fullWidth disabled={isLoading}>
-            {isLoading ? "Tekshirilmoqda..." : "ZENIX ga kirish"}
-=======
-          {/* ✅ BACKEND INTEGRATION: so'rov paytida tugma bloklanadi */}
           <Button type="submit" fullWidth disabled={isLoading}>
             {isLoading ? "Kirilmoqda..." : "ZENIX ga kirish"}
->>>>>>> d6b99a90462b6f5577d34dbe8eb51623ebd2e0a4:frontend/src/features/auth/pages/Login.jsx
           </Button>
         </form>
 
         <p className="login-page__footer">
-          Hisobingiz yo‘qmi? <a href="/register">Hisob yaratish</a>
+          Hisobingiz yo'qmi? <a href="/register">Hisob yaratish</a>
         </p>
       </section>
 
       <aside className="login-page__visual">
         <div className="login-page__follow" ref={glassFollowRef}>
           <div className="login-page__glass-card">
-          <span>AI tahlili</span>
-          <h2>Bugungi savdo kechagidan 18% yuqori.</h2>
-          <p>
-            Ombordagi tez aylanadigan mahsulotlar bo‘yicha aqlli tavsiyalar
-            tayyor.
-          </p>
+            <span>AI tahlili</span>
+            <h2>Bugungi savdo kechagidan 18% yuqori.</h2>
+            <p>
+              Ombordagi tez aylanadigan mahsulotlar bo'yicha aqlli tavsiyalar
+              tayyor.
+            </p>
           </div>
         </div>
       </aside>

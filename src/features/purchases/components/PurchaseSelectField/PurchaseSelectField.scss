@@ -1,0 +1,21 @@
+.purchase-select-field {
+
+  &__message {
+    margin: 0;
+    min-height: 1.4em;
+    color: var(--color-text-muted);
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  &--error {
+    .ui-dropdown__control {
+      border-color: var(--color-danger);
+      box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.08);
+    }
+
+    .purchase-select-field__message {
+      color: var(--color-danger);
+    }
+  }
+}

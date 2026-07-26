@@ -27,7 +27,7 @@ const Cart = ({
     <aside className="pos-cart">
       <div className="pos-cart__head">
         <div>
-          <span>Current cart</span>
+          <span>Joriy savat</span>
           <h2>Savat</h2>
         </div>
 
@@ -59,7 +59,7 @@ const Cart = ({
       </div>
 
       <label className="pos-cart__note">
-        <span>Order note</span>
+        <span>Buyurtma izohi</span>
         <textarea
           rows={2}
           value={note}

@@ -14,20 +14,20 @@ const POSOfflineBanner = ({
     <section className={`pos-offline-banner ${isOnline ? "is-online" : "is-offline"}`} aria-live="polite">
       <span>
         {isOnline ? <Wifi size={16} /> : <CloudOff size={16} />}
-        {isOnline ? "Online" : "Offline mode"}
+        {isOnline ? "Onlayn" : "Oflayn rejim"}
       </span>
       <p>
         {queueCount
-          ? `${queueCount} ta offline sale sync navbatida`
-          : "Offline queue bo'sh"}
+          ? `${queueCount} ta oflayn savdo sinxronlash navbatida`
+          : "Oflayn navbat bo'sh"}
       </p>
       <div>
         <button type="button" onClick={isOnline ? onGoOffline : onGoOnline}>
-          {isOnline ? "Offline simulate" : "Online qaytish"}
+          {isOnline ? "Oflaynni sinash" : "Onlaynga qaytish"}
         </button>
         <button type="button" disabled={!isOnline || !queueCount || isSyncing} onClick={onSync}>
           <RefreshCw size={14} />
-          Sync
+          Sinxronlash
         </button>
       </div>
     </section>

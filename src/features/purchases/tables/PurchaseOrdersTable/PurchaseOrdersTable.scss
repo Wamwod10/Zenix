@@ -1,0 +1,50 @@
+.purchase-orders-table {
+  &__base-total {
+    display: block;
+    font-size: 11px;
+    font-weight: 500;
+    color: rgba(5, 14, 35, 0.48);
+  }
+
+  &__row {
+    grid-template-columns: 20px 1.8fr 0.9fr 1.1fr 1.1fr 0.9fr 1.1fr 190px;
+
+    @media (max-width: 1080px) {
+      grid-template-columns: 20px 1.6fr 1fr 1fr 150px;
+
+      span:nth-child(3),
+      span:nth-child(6),
+      span:nth-child(7) {
+        display: none;
+      }
+    }
+  }
+
+  // Point 23: katta ro'yxatlar uchun ixcham ko'rinish — faqat padding/font-size
+  // kichraytiriladi, hoverda layout siljishi qo'shilmaydi.
+  &--compact {
+    gap: 4px;
+
+    .purchase-table__row:not(.purchase-table__row--head) {
+      padding: 7px 13px;
+      font-size: 12.5px;
+    }
+
+    .purchase-table__primary strong {
+      font-size: 12.5px;
+    }
+
+    .purchase-table__primary small {
+      font-size: 10.5px;
+    }
+
+    .purchase-table__actions button {
+      width: 26px;
+      height: 26px;
+    }
+
+    .purchase-table__progress {
+      min-width: 70px;
+    }
+  }
+}

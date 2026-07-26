@@ -37,7 +37,7 @@ const SalesChart = () => {
         <div className="zenix-dashboard__panel-title">
           <span>
             <BarChart3 size={14} />
-            Sales flow
+            Savdo oqimi
           </span>
           <h3>Bugungi savdo ritmi</h3>
           <p>Soatlar bo'yicha tushum va buyurtma bosimi.</p>

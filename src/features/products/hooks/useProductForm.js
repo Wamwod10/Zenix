@@ -1,0 +1,105 @@
+import { useEffect, useState } from "react";
+
+import { validateProduct } from "../utils/productCalculations";
+import { productStorageKeys, safeStorageWrite } from "../utils/productStorage";
+
+const emptyProduct = {
+  name: "",
+  description: "",
+  sku: "",
+  internalCode: "",
+  barcodes: [],
+  qrCode: "",
+  categoryId: "",
+  brandId: "",
+  unitId: "",
+  type: "simple",
+  lifecycle: "draft",
+  status: "draft",
+  approvalStatus: "draft",
+  price: 0,
+  minPrice: 0,
+  cost: 0,
+  taxRate: 12,
+  tags: [],
+  attributes: {},
+  variants: [],
+  bundleItems: [],
+  relations: [],
+  media: [],
+  documents: [],
+  integrations: { pos: true, warehouse: true, crm: true, finance: true },
+  stockSummary: [],
+  priceHistory: [],
+  sales30d: 0,
+  views30d: 0,
+};
+
+const useProductForm = ({ product, products, onSubmit }) => {
+  const [form, setForm] = useState(() => ({ ...emptyProduct, ...product }));
+  const [step, setStep] = useState(0);
+  const [dirty, setDirty] = useState(false);
+  const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    const handleBeforeUnload = (event) => {
+      if (!dirty) return;
+      event.preventDefault();
+      event.returnValue = "";
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [dirty]);
+
+  const update = (key, value) => {
+    setDirty(true);
+    setForm((current) => ({ ...current, [key]: value }));
+  };
+
+  const updateNested = (group, key, value) => {
+    setDirty(true);
+    setForm((current) => ({
+      ...current,
+      [group]: {
+        ...current[group],
+        [key]: value,
+      },
+    }));
+  };
+
+  const saveDraft = () => {
+    safeStorageWrite(productStorageKeys.drafts, { product: form, savedAt: new Date().toISOString() });
+    setDirty(false);
+  };
+
+  const submit = () => {
+    const nextErrors = validateProduct(form, products);
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length) return { ok: false, errors: nextErrors };
+
+    const result = onSubmit(form);
+    if (result?.ok) setDirty(false);
+    return result;
+  };
+
+  return {
+    form,
+    step,
+    dirty,
+    errors,
+    actions: {
+      setStep,
+      update,
+      updateNested,
+      setForm: (updater) => {
+        setDirty(true);
+        setForm(updater);
+      },
+      saveDraft,
+      submit,
+    },
+  };
+};
+
+export default useProductForm;

@@ -1,0 +1,17 @@
+export const integrationCatalog = [
+  { id: "click", name: "Click", type: "Payments", mode: "live", status: "connected", lastSync: "2026-07-24 16:40", health: 98 },
+  { id: "payme", name: "Payme", type: "Payments", mode: "test", status: "checking", lastSync: "2026-07-24 15:22", health: 84 },
+  { id: "uzum", name: "Uzum", type: "Marketplace", mode: "live", status: "disconnected", lastSync: "Never", health: 0 },
+  { id: "telegram", name: "Telegram Bot", type: "Communication", mode: "live", status: "connected", lastSync: "2026-07-24 17:08", health: 96 },
+  { id: "sms", name: "SMS Gateway", type: "Communication", mode: "live", status: "error", lastSync: "2026-07-24 13:15", health: 42 },
+  { id: "smtp", name: "Email SMTP", type: "Communication", mode: "test", status: "connected", lastSync: "2026-07-24 14:50", health: 91 },
+  { id: "whatsapp", name: "WhatsApp", type: "Communication", mode: "test", status: "disconnected", lastSync: "Never", health: 0 },
+  { id: "shopify", name: "Shopify", type: "Marketplace", mode: "test", status: "checking", lastSync: "2026-07-23 18:11", health: 74 },
+  { id: "woocommerce", name: "WooCommerce", type: "Marketplace", mode: "test", status: "disconnected", lastSync: "Never", health: 0 },
+  { id: "one-c", name: "1C", type: "Accounting", mode: "live", status: "connected", lastSync: "2026-07-24 09:30", health: 88 },
+  { id: "didox", name: "Didox", type: "Documents", mode: "live", status: "connected", lastSync: "2026-07-24 11:44", health: 93 },
+  { id: "scanner", name: "Barcode Scanner", type: "Hardware", mode: "live", status: "connected", lastSync: "2026-07-24 17:12", health: 99 },
+  { id: "printer", name: "Thermal Printer", type: "Hardware", mode: "live", status: "checking", lastSync: "2026-07-24 17:02", health: 79 },
+  { id: "scale", name: "Scale", type: "Hardware", mode: "test", status: "disconnected", lastSync: "Never", health: 0 },
+  { id: "terminal", name: "POS Terminal", type: "Hardware", mode: "live", status: "connected", lastSync: "2026-07-24 16:59", health: 95 },
+];

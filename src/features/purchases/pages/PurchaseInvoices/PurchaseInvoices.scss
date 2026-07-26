@@ -1,0 +1,120 @@
+.purchase-invoices-page {
+  display: grid;
+  gap: 16px;
+
+  &__kpi {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+
+    @media (max-width: 1080px) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    @media (max-width: 560px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &__aging {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+
+    @media (max-width: 720px) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  &__aging-cell {
+    display: grid;
+    gap: 6px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px solid rgba(100, 116, 139, 0.14);
+    background: rgba(255, 255, 255, 0.5);
+
+    span {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: rgba(5, 14, 35, 0.5);
+    }
+
+    strong {
+      font-size: 15px;
+      color: rgba(5, 14, 35, 0.84);
+    }
+
+    &--d30 strong {
+      color: #b45309;
+    }
+
+    &--d60 strong,
+    &--d60plus strong {
+      color: #b91c1c;
+    }
+  }
+
+  &__filters {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+
+    .purchase-select-field {
+      min-width: 220px;
+    }
+
+    .purchase-select-field__message {
+      display: none;
+    }
+  }
+
+  &__create {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+
+    .purchase-select-field {
+      min-width: 300px;
+    }
+
+    .purchase-btn {
+      min-height: 46px;
+      border-radius: 15px;
+    }
+  }
+
+  &__debts {
+    display: grid;
+    gap: 12px;
+
+    h3 {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 700;
+      color: rgba(5, 14, 35, 0.82);
+    }
+  }
+
+  &__debt-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 10px;
+
+    .purchase-table__row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .purchase-table__money {
+      color: #b91c1c;
+    }
+  }
+}
