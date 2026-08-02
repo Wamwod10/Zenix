@@ -32,7 +32,7 @@ const WarehouseAnalytics = ({
           <div className="warehouse-panel__head">
             <div>
               <span>ABC / XYZ</span>
-              <h2>Professional inventory segmentation</h2>
+              <h2>Inventar segmentatsiyasi</h2>
             </div>
           </div>
           <WarehouseTable
@@ -41,7 +41,7 @@ const WarehouseAnalytics = ({
               { key: "name", label: "Tovar", render: (row) => <><strong>{row.name}</strong><small>{row.sku}</small></> },
               { key: "abc", label: "ABC", render: (row) => <StatusBadge status={row.abc === "A" ? "critical" : row.abc === "B" ? "important" : "normal"} label={row.abc} /> },
               { key: "xyz", label: "XYZ", render: (row) => <StatusBadge status={row.xyz === "X" ? "healthy" : row.xyz === "Y" ? "important" : "reserved"} label={row.xyz} /> },
-              { key: "speed", label: "Speed", render: (row) => row.movementSpeed },
+              { key: "speed", label: "Aylanma", render: (row) => row.movementSpeed },
               { key: "daily", label: "Kunlik sotuv", render: (row) => row.averageDailySales },
               { key: "value", label: "Qiymat", render: (row) => formatMoney(row.value) },
             ]}
@@ -72,7 +72,7 @@ const WarehouseAnalytics = ({
       <section className="warehouse-panel">
         <div className="warehouse-panel__head">
           <div>
-            <span>Purchase Suggestions</span>
+            <span>Buyurtma tavsiyalari</span>
             <h2>Reorder point asosidagi buyurtma tavsiyalari</h2>
           </div>
           <button type="button" className="warehouse-button" onClick={() => onExport("Buyurtma tavsiyalari")}>

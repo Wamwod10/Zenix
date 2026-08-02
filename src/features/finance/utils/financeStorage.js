@@ -1,5 +1,5 @@
 export const financeStorageKeys = {
-  state: "zenix.finance.state.v1",
+  state: "zenix.finance.state.v3",
 };
 
 export const safeStorageRead = (key, fallback) => {

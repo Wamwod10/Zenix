@@ -1,6 +1,6 @@
 import { LineChart, ShieldCheck, Sparkles } from "lucide-react";
 
-import { formatReportValue } from "../../utils/reportsFormatters";
+import { formatReportValue, getValueLabel } from "../../utils/reportsFormatters";
 import "./ForecastPanel.scss";
 
 const ForecastPanel = ({ metrics }) => (
@@ -8,9 +8,9 @@ const ForecastPanel = ({ metrics }) => (
     <div className="forecast-panel__head">
       <span className="reports-eyebrow">
         <LineChart size={14} />
-        Forecast
+        Prognoz
       </span>
-      <strong>Confidence 94%</strong>
+      <strong>Ishonchlilik 94%</strong>
     </div>
     <div className="forecast-panel__grid">
       {metrics.slice(0, 4).map((item) => (
@@ -19,14 +19,14 @@ const ForecastPanel = ({ metrics }) => (
           <strong>{formatReportValue(item.forecast, item.unit)}</strong>
           <small>
             <ShieldCheck size={12} />
-            30 days, risk {item.status === "healthy" ? "low" : "medium"}
+            30 kun, risk {item.status === "healthy" ? getValueLabel("low") : getValueLabel("medium")}
           </small>
         </section>
       ))}
     </div>
     <p>
       <Sparkles size={14} />
-      Forecast mavsumiy trend, branch impact va payment rhythm asosida deterministic hisoblanmoqda.
+      Prognoz mavsumiy trend, filial ta'siri va to'lov ritmi asosida hisoblanmoqda.
     </p>
   </article>
 );

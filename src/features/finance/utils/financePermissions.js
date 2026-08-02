@@ -1,19 +1,23 @@
 import {
   approvalMatrix,
+  financeRoles,
   financePermissionRules,
 } from "../data/financePermissions";
+import { FINANCE_ACTION, FINANCE_ROLE, TRANSACTION_STATUS } from "../constants/financeConstants";
+
+const roleLabels = Object.fromEntries(financeRoles.map((role) => [role.id, role.label]));
 
 export const getApprovalRequirement = (amount = 0) =>
   approvalMatrix.find(
     (rule) => Number(amount || 0) > rule.min && Number(amount || 0) <= rule.max,
   ) || approvalMatrix[0];
 
-export const canFinance = (role = "viewer", action = "view") =>
+export const canFinance = (role = FINANCE_ROLE.VIEWER, action = FINANCE_ACTION.VIEW) =>
   Boolean(financePermissionRules[role]?.includes(action));
 
 export const getFinanceActionState = ({
-  role = "viewer",
-  action = "view",
+  role = FINANCE_ROLE.VIEWER,
+  action = FINANCE_ACTION.VIEW,
   transaction,
   currentUser = "admin",
 } = {}) => {
@@ -25,7 +29,7 @@ export const getFinanceActionState = ({
     };
   }
 
-  if (action === "approve" && transaction?.createdBy === currentUser) {
+  if (action === FINANCE_ACTION.APPROVE && transaction?.createdBy === currentUser) {
     return {
       state: "disabled",
       allowed: false,
@@ -33,31 +37,31 @@ export const getFinanceActionState = ({
     };
   }
 
-  if (action === "approve" && transaction) {
+  if (action === FINANCE_ACTION.APPROVE && transaction) {
     const required = getApprovalRequirement(transaction.amount);
 
-    if (required.role !== role && role !== "owner") {
+    if (required.role !== role && role !== FINANCE_ROLE.OWNER) {
       return {
         state: "approval required",
         allowed: false,
-        reason: `${required.label} uchun ${required.role} tasdig'i kerak.`,
+        reason: `${required.label} uchun ${roleLabels[required.role] || "ruxsatli rol"} tasdig'i kerak.`,
       };
     }
   }
 
-  if (action === "post" && transaction?.status !== "Approved") {
+  if (action === FINANCE_ACTION.POST && transaction?.status !== TRANSACTION_STATUS.APPROVED) {
     return {
       state: "disabled",
       allowed: false,
-      reason: "Faqat Approved holatidagi yozuv post qilinadi.",
+      reason: "Faqat tasdiqlangan yozuv o'tkaziladi.",
     };
   }
 
-  if (action === "reverse" && transaction?.status !== "Posted") {
+  if (action === FINANCE_ACTION.REVERSE && transaction?.status !== TRANSACTION_STATUS.POSTED) {
     return {
       state: "disabled",
       allowed: false,
-      reason: "Faqat Posted yozuv storno qilinadi.",
+      reason: "Faqat o'tkazilgan yozuv storno qilinadi.",
     };
   }
 

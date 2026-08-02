@@ -1,8 +1,8 @@
 // Xaridlar moduli lokal holati (backend ulanguncha oflayn-first saqlash).
 // PDF 3: draft avtomatik saqlanadi va yo'qolmaydi.
 
-const STORAGE_KEY = "zenix:purchases:v1";
-const DRAFT_KEY = "zenix:purchases:wizard-draft:v1";
+const STORAGE_KEY = "zenix:purchases:v2";
+const DRAFT_KEY = "zenix:purchases:wizard-draft:v2";
 
 const isBrowser = () => typeof window !== "undefined" && !!window.localStorage;
 
@@ -68,7 +68,7 @@ export const clearWizardDraft = () => {
 // supplier+mahsulot juftligi uchun narx bu yerda saqlanadi. Katalog fayli
 // (purchaseProducts.js) o'zgartirilmaydi — faqat Purchases moduli ichida
 // "eng so'nggi kelishilgan narx" sifatida qayta ishlatiladi.
-const PRICE_OVERRIDES_KEY = "zenix:purchases:supplier-price-overrides:v1";
+const PRICE_OVERRIDES_KEY = "zenix:purchases:supplier-price-overrides:v2";
 
 export const loadSupplierPriceOverrides = () => {
   if (!isBrowser()) return {};

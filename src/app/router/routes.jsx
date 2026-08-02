@@ -16,6 +16,7 @@ import Dashboard from "../../features/dashboard/pages/Dashboard";
 import Products from "../../features/products/pages/Products";
 import Warehouse from "../../features/warehouse/pages/Warehouse";
 import Finance from "../../features/finance/pages/Finance";
+import { FinanceRouteError } from "../../features/finance/components/FinanceErrorBoundary/FinanceErrorBoundary";
 import HR from "../../features/hr/pages/HR";
 import Reports from "../../features/reports/pages/Reports";
 import Settings from "../../features/settings/pages/Settings";
@@ -32,7 +33,7 @@ import PurchaseInvoices from "../../features/purchases/pages/PurchaseInvoices/Pu
 import PurchaseReports from "../../features/purchases/pages/PurchaseReports/PurchaseReports";
 import { SupplierDetails, Suppliers } from "../../features/suppliers";
 
-import POS from "../../pages/POS/POS";
+import POS from "../../features/sales/pages/POS";
 import NotFound from "../../pages/NotFound";
 
 export const router = createBrowserRouter([
@@ -144,6 +145,7 @@ export const router = createBrowserRouter([
       {
         path: "/finance/*",
         element: <Finance />,
+        errorElement: <FinanceRouteError />,
       },
       {
         path: "/hr/*",

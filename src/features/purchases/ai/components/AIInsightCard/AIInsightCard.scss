@@ -118,6 +118,15 @@
     svg {
       transition: transform 0.16s ease;
     }
+
+    &--open svg {
+      transform: rotate(180deg);
+    }
+
+    &:focus-visible {
+      outline: none;
+      box-shadow: 0 2px 0 rgba(74, 103, 255, 0.34);
+    }
   }
 
   &__reasoning {
@@ -159,6 +168,11 @@
     &:hover {
       background: rgba(74, 103, 255, 0.16);
     }
+
+    &:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(74, 103, 255, 0.12);
+    }
   }
 
   &__controls {
@@ -184,6 +198,12 @@
       &:hover {
         color: rgba(5, 14, 35, 0.82);
         background: rgba(255, 255, 255, 0.8);
+      }
+
+      &:focus-visible {
+        outline: none;
+        border-color: rgba(74, 103, 255, 0.42);
+        box-shadow: 0 0 0 3px rgba(74, 103, 255, 0.12);
       }
 
       &.is-active {

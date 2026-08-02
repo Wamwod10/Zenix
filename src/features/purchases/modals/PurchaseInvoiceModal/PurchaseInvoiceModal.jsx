@@ -25,6 +25,7 @@ import {
   formatQuantity,
   normalizeNumber,
 } from "../../utils/purchaseMoney";
+import { createEntityId } from "../../utils/purchaseIds";
 
 import "./PurchaseInvoiceModal.scss";
 
@@ -46,9 +47,8 @@ const createLineFromOrderItem = (item) => ({
   advancedOpen: false,
 });
 
-let extraLineSeq = 0;
 const createExtraLine = () => ({
-  id: `extra-${Date.now()}-${extraLineSeq++}`,
+  id: createEntityId("extra"),
   name: "",
   invoicedQty: 1,
   unitPrice: 0,

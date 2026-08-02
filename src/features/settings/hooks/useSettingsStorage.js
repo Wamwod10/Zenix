@@ -11,9 +11,12 @@ const useSettingsStorage = () => {
   const setState = useCallback((updater) => {
     setStateValue((current) => {
       const next = typeof updater === "function" ? updater(current) : updater;
-      safeSettingsWrite(settingsStorageKeys.state, next);
       return next;
     });
+  }, []);
+
+  const persistState = useCallback((nextState) => {
+    safeSettingsWrite(settingsStorageKeys.state, nextState);
   }, []);
 
   const resetState = useCallback(() => {
@@ -21,7 +24,7 @@ const useSettingsStorage = () => {
     safeSettingsWrite(settingsStorageKeys.state, defaultSettingsState);
   }, []);
 
-  return { state, setState, resetState };
+  return { state, setState, persistState, resetState };
 };
 
 export default useSettingsStorage;

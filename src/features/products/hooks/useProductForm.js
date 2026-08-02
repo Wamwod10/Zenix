@@ -20,7 +20,7 @@ const emptyProduct = {
   price: 0,
   minPrice: 0,
   cost: 0,
-  taxRate: 12,
+  taxRate: 0,
   tags: [],
   attributes: {},
   variants: [],
@@ -96,6 +96,7 @@ const useProductForm = ({ product, products, onSubmit }) => {
         setDirty(true);
         setForm(updater);
       },
+      setErrors,
       saveDraft,
       submit,
     },

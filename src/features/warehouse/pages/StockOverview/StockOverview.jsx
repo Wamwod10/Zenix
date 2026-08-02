@@ -16,6 +16,7 @@ const StockOverview = ({
   onOpenTransfer,
   onOpenAdjustment,
   onExport,
+  onResetFilters,
 }) => {
   const categories = unique(rows.map((row) => row.category));
   const brands = unique(rows.map((row) => row.brand));
@@ -67,7 +68,7 @@ const StockOverview = ({
             </select>
           </label>
           <label>
-            Brand
+            Brend
             <select value={filters.brand} onChange={(event) => onFilter("brand", event.target.value)}>
               {brands.map((brand) => (
                 <option key={brand} value={brand}>
@@ -91,7 +92,7 @@ const StockOverview = ({
             <select value={filters.speed} onChange={(event) => onFilter("speed", event.target.value)}>
               <option value="all">Barchasi</option>
               <option value="fast">Tez aylanadigan</option>
-              <option value="medium">Medium</option>
+              <option value="medium">O'rtacha aylanadigan</option>
               <option value="slow">Sekin aylanadigan</option>
               <option value="dead">O'lik zaxira</option>
             </select>
@@ -100,11 +101,14 @@ const StockOverview = ({
             Qiymat
             <select value={filters.value} onChange={(event) => onFilter("value", event.target.value)}>
               <option value="all">Barchasi</option>
-              <option value="high">High value</option>
-              <option value="medium">Medium value</option>
-              <option value="low">Low value</option>
+              <option value="high">Yuqori qiymat</option>
+              <option value="medium">O'rtacha qiymat</option>
+              <option value="low">Past qiymat</option>
             </select>
           </label>
+          <button type="button" className="warehouse-mini-button" onClick={onResetFilters}>
+            Filtrlarni tozalash
+          </button>
         </div>
       </section>
 
@@ -135,12 +139,13 @@ const StockOverview = ({
             { key: "status", label: "Holat", render: (row) => <StatusBadge status={row.status} /> },
             {
               key: "quick",
-              label: "Quick",
+              label: "Tezkor amal",
               render: (row) => (
                 <button
                   className="warehouse-icon-button"
                   type="button"
-                  aria-label="Open adjustment"
+                  aria-label={`${row.name} zaxirasini tuzatish`}
+                  title="Zaxirani tuzatish"
                   onClick={(event) => {
                     event.stopPropagation();
                     onOpenAdjustment(row.id);
@@ -152,6 +157,12 @@ const StockOverview = ({
             },
           ]}
           emptyText="Zaxira topilmadi. Filtrlarni o'zgartiring."
+          emptyAction={
+            <div className="warehouse-row-actions warehouse-row-actions--text">
+              <button type="button" onClick={onResetFilters}>Filtrlarni tozalash</button>
+              <button type="button" onClick={onOpenReceipt}>Yangi kirim</button>
+            </div>
+          }
         />
       </section>
     </div>

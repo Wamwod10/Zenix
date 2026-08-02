@@ -3,6 +3,9 @@ export const toNumber = (value, fallback = 0) => {
   return Number.isFinite(number) ? number : fallback;
 };
 
+export const createProductEntityId = (prefix = "prd") =>
+  `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+
 export const calculateProfit = (sellingPrice, costPrice) =>
   toNumber(sellingPrice) - toNumber(costPrice);
 
@@ -97,7 +100,8 @@ export const validateProduct = (product, products = []) => {
   if (!String(product.sku || "").trim()) errors.sku = "Artikul majburiy.";
   if (!product.categoryId) errors.categoryId = "Kategoriya tanlang.";
   if (!product.unitId) errors.unitId = "O'lchov birligi tanlang.";
-  if (price < 0 || cost < 0 || minPrice < 0) errors.price = "Narxlar manfiy bo'lmasin.";
+  if (price <= 0) errors.price = "Sotuv narxi 0 dan katta bo'lishi kerak.";
+  if (cost < 0 || minPrice < 0) errors.price = "Narxlar manfiy bo'lmasin.";
   if (price < minPrice) errors.minPrice = "Sotuv narxi eng past narxdan past bo'lmasin.";
   if (duplicates.some((item) => item.sku === product.sku)) errors.sku = "Artikul noyob bo'lishi kerak.";
   if (duplicates.some((item) => (item.barcodes || []).some((barcode) => (product.barcodes || []).includes(barcode)))) {

@@ -144,3 +144,43 @@
     grid-template-columns: 1fr;
   }
 }
+
+.zenix-dashboard__top .quick-actions {
+  grid-template-columns: 1fr;
+  gap: 8px;
+
+  .quick-actions__card {
+    min-height: 54px;
+    grid-template-columns: 34px minmax(0, 1fr);
+    padding: 10px;
+    border-radius: 16px;
+    animation-delay: 0ms;
+
+    > span {
+      width: 34px;
+      height: 34px;
+      border-radius: 13px;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.88);
+    }
+
+    strong {
+      font-size: 12px;
+    }
+
+    small {
+      font-size: 10px;
+    }
+  }
+}
+
+@media (max-width: 1180px) {
+  .zenix-dashboard__top .quick-actions {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .zenix-dashboard__top .quick-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

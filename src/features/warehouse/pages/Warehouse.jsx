@@ -119,12 +119,10 @@ const WarehouseFormModal = ({ open, mode, warehouse, onClose, onSubmit }) => {
   const [form, setForm] = useState(() => ({
     id: warehouse?.id || "",
     name: warehouse?.name || "",
-    code: warehouse?.code || "",
     type: warehouse?.type || "Filial ombori",
-    branch: warehouse?.branch || "Toshkent HQ",
+    branch: warehouse?.branch || "",
     address: warehouse?.address || "",
-    manager: warehouse?.manager || "Administrator",
-    capacity: warehouse?.capacity || 1000,
+    manager: warehouse?.manager || "",
     status: warehouse?.status || "active",
   }));
 
@@ -134,7 +132,7 @@ const WarehouseFormModal = ({ open, mode, warehouse, onClose, onSubmit }) => {
     <Modal
       open={open}
       title={mode === "edit" ? "Omborni tahrirlash" : "Yangi ombor"}
-      description="Nom noyob, filial majburiy, tovarli ombor faqat nofaollashtiriladi."
+      description="Kod avtomatik yaratiladi. Sig'im maydoni ishlatilmaydi."
       onClose={onClose}
       footer={
         <>
@@ -153,14 +151,16 @@ const WarehouseFormModal = ({ open, mode, warehouse, onClose, onSubmit }) => {
       }
     >
       <div className="warehouse-form-grid">
-        {["name", "code", "branch", "address", "manager"].map((field) => (
-          <label key={field}>
-            <span>{field}</span>
-            <input value={form[field]} onChange={(event) => update(field, event.target.value)} />
-          </label>
-        ))}
         <label>
-          <span>type</span>
+          <span>Ombor nomi</span>
+          <input value={form.name} onChange={(event) => update("name", event.target.value)} />
+        </label>
+        <label>
+          <span>Filial</span>
+          <input value={form.branch} onChange={(event) => update("branch", event.target.value)} />
+        </label>
+        <label>
+          <span>Ombor turi</span>
           <select value={form.type} onChange={(event) => update("type", event.target.value)}>
             <option>Asosiy ombor</option>
             <option>Filial ombori</option>
@@ -170,12 +170,12 @@ const WarehouseFormModal = ({ open, mode, warehouse, onClose, onSubmit }) => {
           </select>
         </label>
         <label>
-          <span>capacity</span>
-          <input
-            type="number"
-            value={form.capacity}
-            onChange={(event) => update("capacity", Number(event.target.value))}
-          />
+          <span>Mas'ul xodim</span>
+          <input value={form.manager} onChange={(event) => update("manager", event.target.value)} />
+        </label>
+        <label className="warehouse-form-grid__wide">
+          <span>Manzil (ixtiyoriy)</span>
+          <input value={form.address} onChange={(event) => update("address", event.target.value)} />
         </label>
       </div>
     </Modal>
@@ -374,7 +374,7 @@ const OperationModal = ({
   );
 };
 
-const ProductDetailModal = ({ product, onClose }) => {
+const ProductDetailModal = ({ product, warehousesById = {}, onClose }) => {
   if (!product) return null;
 
   const stockEntries = Object.entries(product.stocks || {});
@@ -384,8 +384,8 @@ const ProductDetailModal = ({ product, onClose }) => {
       <div className="warehouse-card-grid">
         {stockEntries.map(([warehouseId, stock]) => (
           <article className="warehouse-mini-card" key={warehouseId}>
-            <strong>{warehouseId}</strong>
-            <span>On hand: {formatQuantity(stock.onHand, product.unit)}</span>
+            <strong>{warehousesById[warehouseId]?.name || "Ombor aniqlanmadi"}</strong>
+            <span>Jami: {formatQuantity(stock.onHand, product.unit)}</span>
             <span>Band qilingan: {formatQuantity(stock.reserved, product.unit)}</span>
             <span>Kutilayotgan: {formatQuantity(stock.incoming, product.unit)}</span>
             <span>Joylashuv: {stock.location}</span>
@@ -440,7 +440,8 @@ const Warehouse = () => {
             setEditingWarehouse(warehouse);
             controller.actions.setActiveModal("warehouse-edit");
           }}
-          onDeactivate={controller.actions.deactivateWarehouse}
+          onDeactivate={(warehouseId) => window.confirm("Omborni nofaollashtirishni tasdiqlaysizmi?") && controller.actions.deactivateWarehouse(warehouseId)}
+          onActivate={(warehouseId) => controller.actions.activateWarehouse(warehouseId)}
           onOpenDetail={(warehouseId) => {
             controller.actions.setSelectedWarehouseId(warehouseId);
             navigateView("detail");
@@ -472,6 +473,7 @@ const Warehouse = () => {
           warehouses={controller.state.warehouses}
           filters={controller.filters}
           onFilter={controller.actions.updateFilter}
+          onResetFilters={controller.actions.resetFilters}
           onOpenProduct={openProduct}
           onOpenReceipt={() => controller.actions.setActiveModal("receipt")}
           onOpenTransfer={() => controller.actions.setActiveModal("transfer")}
@@ -556,6 +558,8 @@ const Warehouse = () => {
           warehousesById={controller.warehousesById}
           importPreview={controller.importPreview}
           asyncStatus={controller.asyncStatus}
+          activeSection={segment || "reports"}
+          onNavigateAdmin={(nextSegment) => navigate(`/warehouse/${nextSegment}`)}
           onExport={controller.actions.exportReport}
           onValidateImport={controller.actions.validateImport}
           onConfirmImport={controller.actions.confirmImport}
@@ -625,6 +629,7 @@ const Warehouse = () => {
 
       {controller.activeModal === "warehouse-edit" && (
         <WarehouseFormModal
+          key={editingWarehouse?.id || "warehouse-edit"}
           open
           mode="edit"
           warehouse={editingWarehouse}
@@ -656,7 +661,7 @@ const Warehouse = () => {
       )}
 
       {controller.activeModal === "product" && (
-        <ProductDetailModal product={controller.selectedProduct} onClose={controller.actions.closeModal} />
+        <ProductDetailModal product={controller.selectedProduct} warehousesById={controller.warehousesById} onClose={controller.actions.closeModal} />
       )}
     </main>
   );

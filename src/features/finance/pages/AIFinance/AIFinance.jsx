@@ -1,14 +1,15 @@
 import StatusBadge from "../../components/StatusBadge/StatusBadge";
+import { formatAiAction } from "../../utils/financeFormatters";
 
 const AIFinance = ({ controller }) => (
   <section className="finance-view">
     <section className="finance-panel">
       <div className="finance-panel__head">
         <div>
-          <span>Deterministic AI engine</span>
-          <h2>AI Finance insightlar</h2>
+          <span>AI moliya nazorati</span>
+          <h2>AI Finance signallari</h2>
         </div>
-        <StatusBadge status="success" label={`${controller.summary.healthScore}/100 health`} />
+        <StatusBadge status="success" label={`${controller.summary.healthScore}/100 salomatlik`} />
       </div>
       <div className="finance-card-grid">
         {controller.state.aiInsights.map((insight) => (
@@ -18,22 +19,25 @@ const AIFinance = ({ controller }) => (
             <span>{insight.message}</span>
             <div className="finance-row-actions">
               <button type="button" disabled={insight.status !== "open"} onClick={() => controller.actions.runAiAction(insight.id, insight.action)}>
-                {insight.action}
+                {formatAiAction(insight.action)}
               </button>
               <button type="button" disabled={insight.status !== "open"} onClick={() => controller.actions.runAiAction(insight.id, "dismiss")}>
-                Dismiss
+                Yashirish
               </button>
             </div>
           </article>
         ))}
+        {!controller.state.aiInsights.length && (
+          <div className="finance-empty">Hozircha moliyaviy xavf aniqlanmadi.</div>
+        )}
       </div>
     </section>
 
     <section className="finance-panel">
       <div className="finance-panel__head">
         <div>
-          <span>Enterprise edge cases</span>
-          <h2>Himoya va resolution</h2>
+          <span>Himoya qoidalari</span>
+          <h2>Risk va yechimlar</h2>
         </div>
       </div>
       <div className="finance-card-grid">
@@ -43,10 +47,13 @@ const AIFinance = ({ controller }) => (
             <strong>{edgeCase.message}</strong>
             <span>{edgeCase.resolution}</span>
             <button type="button" disabled={edgeCase.status === "resolved"} onClick={() => controller.actions.resolveEdgeCase(edgeCase.id)}>
-              Resolve
+              Hal qilindi
             </button>
           </article>
         ))}
+        {!controller.state.edgeCases.length && (
+          <div className="finance-empty">Risk va edge-case yozuvlari topilmadi.</div>
+        )}
       </div>
     </section>
   </section>

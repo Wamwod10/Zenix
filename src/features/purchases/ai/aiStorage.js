@@ -8,6 +8,8 @@
 
 import { useEffect, useState } from "react";
 
+import { createEntityId } from "../utils/purchaseIds";
+
 const STORAGE_KEY = "zenix:ai:purchases:v1";
 
 const isBrowser = () => typeof window !== "undefined" && !!window.localStorage;
@@ -57,7 +59,7 @@ const getEntry = (state, id) =>
 const pushHistory = (state, insightId, title, action) => ({
   ...state,
   history: [
-    { id: `${insightId}-${action}-${Date.now()}`, insightId, title, action, at: nowIso() },
+    { id: createEntityId("ai-history"), insightId, title, action, at: nowIso() },
     ...state.history,
   ].slice(0, 200),
 });

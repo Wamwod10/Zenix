@@ -1,0 +1,75 @@
+.finance-chart,
+.finance-trend {
+  display: grid;
+  gap: 10px;
+  min-height: 178px;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.66);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.finance-chart {
+  &__plot {
+    min-height: 132px;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(48px, 1fr);
+    gap: 8px;
+    align-items: end;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+  }
+
+  &__bar {
+    display: grid;
+    gap: 7px;
+    justify-items: center;
+    scroll-snap-align: start;
+
+    svg {
+      width: 100%;
+      max-width: 42px;
+      height: 112px;
+      color: rgba(43, 79, 188, 0.76);
+    }
+
+    rect {
+      fill: currentColor;
+    }
+
+    span {
+      color: rgba(15, 23, 42, 0.5);
+      font-size: 11px;
+      font-weight: 720;
+    }
+  }
+}
+
+.finance-trend {
+  color: rgba(43, 79, 188, 0.78);
+
+  svg {
+    width: 100%;
+    min-height: 126px;
+  }
+
+  circle {
+    fill: rgba(255, 255, 255, 0.96);
+    stroke: currentColor;
+    stroke-width: 3;
+  }
+
+  div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  span {
+    color: rgba(15, 23, 42, 0.52);
+    font-size: 11px;
+    font-weight: 700;
+  }
+}

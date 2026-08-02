@@ -13,6 +13,7 @@ import "./ReportPageTemplate.scss";
 const ReportPageTemplate = ({ type, controller }) => {
   const config = moduleReports[type] || moduleReports.sales;
   const metrics = controller.state.metrics.filter((metric) => config.kpis.includes(metric.id));
+  const tableSchema = ["finance", "profit", "cash-flow", "budget", "debt"].includes(type) ? "finance" : type;
 
   return (
     <section className="report-page-template">
@@ -28,18 +29,21 @@ const ReportPageTemplate = ({ type, controller }) => {
         <div className="report-page-template__actions">
           <button type="button" onClick={() => controller.actions.saveReport(config.title, type)}>
             <Save size={15} />
-            Save
+            Saqlash
           </button>
-          <button type="button" onClick={() => controller.actions.setActiveModal("share")}>
+          <button type="button" onClick={() => {
+            controller.actions.setSelectedReport(type);
+            controller.actions.setActiveModal("share");
+          }}>
             <Share2 size={15} />
-            Share
+            Ulashish
           </button>
         </div>
       </div>
 
       <section className="reports-source-strip">
         <Database size={15} />
-        <strong>Data Sources</strong>
+        <strong>Ma'lumot manbalari</strong>
         <span>{config.source}</span>
       </section>
 
@@ -56,6 +60,7 @@ const ReportPageTemplate = ({ type, controller }) => {
             title={title}
             type={["Area", "Bar", "Donut", "Timeline"][index] || "Line"}
             data={controller.state.charts}
+            onRefresh={() => controller.actions.audit("report opened", `${title} chart refreshed`)}
             onDrill={() => controller.actions.setDrillLevel(Math.min(6, controller.state.drillLevel + 1))}
             onCompare={() => controller.actions.setComparisonMode("month-month")}
             onExport={() => controller.actions.exportReport("PDF", title)}
@@ -75,9 +80,9 @@ const ReportPageTemplate = ({ type, controller }) => {
       </div>
 
       {controller.state.rows.length ? (
-        <DataTable title={config.tableTitle} rows={controller.state.rows} onOpen={controller.actions.openReport} />
+        <DataTable title={config.tableTitle} rows={controller.state.rows} schema={tableSchema} onOpen={controller.actions.openReport} onReset={controller.actions.resetFilters} />
       ) : (
-        <ReportsEmptyState title="Report rows topilmadi" />
+        <ReportsEmptyState title="Hisobot qatorlari topilmadi" onAction={controller.actions.resetFilters} actionLabel="Filterlarni tozalash" />
       )}
     </section>
   );

@@ -74,7 +74,7 @@
   display: grid;
   gap: 16px;
   padding: 18px;
-  overflow: hidden;
+  overflow: visible;
   border: 1px solid rgba(255, 255, 255, 0.88);
   border-radius: 26px;
   background:
@@ -272,6 +272,12 @@
       linear-gradient(180deg, rgba(92, 134, 245, 0.88), rgba(43, 79, 188, 0.9)),
       rgba(43, 79, 188, 0.88);
   }
+
+  &.is-active {
+    color: rgba(5, 14, 35, 0.86);
+    border-color: rgba(43, 79, 188, 0.22);
+    background: rgba(255, 255, 255, 0.42);
+  }
 }
 
 .hr-warning,
@@ -292,6 +298,65 @@
 
 .hr-warning-inline {
   color: rgba(210, 124, 36, 0.92);
+}
+
+.hr-field-error {
+  color: rgba(180, 48, 48, 0.88) !important;
+  font-size: 11px !important;
+  font-weight: 650 !important;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.hr-bulk-bar,
+.hr-breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.66);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.14);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.hr-chart-bars {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(72px, 1fr));
+  align-items: end;
+  gap: 9px;
+  min-height: 180px;
+
+  span {
+    position: relative;
+    min-height: 154px;
+    display: flex;
+    align-items: end;
+    justify-content: center;
+    padding: 8px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.62);
+    border-radius: 16px;
+    color: rgba(5, 14, 35, 0.76);
+    background: rgba(255, 255, 255, 0.12);
+
+    &::before {
+      content: "";
+      position: absolute;
+      inset: auto 8px 8px;
+      height: var(--value);
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(92, 134, 245, 0.44), rgba(31, 153, 112, 0.28));
+    }
+  }
+
+  b {
+    position: relative;
+    z-index: 1;
+    font-size: 11px;
+    font-weight: 700;
+  }
 }
 
 .hr-detail-grid,
@@ -577,6 +642,22 @@
   .hr-profile__hero {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .hr-panel,
+  .hr-profile {
+    backdrop-filter: blur(10px) saturate(130%);
+    -webkit-backdrop-filter: blur(10px) saturate(130%);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .hr-panel,
+  .hr-profile,
+  .hr-header {
+    background: rgba(248, 251, 255, 0.82);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
   }
 }
 

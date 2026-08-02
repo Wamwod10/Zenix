@@ -1,5 +1,5 @@
 import { chartSeries, metricCatalog, tableRows } from "../data/reportsMockData";
-import { normalizeSearch } from "./reportsFormatters";
+import { clampNumber, normalizeSearch } from "./reportsFormatters";
 
 const filterImpact = {
   branch: 0.035,
@@ -49,10 +49,23 @@ export const getCalculatedMetrics = (filters) => {
       trend: delta >= 0 ? "up" : "down",
       status,
       forecast: isPercent ? Math.min(100, adjustedValue + 2) : Math.round(adjustedValue * 1.055),
-      progress: Math.min(100, Math.round((adjustedValue / metric.goal) * 100)),
+      progress: clampNumber(Math.round((adjustedValue / metric.goal) * 100)),
       lastUpdated: "2 daqiqa oldin",
     };
   });
+};
+
+export const getChartBounds = (data, keys = ["value", "compare", "forecast"]) => {
+  const values = data.flatMap((item) => keys.map((key) => Number(item[key])).filter(Number.isFinite));
+  const min = Math.min(...values, 0);
+  const max = Math.max(...values, 1);
+  return min === max ? { min: 0, max: max || 1 } : { min, max };
+};
+
+export const scaleChartValue = (value, min, max, inverted = true) => {
+  const percent = ((Number(value) - min) / Math.max(1, max - min)) * 100;
+  const clamped = clampNumber(percent, 4, 96);
+  return inverted ? 100 - clamped : clamped;
 };
 
 export const getCalculatedChart = (filters, offset = 0) => {
@@ -75,7 +88,8 @@ export const getFilteredRows = (filters, search = "") => {
     .filter((row) => filters.status === "all" || row.status === filters.status)
     .filter((row) => !query || normalizeSearch(`${row.name} ${row.module} ${row.branch} ${row.owner}`).includes(query))
     .map((row, index) => ({
-      ...row,
+    ...row,
+      department: row.module === "HR" ? "HR" : row.module,
       value: Math.round(row.value * multiplier),
       change: Number((row.change + (multiplier - 1) * 30 + index * 0.2).toFixed(1)),
     }));
@@ -91,8 +105,8 @@ export const getComparisonResult = (metrics, mode) => {
     "year-year": "Yil vs o'tgan yil",
     "branch-branch": "Filial vs filial",
     "product-product": "Mahsulot vs mahsulot",
-    "employee-employee": "Employee vs employee",
-    "supplier-supplier": "Supplier vs supplier",
+    "employee-employee": "Xodim vs xodim",
+    "supplier-supplier": "Yetkazib beruvchi vs yetkazib beruvchi",
   };
   const diff = primary.value - secondary.previous;
   const percent = secondary.previous ? (diff / secondary.previous) * 100 : 0;
@@ -119,11 +133,11 @@ export const getSearchIntent = (query) => {
     { keys: ["yanvar xarajat", "expenses", "xarajat"], report: "finance", filters: { datePreset: "month" } },
     { keys: ["eng foydali", "profit", "foyda"], report: "profit", filters: { priority: "high" } },
     { keys: ["kam sotilgan", "dead stock", "low stock"], report: "inventory", filters: { risk: "high" } },
-    { keys: ["qarzdor supplier", "supplier"], report: "purchases", filters: { status: "warning" } },
+    { keys: ["qarzdor supplier", "qarzdor yetkazib", "supplier", "yetkazib beruvchi"], report: "purchases", filters: { status: "warning" } },
     { keys: ["top 10 mijoz", "top customer", "mijoz"], report: "crm", filters: { customer: "VIP" } },
     { keys: ["oxirgi 30 kun", "last 30"], report: "dashboard", filters: { datePreset: "last30" } },
-    { keys: ["revenue", "daromad"], report: "sales", filters: { priority: "high" } },
-    { keys: ["hr", "hodim", "employee"], report: "hr", filters: { department: "HR" } },
+    { keys: ["revenue", "daromad", "daromad prognozi"], report: "sales", filters: { priority: "high" } },
+    { keys: ["hr", "hodim", "xodim", "employee"], report: "hr", filters: { department: "HR" } },
   ];
 
   return cases.find((item) => item.keys.some((key) => value.includes(key))) || {

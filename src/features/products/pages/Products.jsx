@@ -1,15 +1,6 @@
-import { useLocation, useNavigate } from "react-router-dom";
-import {
-  BarChart3,
-  Boxes,
-  CircleDollarSign,
-  Factory,
-  FolderTree,
-  Import,
-  PackageSearch,
-  Settings,
-  Sparkles,
-} from "lucide-react";
+import { useNavigate, useParams, useRoutes } from "react-router-dom";
+import { useMemo } from "react";
+import { Boxes } from "lucide-react";
 
 import ProductsHeader from "../components/ProductsHeader/ProductsHeader";
 import ProductsNavigation from "../components/ProductsNavigation/ProductsNavigation";
@@ -26,92 +17,89 @@ import ProductAnalytics from "./ProductAnalytics/ProductAnalytics";
 import ProductImportExport from "./ProductImportExport/ProductImportExport";
 import ProductSettings from "./ProductSettings/ProductSettings";
 import useProductsController from "../hooks/useProductsController";
+import { productNavigationGroups, productPathByView } from "../config/productsNavigation";
 
 import "./Products.scss";
 
-const navigationGroups = [
-  {
-    id: "catalog",
-    title: "Katalog",
-    items: [
-      { id: "dashboard", label: "Bosh sahifa", icon: Sparkles },
-      { id: "list", label: "Mahsulotlar", icon: PackageSearch },
-      { id: "categories", label: "Kategoriyalar", icon: FolderTree },
-      { id: "brands", label: "Brend va birliklar", icon: Factory },
-    ],
-  },
-  {
-    id: "commerce",
-    title: "Savdo",
-    items: [
-      { id: "pricing", label: "Narxlar", icon: CircleDollarSign },
-      { id: "import-export", label: "Kiritish / chiqarish", icon: Import },
-      { id: "analytics", label: "Tahlil", icon: BarChart3 },
-      { id: "settings", label: "Sozlamalar", icon: Settings },
-    ],
-  },
-];
-
-const segmentToView = {
-  "": "dashboard",
-  list: "list",
-  new: "new",
-  categories: "categories",
-  brands: "brands",
-  pricing: "pricing",
-  "import-export": "import-export",
-  analytics: "analytics",
-  settings: "settings",
-};
-
-const viewToPath = {
-  dashboard: "",
-  list: "list",
-  categories: "categories",
-  brands: "brands",
-  pricing: "pricing",
-  "import-export": "import-export",
-  analytics: "analytics",
-  settings: "settings",
-};
-
-const Products = () => {
-  const controller = useProductsController();
-  const location = useLocation();
+const ProductRouteNotFound = () => {
   const navigate = useNavigate();
-  const path = location.pathname.replace(/^\/products\/?/, "");
-  const [segment, nested] = path.split("/");
-  const activeView = segmentToView[segment || ""] || "details";
-  const detailProductId = activeView === "details" ? segment : "";
-  const detailProduct = detailProductId ? controller.productsById[detailProductId] : null;
 
-  const navigateView = (view) => {
-    const nextPath = viewToPath[view] || "";
-    navigate(`/products/${nextPath}`.replace(/\/$/, ""));
-  };
+  return (
+    <section className="products-empty-state">
+      <strong>Sahifa topilmadi</strong>
+      <span>Bu mahsulotlar yo'nalishi mavjud emas yoki noto'g'ri manzil kiritilgan.</span>
+      <button type="button" className="products-mini-button is-primary" onClick={() => navigate("/products/list")}>
+        Mahsulotlar ro'yxati
+      </button>
+    </section>
+  );
+};
 
-  const renderView = () => {
-    if (activeView === "list") return <ProductList controller={controller} />;
-    if (activeView === "new") return <ProductCreate controller={controller} />;
-    if (activeView === "categories") {
-      return (
-        <Categories
-          categories={controller.state.categories}
-          onCreateCategory={controller.actions.createCategory}
+const ProductDetailsRoute = ({ controller, edit = false }) => {
+  const { productId } = useParams();
+  const product = productId ? controller.productsById[productId] : null;
+
+  if (!product) return <ProductRouteNotFound />;
+
+  if (edit) {
+    return <ProductEdit product={product} controller={controller} />;
+  }
+
+  return (
+    <ProductDetails
+      product={product}
+      productsById={controller.productsById}
+      canViewCost={controller.permissions.canViewCost}
+      onDuplicate={controller.actions.duplicateProduct}
+      onArchive={controller.actions.archiveProduct}
+      onRestore={controller.actions.restoreProduct}
+    />
+  );
+};
+
+const ProductsRoutes = ({ controller, categoriesWithCounts, onNavigate }) =>
+  useRoutes([
+    {
+      index: true,
+      element: (
+        <ProductsDashboard
+          metrics={controller.metrics}
+          products={controller.products}
+          aiInsights={controller.aiInsights}
+          onNavigate={onNavigate}
+          onOpenProduct={(productId) => navigate(`/products/${productId}`)}
+          onRunAiAction={controller.actions.runAiAction}
         />
-      );
-    }
-    if (activeView === "brands") {
-      return (
+      ),
+    },
+    { path: "list", element: <ProductList controller={controller} /> },
+    { path: "new", element: <ProductCreate controller={controller} /> },
+    {
+      path: "categories",
+      element: (
+        <Categories
+          categories={categoriesWithCounts}
+          onCreateCategory={controller.actions.createCategory}
+          onUpdateCategory={controller.actions.updateCategory}
+          onDeleteCategory={controller.actions.deleteCategory}
+        />
+      ),
+    },
+    {
+      path: "brands",
+      element: (
         <Brands
           brands={controller.state.brands}
           units={controller.state.units}
           onCreateBrand={controller.actions.createBrand}
+          onUpdateBrand={controller.actions.updateBrand}
+          onDeleteBrand={controller.actions.deleteBrand}
         />
-      );
-    }
-    if (activeView === "pricing") {
-      return (
+      ),
+    },
+    {
+      path: "pricing",
+      element: (
         <PriceLists
           products={controller.products}
           priceLists={controller.state.priceLists}
@@ -119,10 +107,11 @@ const Products = () => {
           onSubmitApproval={controller.actions.submitPriceApproval}
           onResolveApproval={controller.actions.resolvePriceApproval}
         />
-      );
-    }
-    if (activeView === "import-export") {
-      return (
+      ),
+    },
+    {
+      path: "import-export",
+      element: (
         <ProductImportExport
           importPreview={controller.importPreview}
           asyncStatus={controller.asyncStatus}
@@ -131,44 +120,40 @@ const Products = () => {
           onConfirmImport={controller.actions.confirmImport}
           onExport={controller.actions.exportProducts}
         />
-      );
-    }
-    if (activeView === "analytics") return <ProductAnalytics products={controller.products} />;
-    if (activeView === "settings") {
-      return (
+      ),
+    },
+    { path: "analytics", element: <ProductAnalytics products={controller.products} /> },
+    {
+      path: "settings",
+      element: (
         <ProductSettings
           state={controller.state}
           role={controller.role}
           permissions={controller.permissions}
           onMarkNotificationRead={controller.actions.markNotificationRead}
         />
-      );
-    }
-    if (activeView === "details" && nested === "edit") {
-      return <ProductEdit product={detailProduct} controller={controller} />;
-    }
-    if (activeView === "details") {
-      return (
-        <ProductDetails
-          product={detailProduct}
-          productsById={controller.productsById}
-          canViewCost={controller.permissions.canViewCost}
-          onDuplicate={controller.actions.duplicateProduct}
-          onArchive={controller.actions.archiveProduct}
-          onRestore={controller.actions.restoreProduct}
-        />
-      );
-    }
+      ),
+    },
+    { path: ":productId/edit", element: <ProductDetailsRoute controller={controller} edit /> },
+    { path: ":productId", element: <ProductDetailsRoute controller={controller} /> },
+    { path: "*", element: <ProductRouteNotFound /> },
+  ]);
 
-    return (
-      <ProductsDashboard
-        metrics={controller.metrics}
-        products={controller.products}
-        aiInsights={controller.aiInsights}
-        onNavigate={navigateView}
-        onRunAiAction={controller.actions.runAiAction}
-      />
-    );
+const Products = () => {
+  const controller = useProductsController();
+  const navigate = useNavigate();
+  const categoriesWithCounts = useMemo(
+    () =>
+      controller.state.categories.map((category) => ({
+        ...category,
+        productCount: controller.products.filter((product) => product.categoryId === category.id).length,
+      })),
+    [controller.products, controller.state.categories],
+  );
+
+  const navigateView = (view) => {
+    const nextPath = productPathByView[view] || "";
+    navigate(`/products/${nextPath}`.replace(/\/$/, ""));
   };
 
   return (
@@ -177,6 +162,7 @@ const Products = () => {
         searchRef={controller.refs.searchRef}
         search={controller.search}
         onSearch={controller.actions.setSearch}
+        products={controller.products}
         role={controller.role}
         onRoleChange={controller.actions.setRole}
         unreadCount={controller.state.notifications.filter((item) => !item.read).length}
@@ -186,9 +172,7 @@ const Products = () => {
       />
 
       <ProductsNavigation
-        groups={navigationGroups}
-        activeView={activeView}
-        onNavigate={navigateView}
+        groups={productNavigationGroups}
       />
 
       {!controller.permissions.canViewCost && (
@@ -198,7 +182,11 @@ const Products = () => {
         </section>
       )}
 
-      {renderView()}
+      <ProductsRoutes
+        controller={controller}
+        categoriesWithCounts={categoriesWithCounts}
+        onNavigate={navigateView}
+      />
 
       {controller.activeModal === "quickView" && (
         <ProductQuickView

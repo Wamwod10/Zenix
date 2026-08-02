@@ -86,6 +86,28 @@ const PurchasesDashboard = () => {
     ...dashboard.statusOverview.map((entry) => entry.count),
     1,
   );
+  const getOrderPrimaryLabel = (order) => {
+    const supplierName = getSupplier(order.supplierId)?.name || "Noma'lum yetkazib beruvchi";
+    const productName = order.items?.[0]?.name;
+
+    return productName ? `${supplierName} · ${productName}` : supplierName;
+  };
+  const getOrderMetaLabel = (order) => {
+    const itemsCount = order.items?.length || 0;
+
+    return `${order.number}${itemsCount > 1 ? ` · ${itemsCount} turdagi tovar` : ""}`;
+  };
+  const getDueLabel = (order) => {
+    if (order.isLate) return "Kechikdi";
+    if (order.isToday) return "Bugun, reja bo'yicha";
+
+    return formatPurchaseDate(order.expectedDate);
+  };
+  const getBarHeight = (total) => {
+    if (!total) return 0;
+
+    return Math.max((total / maxMonthly) * 100, 2);
+  };
 
   return (
     <div className="purchases-dashboard">
@@ -149,9 +171,20 @@ const PurchasesDashboard = () => {
                   {formatCompactMoney(entry.total)}
                 </span>
                 <span
-                  className="purchases-dashboard__bar"
-                  style={{ height: `${Math.max((entry.total / maxMonthly) * 100, entry.total > 0 ? 4 : 0)}%` }}
-                />
+                  className={[
+                    "purchases-dashboard__bar",
+                    entry.total === 0 ? "purchases-dashboard__bar--zero" : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                  style={{ "--bar-height": `${getBarHeight(entry.total)}%` }}
+                  aria-label={`${entry.label}: ${formatMoney(entry.total)}`}
+                  title={`${entry.label}: ${formatMoney(entry.total)}`}
+                >
+                  <span className="purchases-dashboard__bar-tooltip">
+                    {entry.label} · {formatMoney(entry.total)}
+                  </span>
+                </span>
                 <span className="purchases-dashboard__bar-label">{entry.label}</span>
               </div>
             ))}
@@ -172,23 +205,26 @@ const PurchasesDashboard = () => {
 
           <ul className="purchases-dashboard__list">
             {dashboard.todayArrivals.map((order) => (
-              <li
-                key={order.id}
-                onClick={() => navigate(`/purchases/orders/${order.id}`)}
-              >
-                <div>
-                  <strong>{order.number}</strong>
-                  <small>{getSupplier(order.supplierId)?.name}</small>
-                </div>
-                <span
-                  className={
-                    order.isLate
-                      ? "purchases-dashboard__due purchases-dashboard__due--late"
-                      : "purchases-dashboard__due"
-                  }
+              <li key={order.id}>
+                <button
+                  className="purchases-dashboard__list-action"
+                  type="button"
+                  onClick={() => navigate(`/purchases/orders/${order.id}`)}
                 >
-                  {order.isLate ? "Kechikdi!" : "Bugun keladi"}
-                </span>
+                  <div>
+                    <strong>{getOrderPrimaryLabel(order)}</strong>
+                    <small>{getOrderMetaLabel(order)}</small>
+                  </div>
+                  <span
+                    className={
+                      order.isLate
+                        ? "purchases-dashboard__due purchases-dashboard__due--late"
+                        : "purchases-dashboard__due"
+                    }
+                  >
+                    {getDueLabel(order)}
+                  </span>
+                </button>
               </li>
             ))}
           </ul>
@@ -235,27 +271,26 @@ const PurchasesDashboard = () => {
 
           <ul className="purchases-dashboard__list">
             {dashboard.incomingOrders.map((order) => (
-              <li
-                key={order.id}
-                onClick={() => navigate(`/purchases/orders/${order.id}`)}
-              >
-                <div>
-                  <strong>{order.number}</strong>
-                  <small>{getSupplier(order.supplierId)?.name}</small>
-                </div>
-                <span
-                  className={
-                    order.isLate
-                      ? "purchases-dashboard__due purchases-dashboard__due--late"
-                      : "purchases-dashboard__due"
-                  }
+              <li key={order.id}>
+                <button
+                  className="purchases-dashboard__list-action"
+                  type="button"
+                  onClick={() => navigate(`/purchases/orders/${order.id}`)}
                 >
-                  {order.isLate
-                    ? "Kechikdi!"
-                    : order.isToday
-                      ? "Bugun"
-                      : formatPurchaseDate(order.expectedDate)}
-                </span>
+                  <div>
+                    <strong>{getOrderPrimaryLabel(order)}</strong>
+                    <small>{getOrderMetaLabel(order)}</small>
+                  </div>
+                  <span
+                    className={
+                      order.isLate
+                        ? "purchases-dashboard__due purchases-dashboard__due--late"
+                        : "purchases-dashboard__due"
+                    }
+                  >
+                    {getDueLabel(order)}
+                  </span>
+                </button>
               </li>
             ))}
           </ul>
@@ -270,13 +305,15 @@ const PurchasesDashboard = () => {
           <ul className="purchases-dashboard__list">
             {dashboard.topSuppliers.map((entry) => (
               <li key={entry.supplier.id}>
-                <div>
-                  <strong>{entry.supplier.name}</strong>
-                  <small>Score: {entry.supplier.score}/100</small>
+                <div className="purchases-dashboard__list-static">
+                  <div>
+                    <strong>{entry.supplier.name}</strong>
+                    <small>Score: {entry.supplier.score}/100</small>
+                  </div>
+                  <span className="purchases-dashboard__amount">
+                    {formatCompactMoney(entry.total)}
+                  </span>
                 </div>
-                <span className="purchases-dashboard__amount">
-                  {formatCompactMoney(entry.total)}
-                </span>
               </li>
             ))}
           </ul>
@@ -296,10 +333,15 @@ const PurchasesDashboard = () => {
 
           <ul className="purchases-dashboard__list">
             {dashboard.paymentAlerts.map((invoice) => (
-              <li key={invoice.id} onClick={() => navigate("/purchases/invoices")}>
+              <li key={invoice.id}>
+                <button
+                  className="purchases-dashboard__list-action"
+                  type="button"
+                  onClick={() => navigate("/purchases/invoices")}
+                >
                 <div>
-                  <strong>{invoice.number}</strong>
-                  <small>{getSupplier(invoice.supplierId)?.name}</small>
+                  <strong>{getSupplier(invoice.supplierId)?.name || invoice.number}</strong>
+                  <small>{invoice.number}</small>
                 </div>
                 <span
                   className={
@@ -313,6 +355,7 @@ const PurchasesDashboard = () => {
                     : `${invoice.dueInDays} kun qoldi`}{" "}
                   · {formatCompactMoney(invoice.remaining)}
                 </span>
+                </button>
               </li>
             ))}
           </ul>
@@ -332,19 +375,22 @@ const PurchasesDashboard = () => {
 
           <ul className="purchases-dashboard__list">
             {dashboard.reorderSuggestions.map((product) => (
-              <li
-                key={product.id}
-                onClick={() => navigate("/purchases/orders/new")}
-              >
-                <div>
-                  <strong>{product.name}</strong>
-                  <small>
-                    Qoldiq: {product.stock} / min {product.reorderPoint}
-                  </small>
-                </div>
-                <span className="purchases-dashboard__cta">
-                  {product.suggestedQty} dona buyurtma
-                </span>
+              <li key={product.id}>
+                <button
+                  className="purchases-dashboard__list-action"
+                  type="button"
+                  onClick={() => navigate("/purchases/orders/new")}
+                >
+                  <div>
+                    <strong>{product.name}</strong>
+                    <small>
+                      Qoldiq: {product.stock} / min {product.reorderPoint}
+                    </small>
+                  </div>
+                  <span className="purchases-dashboard__cta">
+                    {product.suggestedQty} dona buyurtma
+                  </span>
+                </button>
               </li>
             ))}
           </ul>
@@ -367,7 +413,12 @@ const PurchasesDashboard = () => {
 
           <ul className="purchases-dashboard__list">
             {budgetOverview.slice(0, 4).map(({ budget, consumption, status }) => (
-              <li key={budget.id} onClick={() => setBudgetManagerOpen(true)}>
+              <li key={budget.id}>
+                <button
+                  className="purchases-dashboard__list-action"
+                  type="button"
+                  onClick={() => setBudgetManagerOpen(true)}
+                >
                 <div>
                   <strong>{budget.name}</strong>
                   <small>
@@ -378,6 +429,7 @@ const PurchasesDashboard = () => {
                   </small>
                 </div>
                 <BudgetStatusBadge status={status} />
+                </button>
               </li>
             ))}
           </ul>

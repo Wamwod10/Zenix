@@ -1,5 +1,7 @@
 import { Archive, Ban, CheckCircle2, Clock3, FilePenLine, RotateCcw, Send } from "lucide-react";
 
+import { formatStatusLabel } from "../../utils/financeFormatters";
+
 import "./TransactionLifecycle.scss";
 
 const steps = [
@@ -16,7 +18,7 @@ const TransactionLifecycle = ({ status }) => {
   const activeIndex = steps.findIndex((item) => item.id === status);
 
   return (
-    <ol className="transaction-lifecycle" aria-label="Transaction lifecycle">
+    <ol className="transaction-lifecycle" aria-label="Tranzaksiya lifecycle">
       {steps.map((step, index) => {
         const Icon = step.icon;
         const complete = activeIndex >= index && activeIndex <= 3;
@@ -29,7 +31,7 @@ const TransactionLifecycle = ({ status }) => {
             <span>
               <Icon size={14} />
             </span>
-            <strong>{step.id}</strong>
+            <strong>{formatStatusLabel(step.id)}</strong>
           </li>
         );
       })}

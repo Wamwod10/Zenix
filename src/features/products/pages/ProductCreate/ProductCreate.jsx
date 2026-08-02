@@ -10,6 +10,8 @@ const ProductCreate = ({ controller }) => (
     allProducts={controller.products}
     onSubmit={controller.actions.createOrUpdateProduct}
     onGenerateCodes={controller.actions.generateCodes}
+    onCreateCategory={controller.actions.createCategory}
+    onCreateBrand={controller.actions.createBrand}
   />
 );
 

@@ -10,11 +10,11 @@ const Shifts = ({ controller }) => {
           <button type="button" onClick={() => controller.actions.addNotification("Shift assignment saqlandi.")}>Assign shift</button>
         </div>
         <div className="hr-schedule-grid">
-          {schedule.days.map((day) => (
+          {(schedule?.days || []).map((day) => (
             <button key={day.day} type="button" className={day.work ? "is-work" : ""} onClick={() => controller.actions.addNotification(`${day.day} shift swap request preview.`)}>
               <strong>{day.day}</strong>
               <span>{day.work ? `${day.start}-${day.end}` : "Dam"}</span>
-              <small>{day.work ? `${day.lunchStart}-${day.lunchEnd}` : schedule.rotation}</small>
+              <small>{day.work ? `${day.lunchStart}-${day.lunchEnd}` : schedule?.rotation}</small>
             </button>
           ))}
         </div>

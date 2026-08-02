@@ -1,4 +1,10 @@
-const ProductsNavigation = ({ groups, activeView, onNavigate }) => (
+import { NavLink } from "react-router-dom";
+
+import "./ProductsNavigation.scss";
+
+const resolvePath = (path) => `/products/${path}`.replace(/\/$/, "");
+
+const ProductsNavigation = ({ groups }) => (
   <nav className="products-navigation" aria-label="Mahsulotlar navigatsiyasi">
     {groups.map((group) => (
       <section className="products-navigation__group" key={group.id}>
@@ -8,16 +14,15 @@ const ProductsNavigation = ({ groups, activeView, onNavigate }) => (
             const Icon = item.icon;
 
             return (
-              <button
-                type="button"
+              <NavLink
                 key={item.id}
-                className={activeView === item.id ? "is-active" : ""}
-                aria-selected={activeView === item.id}
-                onClick={() => onNavigate(item.id)}
+                className={({ isActive }) => (isActive ? "is-active" : "")}
+                end={item.end}
+                to={resolvePath(item.path)}
               >
                 <Icon size={15} />
                 {item.label}
-              </button>
+              </NavLink>
             );
           })}
         </div>

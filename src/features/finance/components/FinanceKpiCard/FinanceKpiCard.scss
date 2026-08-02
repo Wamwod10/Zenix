@@ -63,6 +63,34 @@
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.76);
   }
 
+  &__trend {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    min-height: 24px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 8px;
+    border-radius: 999px;
+    color: var(--finance-accent) !important;
+    background: color-mix(in srgb, var(--finance-accent) 10%, transparent);
+    font-size: 11px !important;
+    font-weight: 820 !important;
+  }
+
+  &__spark {
+    width: 100%;
+    height: 34px;
+    opacity: 0.78;
+
+    polyline {
+      stroke: var(--finance-accent);
+      stroke-width: 4;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+  }
+
   span:not(.finance-kpi__icon) {
     color: rgba(15, 23, 42, 0.46);
     font-size: 12px;
@@ -82,6 +110,21 @@
     color: rgba(15, 23, 42, 0.42);
     font-size: 11px;
     font-weight: 600;
+  }
+
+  em {
+    min-height: 28px;
+    display: inline-flex;
+    align-items: center;
+    width: max-content;
+    max-width: 100%;
+    padding: 0 9px;
+    border-radius: 999px;
+    color: rgba(43, 79, 188, 0.84);
+    background: rgba(255, 255, 255, 0.2);
+    font-size: 11px;
+    font-style: normal;
+    font-weight: 760;
   }
 
   &--blue {

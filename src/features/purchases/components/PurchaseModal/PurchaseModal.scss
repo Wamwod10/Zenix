@@ -14,8 +14,8 @@
     max-height: calc(100vh - 48px);
     display: grid;
     grid-template-rows: auto 1fr auto;
-    gap: 16px;
-    padding: 22px;
+    gap: 0;
+    padding: 0;
     // "hidden" emas — dialog chetiga yaqin ochilgan dropdown menyusi
     // kesilib qolmasligi uchun (body o'zi scroll qiladi).
     overflow: visible;
@@ -27,6 +27,7 @@
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.92),
       0 34px 90px rgba(23, 38, 78, 0.2);
+    outline: none;
 
     &--lg {
       width: min(100%, 860px);
@@ -42,6 +43,8 @@
     align-items: flex-start;
     justify-content: space-between;
     gap: 18px;
+    padding: 22px 22px 16px;
+    border-bottom: 1px solid rgba(100, 116, 139, 0.1);
 
     h2 {
       margin: 4px 0 0;
@@ -84,19 +87,34 @@
       color: #b91c1c;
       border-color: rgba(220, 38, 38, 0.3);
     }
+
+    &:focus-visible {
+      outline: none;
+      border-color: rgba(74, 103, 255, 0.5);
+      box-shadow: 0 0 0 4px rgba(74, 103, 255, 0.12);
+    }
   }
 
   &__body {
     overflow-y: auto;
     display: grid;
     gap: 16px;
-    padding-right: 2px;
+    padding: 18px 22px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(93, 120, 180, 0.32) transparent;
   }
 
   &__footer {
+    position: sticky;
+    bottom: 0;
     display: flex;
     justify-content: flex-end;
     gap: 10px;
+    padding: 16px 22px 22px;
+    border-top: 1px solid rgba(100, 116, 139, 0.1);
+    background:
+      linear-gradient(180deg, rgba(246, 249, 255, 0.8), rgba(238, 244, 252, 0.94));
+    border-radius: 0 0 28px 28px;
   }
 }
 
@@ -142,7 +160,9 @@
         rgba(255, 255, 255, 0.52);
     }
 
-    &:focus {
+    &:focus,
+    &:focus-visible {
+      outline: none;
       border-color: rgba(74, 103, 255, 0.48);
       box-shadow:
         inset 0 1px 0 rgba(255, 255, 255, 0.9),
@@ -203,8 +223,9 @@
     background 0.16s ease;
 
   &:disabled {
-    opacity: 0.5;
+    opacity: 0.62;
     cursor: not-allowed;
+    box-shadow: none;
   }
 
   &:not(:disabled):hover {
@@ -214,10 +235,21 @@
     filter: brightness(1.03);
   }
 
+  &:focus-visible {
+    outline: none;
+    box-shadow:
+      0 0 0 4px rgba(74, 103, 255, 0.16),
+      0 14px 34px rgba(64, 86, 136, 0.16);
+  }
+
   &--primary {
     color: #ffffff;
-    background: linear-gradient(135deg, #4a67ff, #3048e6);
-    box-shadow: 0 12px 28px rgba(74, 103, 255, 0.32);
+    background:
+      linear-gradient(135deg, rgba(255, 255, 255, 0.2), transparent 34%),
+      linear-gradient(135deg, #5b74ff 0%, #334be9 52%, #1e2fba 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.34),
+      0 16px 34px rgba(51, 75, 233, 0.34);
   }
 
   &--ghost {
@@ -234,7 +266,37 @@
 
   &--success {
     color: #ffffff;
-    background: linear-gradient(135deg, #16a34a, #15803d);
-    box-shadow: 0 12px 28px rgba(22, 163, 74, 0.28);
+    background:
+      linear-gradient(135deg, rgba(255, 255, 255, 0.18), transparent 34%),
+      linear-gradient(135deg, #20b95a, #12813d);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.32),
+      0 14px 30px rgba(18, 129, 61, 0.28);
+  }
+}
+
+@media (max-width: 640px) {
+  .purchase-modal {
+    padding: 10px;
+
+    &__dialog {
+      max-height: calc(100vh - 20px);
+      border-radius: 20px;
+    }
+
+    &__header,
+    &__body {
+      padding-inline: 16px;
+    }
+
+    &__footer {
+      padding: 14px 16px 16px;
+      flex-wrap: wrap;
+
+      .purchase-btn {
+        flex: 1 1 150px;
+        justify-content: center;
+      }
+    }
   }
 }

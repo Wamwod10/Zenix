@@ -1,8 +1,8 @@
 const canUseStorage = () => typeof window !== "undefined" && window.localStorage;
 
 export const warehouseStorageKeys = {
-  state: "zenix.warehouse.state",
-  settings: "zenix.warehouse.settings",
+  state: "zenix.warehouse.state.v2",
+  settings: "zenix.warehouse.settings.v2",
   filters: "zenix.warehouse.filters",
   role: "zenix.warehouse.role",
 };

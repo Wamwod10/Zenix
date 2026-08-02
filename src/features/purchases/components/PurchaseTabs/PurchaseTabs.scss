@@ -1,6 +1,9 @@
 .purchase-tabs {
   display: inline-flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: thin;
   gap: 4px;
   padding: 4px;
   border-radius: 16px;
@@ -27,6 +30,13 @@
 
     &:hover {
       color: rgba(5, 14, 35, 0.78);
+    }
+
+    &:focus-visible {
+      outline: none;
+      box-shadow:
+        0 0 0 3px rgba(74, 103, 255, 0.12),
+        inset 0 0 0 1px rgba(74, 103, 255, 0.28);
     }
 
     &--active {

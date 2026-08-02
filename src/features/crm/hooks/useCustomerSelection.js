@@ -4,8 +4,10 @@ import {
     useRef,
     useState,
 } from "react";
+import { useSelector } from "react-redux";
 
 import {
+    deleteCRMCustomerRecord,
     getCRMCustomerRecords,
     saveCRMCustomerRecord,
 } from "./useCustomerProfile";
@@ -56,6 +58,14 @@ const mergeCustomerRecords = (initialCustomers = []) => {
 };
 
 const useCustomerSelection = (initialCustomers = []) => {
+    const customerRevision = useSelector((state) =>
+        (state.businessOS?.entities?.customers?.allIds || [])
+            .map((id) => {
+                const customer = state.businessOS.entities.customers.byId[id];
+                return `${id}:${customer?.updatedAt || ""}:${customer?.totalSpent || 0}:${customer?.archived || false}`;
+            })
+            .join("|"),
+    );
     const initialRecordsRef = useRef(
         mergeCustomerRecords(initialCustomers),
     );
@@ -125,7 +135,7 @@ const useCustomerSelection = (initialCustomers = []) => {
                 );
             }
         };
-    }, [refreshCustomers]);
+    }, [customerRevision, refreshCustomers]);
 
     useEffect(() => {
         if (!feedback) {
@@ -350,6 +360,44 @@ const useCustomerSelection = (initialCustomers = []) => {
         [performBulkUpdate],
     );
 
+    const deleteCustomer = useCallback(
+        (customerId) => {
+            const customer = customersRef.current.find(
+                (item) => item.id === customerId,
+            );
+
+            if (!customer) {
+                return;
+            }
+
+            const confirmed = window.confirm(
+                `${customer.fullName} mijozini o'chirishni tasdiqlaysizmi?`,
+            );
+
+            if (!confirmed) {
+                return;
+            }
+
+            deleteCRMCustomerRecord(customerId);
+            const nextCustomers = customersRef.current.filter(
+                (item) => item.id !== customerId,
+            );
+
+            replaceCustomers(nextCustomers);
+            setSelectedCustomerIds((currentIds) =>
+                currentIds.filter((id) => id !== customerId),
+            );
+            setFeedback(
+                createFeedback(
+                    "success",
+                    "Mijoz o'chirildi",
+                    `${customer.fullName} ro'yxatdan olib tashlandi.`,
+                ),
+            );
+        },
+        [replaceCustomers],
+    );
+
     return {
         customers,
         selectedCustomerIds,
@@ -364,6 +412,7 @@ const useCustomerSelection = (initialCustomers = []) => {
             clearSelection,
             changeSelectedGroup,
             changeSelectedStatus,
+            deleteCustomer,
             dismissFeedback,
         },
     };

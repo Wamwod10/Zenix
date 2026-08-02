@@ -113,7 +113,7 @@ export const validateDoubleEntry = (rows = [], accounts = [], periods = []) => {
 };
 
 export const buildFinanceSummary = (state) => {
-  const posted = state.transactions.filter((item) => item.status === "Posted");
+  const posted = state.transactions.filter((item) => item.status === "Posted" || item.status === "Approved");
   const income = sumBy(
     posted.filter((item) => item.type === "income"),
     (item) => item.amount,
@@ -151,9 +151,6 @@ export const buildFinanceSummary = (state) => {
     taxPayable: sumBy(state.taxReports, (item) => item.payable),
     pendingApprovals: state.transactions.filter((item) => item.status === "Pending").length,
     unreconciled: state.reconciliation.system.filter((item) => !item.matched).length,
-    healthScore: Math.max(
-      40,
-      Math.min(96, 78 + Math.round((income - expenses - overdue * 0.2) / 10000000)),
-    ),
+    healthScore: income || expenses || overdue ? Math.min(100, Math.max(0, Math.round((income - expenses - overdue * 0.2) / 10000000))) : 0,
   };
 };

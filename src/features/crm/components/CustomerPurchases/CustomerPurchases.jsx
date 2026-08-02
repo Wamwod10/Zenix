@@ -97,7 +97,7 @@ const CustomerPurchases = ({ customer, customerId }) => {
       normalizedPaymentMethod:
         purchase?.paymentMethod ?? purchase?.paymentType ?? "cash",
     }));
-  }, [customer, customerId]);
+  }, [customer]);
 
   const filteredPurchases = useMemo(() => {
     const normalizedSearch = searchValue.trim().toLowerCase();

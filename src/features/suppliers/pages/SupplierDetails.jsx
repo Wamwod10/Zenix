@@ -1,7 +1,7 @@
 // Task 4: Supplier tafsilotlari sahifasi — profil, tahrirlash, Purchases
 // xarid tarixi (o'qish uchun, faqat ko'rsatish).
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { Archive, ArchiveRestore, ArrowLeft, PencilLine, Users } from "lucide-react";
 
@@ -49,6 +49,10 @@ const SupplierDetails = () => {
   const [archiveRequest, setArchiveRequest] = useState(false);
 
   const can = (permission) => hasSupplierPermission(supplierCurrentUser.role, permission);
+
+  useEffect(() => {
+    setEditOpen(searchParams.get("edit") === "1");
+  }, [searchParams]);
 
   // Deep Linking (Task 5): "tab" query-parametri profil ichidagi faol
   // bo'limni URL bilan sinxronlaydi (masalan /suppliers/:id?tab=documents
@@ -98,8 +102,10 @@ const SupplierDetails = () => {
 
   const closeEdit = () => {
     setEditOpen(false);
-    searchParams.delete("edit");
-    setSearchParams(searchParams, { replace: true });
+    const next = new URLSearchParams(searchParams);
+
+    next.delete("edit");
+    setSearchParams(next, { replace: true });
   };
 
   if (!supplier) {
@@ -107,7 +113,7 @@ const SupplierDetails = () => {
       <EmptyState
         icon={Users}
         title="Yetkazib beruvchi topilmadi"
-        description="Bu yetkazib beruvchi o'chirilgan yoki havola noto'g'ri bo'lishi mumkin."
+        description="Yetkazib beruvchi topilmadi yoki havola noto'g'ri bo'lishi mumkin."
         action={
           <Button
             variant="ghost"
@@ -139,8 +145,10 @@ const SupplierDetails = () => {
                     variant="secondary"
                     leftIcon={<ArchiveRestore size={15} />}
                     onClick={() => {
-                      actions.restoreSupplier(supplier.id);
-                      notify.success(`"${supplier.name}" arxivdan tiklandi.`);
+                      const result = actions.restoreSupplier(supplier.id);
+
+                      if (result?.ok === false) notify.error(result.error);
+                      else notify.success(`"${supplier.name}" arxivdan tiklandi.`);
                     }}
                   >
                     Tiklash
@@ -160,6 +168,7 @@ const SupplierDetails = () => {
               <Button
                 variant="primary"
                 leftIcon={<PencilLine size={15} />}
+                disabled={supplier.archived}
                 onClick={() => setEditOpen(true)}
               >
                 Tahrirlash
@@ -196,12 +205,25 @@ const SupplierDetails = () => {
         onSetDocumentExpiry={(file, expiryDate) =>
           actions.updateSupplierDocumentExpiry(supplier.id, file.id, expiryDate)
         }
-        onUpdateSupplier={(payload) => actions.updateSupplier(supplier.id, payload)}
-        onChangeStatus={(status) => actions.setSupplierStatus(supplier.id, status)}
+        onUpdateSupplier={(payload) => {
+          const result = actions.updateSupplier(supplier.id, payload);
+
+          if (result?.ok === false) notify.error(result.error);
+
+          return result;
+        }}
+        onChangeStatus={(status) => {
+          const result = actions.setSupplierStatus(supplier.id, status);
+
+          if (result?.ok === false) notify.error(result.error);
+
+          return result;
+        }}
         onCreateProduct={(payload) => purchasesActions.createProduct(payload)}
         permissions={{
-          canEdit: can(SUPPLIER_PERMISSIONS.edit),
-          canStatusChange: can(SUPPLIER_PERMISSIONS.statusChange),
+          canEdit: can(SUPPLIER_PERMISSIONS.edit) && !supplier.archived,
+          canStatusChange:
+            can(SUPPLIER_PERMISSIONS.statusChange) && !supplier.archived,
           canClaimManage: can(SUPPLIER_PERMISSIONS.claimManage),
         }}
       />
@@ -212,9 +234,13 @@ const SupplierDetails = () => {
         title="Yetkazib beruvchini arxivlash"
         description={`"${supplier.name}" arxivlanadi — ro'yxatda ko'rinmay qoladi va yangi xarid buyurtmalarida tanlanmaydi. Istalgan vaqt tiklashingiz mumkin.`}
         confirmLabel="Ha, arxivlash"
-        onConfirm={() => {
-          actions.archiveSupplier(supplier.id);
-          notify.success(`"${supplier.name}" arxivlandi.`);
+        reasonLabel="Arxivlash sababi"
+        reasonRequired
+        onConfirm={(reason) => {
+          const result = actions.archiveSupplier(supplier.id, reason);
+
+          if (result?.ok === false) notify.error(result.error);
+          else notify.success(`"${supplier.name}" arxivlandi.`);
           setArchiveRequest(false);
         }}
         onClose={() => setArchiveRequest(false)}
@@ -229,10 +255,21 @@ const SupplierDetails = () => {
         <SupplierForm
           supplier={supplier}
           suppliers={suppliers}
+          submitting={false}
           onSubmit={(payload) => {
-            actions.updateSupplier(supplier.id, payload);
-            notify.success("Yetkazib beruvchi ma'lumotlari yangilandi.");
-            closeEdit();
+            const result = actions.updateSupplier(supplier.id, payload);
+
+            if (result?.ok === false) {
+              notify.error(result.error);
+              return;
+            }
+
+            notify.success(
+              result?.changed === false
+                ? "O'zgarish topilmadi."
+                : "Yetkazib beruvchi ma'lumotlari yangilandi.",
+            );
+            if (result?.changed !== false) closeEdit();
           }}
           onCancel={closeEdit}
         />

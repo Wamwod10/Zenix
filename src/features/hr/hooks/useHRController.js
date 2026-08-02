@@ -1,6 +1,14 @@
 import { useMemo, useState } from "react";
 
 import { hrRoles } from "../data/hrPermissions";
+import {
+  addAudit,
+  buildEmployeeRecords,
+  buildNotification,
+  now,
+  payrollTransitions,
+  validateEmployeePayload,
+} from "../services/hrWorkflowService";
 import { hrAdapter } from "../utils/hrAdapters";
 import {
   buildAIInsights,
@@ -8,24 +16,10 @@ import {
   calculateDocumentExpiry,
   calculatePayroll,
 } from "../utils/hrCalculations";
-import { generateEmployeeId, generateHRId } from "../utils/hrIds";
+import { generateHRId } from "../utils/hrIds";
 import { canHR, getHRActionState } from "../utils/hrPermissions";
 import useEmployeeFilters from "./useEmployeeFilters";
 import useHRStorage from "./useHRStorage";
-
-const now = () => new Date().toISOString();
-
-const addAudit = (state, event, area, by) => ({
-  ...state,
-  auditLog: [{ id: generateHRId("aud"), at: now(), by, event, area }, ...state.auditLog],
-});
-
-const buildNotification = (text, tone = "success") => ({
-  id: generateHRId("ntf"),
-  tone,
-  text,
-  read: false,
-});
 
 const useHRController = () => {
   const { state, setState, resetState } = useHRStorage();
@@ -34,14 +28,12 @@ const useHRController = () => {
   const [selectedEmployeeId, setSelectedEmployeeId] = useState(state.employees[0]?.id || "");
   const [activeModal, setActiveModal] = useState("");
   const [pagination, setPagination] = useState({ page: 1, pageSize: 6 });
+  const [mutationStatus, setMutationStatus] = useState({});
   const employeeFilters = useEmployeeFilters(state.employees);
 
   const currentUser = state.settings.currentUser;
   const summary = useMemo(() => buildHRAnalytics(state), [state]);
   const aiInsights = useMemo(() => buildAIInsights(state), [state]);
-  const selectedEmployee =
-    state.employees.find((employee) => employee.id === selectedEmployeeId) || state.employees[0];
-
   const dictionaries = useMemo(() => {
     const departmentById = Object.fromEntries(state.departments.map((item) => [item.id, item]));
     const positionById = Object.fromEntries(state.positions.map((item) => [item.id, item]));
@@ -60,6 +52,20 @@ const useHRController = () => {
     }));
   };
 
+  const runMutation = async (key, operation) => {
+    setMutationStatus((current) => ({ ...current, [key]: { pending: true, error: "", success: false } }));
+    try {
+      const result = await operation();
+      setMutationStatus((current) => ({ ...current, [key]: { pending: false, error: "", success: true } }));
+      return result;
+    } catch (error) {
+      const message = error?.message || "Amal bajarilmadi. Qayta urinib ko'ring.";
+      setMutationStatus((current) => ({ ...current, [key]: { pending: false, error: message, success: false } }));
+      addNotification(message, "danger");
+      return { ok: false, errors: [message] };
+    }
+  };
+
   const updateEmployee = (employeeId, updater, auditText) => {
     setState((current) =>
       addAudit(
@@ -76,53 +82,14 @@ const useHRController = () => {
     );
   };
 
-  const createEmployee = async (payload) => {
+  const createEmployee = async (payload) => runMutation("employee.create", async () => {
     const errors = validateEmployeePayload(payload, state.employees);
     if (errors.length) {
       addNotification(errors[0], "danger");
       return { ok: false, errors };
     }
 
-    const employee = {
-      id: generateEmployeeId(),
-      code: `HR-${String(state.employees.length + 1).padStart(3, "0")}`,
-      firstName: payload.firstName.trim(),
-      lastName: payload.lastName.trim(),
-      phone: payload.phone.trim(),
-      email: payload.email.trim(),
-      pinfl: payload.pinfl.trim(),
-      passport: payload.passport.trim(),
-      birthDate: payload.birthDate,
-      photo: `${payload.firstName[0] || "H"}${payload.lastName[0] || "R"}`.toUpperCase(),
-      positionId: payload.positionId,
-      departmentId: payload.departmentId,
-      branchId: payload.branchId,
-      status: "active",
-      hireDate: payload.hireDate,
-      salary: Number(payload.salary),
-      bankCard: payload.bankCard || "",
-      role: payload.role,
-      attendanceRate: 100,
-      kpiScore: 80,
-      probation: {
-        status: payload.probationDays ? "active" : "confirmed",
-        startDate: payload.hireDate,
-        endDate: addDays(payload.hireDate, Number(payload.probationDays || 0)),
-        managerId: payload.managerId || "",
-      },
-      documents: [
-        {
-          id: generateHRId("doc"),
-          type: "contract",
-          issueDate: payload.contractDate,
-          expiryDate: payload.contractEndDate,
-          status: "normal",
-          history: ["Created"],
-        },
-      ],
-      assets: [],
-      notes: [],
-    };
+    const { employee, onboarding } = buildEmployeeRecords(payload, state.employees.length);
 
     await hrAdapter.saveEmployee(employee);
     setState((current) =>
@@ -130,26 +97,7 @@ const useHRController = () => {
         {
           ...current,
           employees: [employee, ...current.employees],
-          onboarding: [
-            {
-              id: generateHRId("onb"),
-              employeeId: employee.id,
-              progress: 35,
-              checks: {
-                personal: true,
-                documents: false,
-                contract: true,
-                equipment: false,
-                training: false,
-                systemAccount: Boolean(payload.login),
-                role: Boolean(payload.role),
-                schedule: false,
-                probation: Boolean(payload.probationDays),
-                mentor: false,
-              },
-            },
-            ...current.onboarding,
-          ],
+          onboarding: [onboarding, ...current.onboarding],
         },
         `${employee.code} employee created`,
         "employees",
@@ -159,16 +107,30 @@ const useHRController = () => {
     setSelectedEmployeeId(employee.id);
     addNotification("Yangi xodim yaratildi.");
     return { ok: true, employee };
-  };
+  });
 
-  const transferEmployee = (employeeId, branchId) => {
+  const transferEmployee = (employeeId, branchId, effectiveDate = new Date().toISOString().slice(0, 10)) => {
+    if (!canHR(role, "employee.transfer")) {
+      addNotification("Xodimni filialga o'tkazish uchun ruxsat yo'q.", "danger");
+      return false;
+    }
+    const employee = state.employees.find((item) => item.id === employeeId);
+    if (!employee || !branchId || employee.branchId === branchId) {
+      addNotification("Yangi filialni tanlang va ma'lumotlarni tekshiring.", "danger");
+      return false;
+    }
     updateEmployee(employeeId, (employee) => ({ ...employee, branchId }), `${employeeId} transferred`);
-    addNotification("Xodim filialga o'tkazildi.");
+    addNotification(`Xodim ${effectiveDate} sanasidan filialga o'tkazildi.`);
+    return true;
   };
 
   const decideProbation = (employeeId, decision, comment) => {
+    if (!canHR(role, "probation.decide")) {
+      addNotification("Sinov muddati qarori uchun ruxsat yo'q.", "danger");
+      return false;
+    }
     if (!comment?.trim()) {
-      addNotification("Probation qarori uchun izoh majburiy.", "danger");
+      addNotification("Sinov muddati qarori uchun izoh majburiy.", "danger");
       return false;
     }
     const statusMap = { confirm: "confirmed", extend: "extended", terminate: "terminated" };
@@ -182,14 +144,28 @@ const useHRController = () => {
       }),
       `${employeeId} probation ${statusMap[decision]}`,
     );
-    addNotification("Probation qarori saqlandi.");
+    addNotification("Sinov muddati qarori saqlandi.");
     return true;
   };
 
   const renewDocument = async (employeeId, documentId, expiryDate) => {
+    if (!canHR(role, "document.edit")) {
+      addNotification("Hujjatni yangilash uchun ruxsat yo'q.", "danger");
+      return false;
+    }
+    const employee = state.employees.find((item) => item.id === employeeId);
+    const currentDocument = employee?.documents.find((item) => item.id === documentId);
     if (!expiryDate) {
       addNotification("Yangi hujjat muddati majburiy.", "danger");
-      return;
+      return false;
+    }
+    if (expiryDate <= new Date().toISOString().slice(0, 10)) {
+      addNotification("Yangi muddat kelajak sanasi bo'lishi kerak.", "danger");
+      return false;
+    }
+    if (currentDocument && expiryDate <= currentDocument.expiryDate) {
+      addNotification("Yangi muddat hozirgi muddatdan keyin bo'lishi kerak.", "danger");
+      return false;
     }
 
     await hrAdapter.uploadDocument({ employeeId, documentId, expiryDate });
@@ -211,19 +187,24 @@ const useHRController = () => {
       `${employeeId} document renewed`,
     );
     addNotification("Hujjat muddati yangilandi.");
+    return true;
   };
 
-  const calculatePayrollEntry = async (payrollId) => {
+  const calculatePayrollEntry = async (payrollId) => runMutation(`payroll.${payrollId}.calculate`, async () => {
     const entry = state.payroll.find((item) => item.id === payrollId);
-    if (!entry) return;
+    if (!entry) return { ok: false };
     const result = calculatePayroll(entry, state.settings.payrollConfig);
+    if (result.validationErrors.length) {
+      addNotification(result.validationErrors[0], "danger");
+      return { ok: false, errors: result.validationErrors };
+    }
     await hrAdapter.calculatePayroll(entry, result);
     setState((current) =>
       addAudit(
         {
           ...current,
           payroll: current.payroll.map((item) =>
-            item.id === payrollId ? { ...item, status: "Calculated", result } : item,
+            item.id === payrollId ? { ...item, status: "Calculated", result, calculatedBy: currentUser } : item,
           ),
         },
         `${payrollId} payroll calculated`,
@@ -232,7 +213,8 @@ const useHRController = () => {
       ),
     );
     addNotification("Payroll hisoblandi.");
-  };
+    return { ok: true };
+  });
 
   const transitionPayroll = async (payrollId, status) => {
     if (["Approved", "Paid"].includes(status) && !canHR(role, "payroll.approve")) {
@@ -240,6 +222,15 @@ const useHRController = () => {
       return;
     }
     const entry = state.payroll.find((item) => item.id === payrollId);
+    if (!entry) return;
+    if (!payrollTransitions[entry.status]?.includes(status)) {
+      addNotification(`${entry.status} holatidan ${status} holatiga o'tib bo'lmaydi.`, "danger");
+      return;
+    }
+    if (status === "Approved" && entry.calculatedBy === currentUser) {
+      addNotification("Hisoblagan foydalanuvchi o'zi tasdiqlay olmaydi.", "danger");
+      return;
+    }
     if (status === "Paid" && entry) {
       await hrAdapter.processPayment(entry);
     }
@@ -248,7 +239,14 @@ const useHRController = () => {
         {
           ...current,
           payroll: current.payroll.map((item) =>
-            item.id === payrollId ? { ...item, status } : item,
+            item.id === payrollId
+              ? {
+                  ...item,
+                  status,
+                  approvedBy: status === "Approved" ? currentUser : item.approvedBy,
+                  paidAt: status === "Paid" ? now() : item.paidAt,
+                }
+              : item,
           ),
         },
         `${payrollId} payroll ${status}`,
@@ -260,8 +258,12 @@ const useHRController = () => {
   };
 
   const correctAttendance = (attendanceId, patch, reason) => {
+    if (!canHR(role, "attendance.correct")) {
+      addNotification("Davomatni tuzatish uchun ruxsat yo'q.", "danger");
+      return false;
+    }
     if (!reason?.trim()) {
-      addNotification("Manual correction uchun sabab majburiy.", "danger");
+      addNotification("Qo'lda tuzatish uchun sabab majburiy.", "danger");
       return false;
     }
     setState((current) =>
@@ -281,14 +283,35 @@ const useHRController = () => {
     return true;
   };
 
-  const approveLeave = (leaveId, status) => {
+  const approveLeave = (leaveId, status, comment = "") => {
+    if (!canHR(role, "leave.approve")) {
+      addNotification("Ta'til so'rovini tasdiqlash uchun ruxsat yo'q.", "danger");
+      return false;
+    }
+    if (!comment.trim()) {
+      addNotification("Ta'til qarori uchun izoh majburiy.", "danger");
+      return false;
+    }
+    const leave = state.leaves.find((item) => item.id === leaveId);
+    const hasConflict = state.leaves.some(
+      (item) =>
+        item.id !== leaveId &&
+        item.employeeId === leave?.employeeId &&
+        item.status === "Approved" &&
+        item.from <= leave.to &&
+        item.to >= leave.from,
+    );
+    if (status === "Approved" && hasConflict) {
+      addNotification("Tanlangan davr boshqa tasdiqlangan ta'til bilan kesishyapti.", "danger");
+      return false;
+    }
     setState((current) =>
       addAudit(
         {
           ...current,
           leaves: current.leaves.map((item) =>
             item.id === leaveId
-              ? { ...item, status, history: [`${status} by ${currentUser}`, ...item.history] }
+              ? { ...item, status, decisionComment: comment, history: [`${status} by ${currentUser}: ${comment}`, ...item.history] }
               : item,
           ),
         },
@@ -297,7 +320,8 @@ const useHRController = () => {
         currentUser,
       ),
     );
-    addNotification(`Leave ${status}.`);
+    addNotification(status === "Approved" ? "Ta'til tasdiqlandi." : "Ta'til rad etildi.");
+    return true;
   };
 
   const createTask = (payload) => {
@@ -438,15 +462,14 @@ const useHRController = () => {
     toast,
     summary,
     aiInsights,
-    selectedEmployee,
     selectedEmployeeId,
     activeModal,
     pagination,
+    mutationStatus,
     employeeFilters,
     dictionaries,
     currentUser,
-    actionState: (permission, approvalRequired = false) =>
-      getHRActionState({ role, permission, approvalRequired }),
+    actionState: (permission, approvalRequired = false) => getHRActionState({ role, permission, approvalRequired }),
     actions: {
       setRole,
       setSelectedEmployeeId,
@@ -472,32 +495,6 @@ const useHRController = () => {
       resetState,
     },
   };
-};
-
-const addDays = (date, days) => {
-  if (!date || !days) return "";
-  const next = new Date(date);
-  next.setDate(next.getDate() + Number(days));
-  return next.toISOString().slice(0, 10);
-};
-
-const validateEmployeePayload = (payload, employees) => {
-  const errors = [];
-  const fullName = `${payload.firstName || ""} ${payload.lastName || ""}`.trim();
-  if (!fullName) errors.push("F.I.O majburiy.");
-  if (!/^\+998\d{9}$/.test(payload.phone || "")) errors.push("Telefon +998XXXXXXXXX formatida bo'lishi kerak.");
-  if (payload.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email)) errors.push("Email formati noto'g'ri.");
-  if (!/^\d{14}$/.test(payload.pinfl || "")) errors.push("PINFL 14 raqam bo'lishi kerak.");
-  if (employees.some((employee) => employee.pinfl === payload.pinfl)) errors.push("Duplicate PINFL topildi.");
-  if (employees.some((employee) => employee.phone === payload.phone)) errors.push("Duplicate phone topildi.");
-  if (Number(payload.salary || 0) <= 0) errors.push("Oylik musbat bo'lishi kerak.");
-  if (!payload.branchId) errors.push("Filial majburiy.");
-  if (!payload.contractDate || !payload.contractEndDate) errors.push("Contract date majburiy.");
-  if (Number(payload.probationDays || 0) > 90) errors.push("Probation 90 kundan oshmasin.");
-  if (!payload.login?.trim()) errors.push("Login majburiy.");
-  if (!/^(?=.*[A-Za-z])(?=.*\d).{8,}$/.test(payload.password || "")) errors.push("Password kamida 8 belgi va raqamdan iborat bo'lishi kerak.");
-  if (!payload.role) errors.push("Role tanlangan bo'lishi kerak.");
-  return errors;
 };
 
 export default useHRController;

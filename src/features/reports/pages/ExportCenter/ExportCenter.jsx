@@ -2,21 +2,45 @@ import { Download } from "lucide-react";
 
 import "./ExportCenter.scss";
 
+const formats = [
+  ["PDF", true],
+  ["XLSX", true],
+  ["CSV", true],
+  ["DOCX", false],
+  ["XML", false],
+  ["Print", false],
+];
+
 const ExportCenter = ({ controller }) => (
   <section className="export-center">
     <div className="reports-simple-view__head">
-      <span className="reports-eyebrow">Export Center</span>
-      <h2>Professional export simulation</h2>
+      <span className="reports-eyebrow">Eksport markazi</span>
+      <h2>Hisobotlarni eksport qilish</h2>
+      <p>Kerakli formatni tanlang. Ulanmagan adapterlar hozircha nofaol ko'rsatiladi.</p>
     </div>
     <div className="export-center__formats">
-      {["PDF", "XLSX", "CSV", "DOCX", "JSON", "XML", "Print"].map((format) => (
-        <button key={format} type="button" onClick={() => controller.actions.exportReport(format, controller.state.selectedReport)}>
+      {formats.map(([format, enabled]) => (
+        <button
+          key={format}
+          type="button"
+          disabled={!enabled || controller.state.pendingAction === "export"}
+          title={enabled ? `${format} eksport qilish` : `${format} adapteri ulanmagan`}
+          onClick={() => controller.actions.exportReport(format, controller.state.selectedReport)}
+        >
           <Download size={16} />
           {format}
+          {!enabled && <small>Tez orada</small>}
         </button>
       ))}
     </div>
-    <pre>{JSON.stringify(controller.state.backendPayload, null, 2)}</pre>
+    <div className="export-center__history">
+      {controller.state.exportHistory.slice(0, 5).map((item) => (
+        <article key={item.id}>
+          <strong>{item.reportName}</strong>
+          <span>{item.format} / {item.generatedAt}</span>
+        </article>
+      ))}
+    </div>
   </section>
 );
 

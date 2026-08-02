@@ -3,34 +3,74 @@
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 8px;
 
-  > span,
-  select,
-  input,
-  button {
-    min-height: 40px;
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    padding: 0 11px;
+  &__title,
+  label,
+  > button,
+  &__chips button,
+  &__chips span {
     border: 1px solid rgba(255, 255, 255, 0.66);
     border-radius: 15px;
     color: rgba(15, 23, 42, 0.52);
     background: rgba(255, 255, 255, 0.14);
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
     font-size: 12px;
-    font-weight: 720;
+    font-weight: 700;
+  }
+
+  &__title,
+  > button,
+  &__chips button,
+  &__chips span {
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 0 11px;
+  }
+
+  label {
+    display: grid;
+    gap: 5px;
+    padding: 7px 10px 8px;
+
+    &.is-invalid {
+      border-color: rgba(220, 65, 65, 0.42);
+      background: rgba(220, 65, 65, 0.08);
+    }
   }
 
   select,
   input {
     width: 100%;
+    min-width: 0;
+    border: 0;
     outline: 0;
+    color: rgba(5, 14, 35, 0.82);
+    background: transparent;
     font: inherit;
   }
 
-  button {
+  > button,
+  &__chips button {
     justify-content: center;
     cursor: pointer;
+  }
+
+  &__chips {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+
+    button {
+      min-height: 32px;
+      border-radius: 999px;
+    }
+
+    .is-invalid {
+      color: rgba(170, 45, 45, 0.86);
+      background: rgba(220, 65, 65, 0.09);
+    }
   }
 }
 

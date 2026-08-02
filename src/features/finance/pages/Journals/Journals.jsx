@@ -1,6 +1,6 @@
 import JournalEntryForm from "../../components/JournalEntryForm/JournalEntryForm";
 import StatusBadge from "../../components/StatusBadge/StatusBadge";
-import { formatMoney } from "../../utils/financeFormatters";
+import { formatMoney, formatSource } from "../../utils/financeFormatters";
 
 const Journals = ({ controller }) => (
   <section className="finance-view">
@@ -8,7 +8,7 @@ const Journals = ({ controller }) => (
       <div className="finance-panel__head">
         <div>
           <span>Manual journal</span>
-          <h2>Debit/Credit entry</h2>
+          <h2>Debit/Kredit yozuvi</h2>
         </div>
       </div>
       <JournalEntryForm
@@ -21,8 +21,8 @@ const Journals = ({ controller }) => (
     <section className="finance-panel">
       <div className="finance-panel__head">
         <div>
-          <span>Journal register</span>
-          <h2>Manual va automatic yozuvlar</h2>
+          <span>Journal reyestri</span>
+          <h2>Manual va avtomatik yozuvlar</h2>
         </div>
       </div>
       <div className="finance-table">
@@ -35,12 +35,12 @@ const Journals = ({ controller }) => (
                 <strong>{journal.id}</strong>
                 <span>{journal.description}</span>
               </div>
-              <StatusBadge status={journal.source === "Automatic" ? "success" : "Draft"} label={journal.source} />
+              <StatusBadge status={journal.source === "Automatic" ? "success" : "Draft"} label={formatSource(journal.source)} />
               <b>{formatMoney(debit)}</b>
               <StatusBadge status={journal.status} />
               <div className="finance-row-actions">
-                <button type="button" disabled={journal.status !== "Pending"} onClick={() => controller.actions.approveJournal(journal.id)}>Approve</button>
-                <button type="button" disabled={journal.status !== "Approved"} onClick={() => controller.actions.postJournal(journal.id)}>Post</button>
+                <button type="button" disabled={journal.status !== "Pending"} onClick={() => controller.actions.approveJournal(journal.id)}>Tasdiqlash</button>
+                <button type="button" disabled={journal.status !== "Approved"} onClick={() => controller.actions.postJournal(journal.id)}>O'tkazish</button>
               </div>
             </article>
           );

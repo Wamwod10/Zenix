@@ -12,24 +12,13 @@ import {
 } from "lucide-react";
 
 import { formatPurchaseDate } from "../../utils/purchaseMoney";
+import { createEntityId } from "../../utils/purchaseIds";
+import {
+  ATTACHMENT_ALLOWED_EXTENSIONS,
+  ATTACHMENT_MAX_SIZE,
+} from "../../utils/attachmentValidation";
 
 import "./PurchaseAttachmentManager.scss";
-
-export const ATTACHMENT_MAX_SIZE = 10 * 1024 * 1024;
-export const ATTACHMENT_ALLOWED_EXTENSIONS = [
-  "pdf",
-  "png",
-  "jpg",
-  "jpeg",
-  "webp",
-  "gif",
-  "doc",
-  "docx",
-  "xls",
-  "xlsx",
-  "csv",
-  "txt",
-];
 
 const formatFileSize = (size = 0) => {
   if (!size) return "0 KB";
@@ -74,7 +63,7 @@ const buildAttachment = (file) => {
   const objectUrl = URL.createObjectURL(file);
 
   return {
-    id: `att-${Date.now()}-${crypto.randomUUID?.() || Math.random().toString(36).slice(2)}`,
+    id: createEntityId("att"),
     name: file.name,
     size: file.size,
     type: extension || file.type || "file",

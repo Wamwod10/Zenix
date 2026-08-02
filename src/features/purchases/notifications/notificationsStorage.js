@@ -1,7 +1,7 @@
 // Bildirishnomalar moduli lokal holati (backend ulanguncha oflayn-first
 // saqlash) — purchasesStorage.js bilan bir xil naqsh, alohida kalit.
 
-const STORAGE_KEY = "zenix:notifications:v1";
+const STORAGE_KEY = "zenix:notifications:v2";
 
 const isBrowser = () => typeof window !== "undefined" && !!window.localStorage;
 

@@ -1,48 +1,49 @@
-import { BookmarkPlus, LayoutGrid, ListFilter, Rows3, Table2 } from "lucide-react";
+import { BookmarkPlus, ListFilter, SlidersHorizontal, X } from "lucide-react";
+import { useMemo, useState } from "react";
+
+import "./ProductSearch.scss";
 
 const ProductSearch = ({
   filters,
   categories,
   brands,
   savedFilters,
-  viewMode,
   onFilter,
   onApplySavedFilter,
   onSaveFilter,
   onRemoveSavedFilter,
-  onViewMode,
-}) => (
-  <section className="products-panel products-filter-panel">
-    <div className="products-panel__head">
-      <div>
-        <span>
-          <ListFilter size={13} />
-          Kengaytirilgan filtrlar
-        </span>
-        <h2>Qidiruv, saqlangan filtrlar va ko'rinishlar</h2>
+  onResetFilters,
+}) => {
+  const [filterName, setFilterName] = useState("");
+  const activeFilters = useMemo(
+    () =>
+      Object.entries(filters).filter(
+        ([, value]) => value !== "all" && value !== "" && value !== null && value !== undefined,
+      ),
+    [filters],
+  );
+  const clearFilter = (key) => {
+    const emptyValue = ["priceMin", "priceMax", "marginMin"].includes(key) ? "" : "all";
+    onFilter(key, emptyValue);
+  };
+
+  const saveFilter = () => {
+    if (onSaveFilter(filterName)) {
+      setFilterName("");
+    }
+  };
+
+  return (
+    <section className="products-panel products-filter-panel">
+      <div className="products-panel__head">
+        <div>
+          <span>
+            <ListFilter size={13} />
+            Filtrlar
+          </span>
+          <h2>Asosiy filterlar va saqlangan ko'rinishlar</h2>
+        </div>
       </div>
-      <div className="products-view-toggle" role="tablist" aria-label="Mahsulotlar ko'rinishi">
-        {[
-          { id: "table", icon: Table2, label: "Jadval" },
-          { id: "grid", icon: LayoutGrid, label: "Kataklar" },
-          { id: "compact", icon: Rows3, label: "Ixcham" },
-        ].map((item) => {
-          const Icon = item.icon;
-          return (
-            <button
-              type="button"
-              key={item.id}
-              className={viewMode === item.id ? "is-active" : ""}
-              aria-selected={viewMode === item.id}
-              onClick={() => onViewMode(item.id)}
-            >
-              <Icon size={15} />
-              <span>{item.label}</span>
-            </button>
-          );
-        })}
-      </div>
-    </div>
 
     <div className="products-filters">
       <label>
@@ -82,42 +83,73 @@ const ProductSearch = ({
           <option value="out">Tugagan</option>
         </select>
       </label>
-      <label>
-        <span>Tasdiq</span>
-        <select value={filters.approvalStatus} onChange={(event) => onFilter("approvalStatus", event.target.value)}>
-          <option value="all">Barchasi</option>
-          <option value="draft">Qoralama</option>
-          <option value="pending">Kutilmoqda</option>
-          <option value="active">Faol</option>
-          <option value="rejected">Rad etilgan</option>
-        </select>
-      </label>
-      <label>
-        <span>Eng kam marja %</span>
-        <input type="number" value={filters.marginMin} onChange={(event) => onFilter("marginMin", event.target.value)} />
-      </label>
-      <label>
-        <span>Eng kam narx</span>
-        <input type="number" value={filters.priceMin} onChange={(event) => onFilter("priceMin", event.target.value)} />
-      </label>
-      <label>
-        <span>Eng yuqori narx</span>
-        <input type="number" value={filters.priceMax} onChange={(event) => onFilter("priceMax", event.target.value)} />
-      </label>
-      <label>
-        <span>Yetishmayotgan ma'lumot</span>
-        <select value={filters.missingData} onChange={(event) => onFilter("missingData", event.target.value)}>
-          <option value="all">Barchasi</option>
-          <option value="yes">Bor</option>
-          <option value="no">To'liq</option>
-        </select>
-      </label>
     </div>
 
+    <details className="products-advanced-filters">
+      <summary>
+        <SlidersHorizontal size={14} />
+        Qo'shimcha filterlar
+      </summary>
+      <div className="products-filters">
+        <label>
+          <span>Tasdiq</span>
+          <select value={filters.approvalStatus} onChange={(event) => onFilter("approvalStatus", event.target.value)}>
+            <option value="all">Barchasi</option>
+            <option value="draft">Qoralama</option>
+            <option value="pending">Kutilmoqda</option>
+            <option value="approved">Tasdiqlangan</option>
+            <option value="rejected">Rad etilgan</option>
+          </select>
+        </label>
+        <label>
+          <span>Eng kam marja %</span>
+          <input min="0" max="100" type="number" value={filters.marginMin} onChange={(event) => onFilter("marginMin", event.target.value)} />
+        </label>
+        <label>
+          <span>Eng kam narx</span>
+          <input min="0" type="number" value={filters.priceMin} onChange={(event) => onFilter("priceMin", event.target.value)} />
+        </label>
+        <label>
+          <span>Eng yuqori narx</span>
+          <input min="0" type="number" value={filters.priceMax} onChange={(event) => onFilter("priceMax", event.target.value)} />
+        </label>
+        <label>
+          <span>Yetishmayotgan ma'lumot</span>
+          <select value={filters.missingData} onChange={(event) => onFilter("missingData", event.target.value)}>
+            <option value="all">Barchasi</option>
+            <option value="yes">Bor</option>
+            <option value="no">To'liq</option>
+          </select>
+        </label>
+      </div>
+    </details>
+
+    {activeFilters.length > 0 && (
+      <div className="products-filter-chips" aria-label="Faol filterlar">
+        {activeFilters.map(([key, value]) => (
+          <button type="button" key={key} onClick={() => clearFilter(key)}>
+            <span>{key}: {value}</span>
+            <X size={13} />
+          </button>
+        ))}
+      </div>
+    )}
+
     <div className="products-saved-filters">
-      <button type="button" className="products-mini-button" onClick={() => onSaveFilter(`Filtr ${savedFilters.length + 1}`)}>
+      <label className="products-save-filter-field">
+        <span>Filtr nomi</span>
+        <input
+          value={filterName}
+          onChange={(event) => setFilterName(event.target.value)}
+          placeholder="Masalan: past qoldiq"
+        />
+      </label>
+      <button type="button" className="products-mini-button" onClick={saveFilter}>
         <BookmarkPlus size={14} />
         Saqlash
+      </button>
+      <button type="button" className="products-mini-button" onClick={onResetFilters}>
+        Filtrlarni tozalash
       </button>
       {savedFilters.map((filter) => (
         <span className="products-saved-filter" key={filter.id}>
@@ -129,12 +161,13 @@ const ProductSearch = ({
             aria-label={`${filter.name} filtrini o'chirish`}
             onClick={() => onRemoveSavedFilter(filter.id)}
           >
-            x
+            <X size={13} />
           </button>
         </span>
       ))}
     </div>
   </section>
-);
+  );
+};
 
 export default ProductSearch;

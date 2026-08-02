@@ -15,9 +15,9 @@ const AIInsightCard = ({ insights, onAction }) => (
     <div className="ai-insight-card__head">
       <span className="reports-eyebrow">
         <Sparkles size={14} />
-        AI Analytics
+        Aqlli tahlil
       </span>
-      <strong>{insights.filter((item) => item.status === "open").length} active</strong>
+      <strong>{insights.filter((item) => item.status === "open").length} faol</strong>
     </div>
 
     <div className="ai-insight-card__list">
@@ -39,7 +39,7 @@ const AIInsightCard = ({ insights, onAction }) => (
                   <ArrowRight size={13} />
                 </button>
                 <button type="button" aria-label="Compare insight" onClick={() => onAction(item, "compare")}>
-                  Compare
+                  Taqqoslash
                 </button>
                 <button type="button" aria-label="Dismiss insight" onClick={() => onAction(item, "dismiss")}>
                   <X size={13} />

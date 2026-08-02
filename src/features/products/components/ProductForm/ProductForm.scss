@@ -1,0 +1,31 @@
+.products-form-stepper button:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+
+.products-form input[type="number"] {
+  appearance: textfield;
+}
+
+.products-form input[type="number"]::-webkit-outer-spin-button,
+.products-form input[type="number"]::-webkit-inner-spin-button {
+  margin: 0;
+  appearance: none;
+}
+
+.products-inline-create {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 7px;
+
+  .products-mini-button {
+    min-height: 38px;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 520px) {
+  .products-inline-create {
+    grid-template-columns: 1fr;
+  }
+}

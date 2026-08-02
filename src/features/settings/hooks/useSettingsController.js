@@ -1,8 +1,11 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useDispatch } from "react-redux";
 
+import { businessOSActions } from "../../../core/businessOS/businessOSSlice";
 import { settingsMockAdapter } from "../utils/settingsAdapters";
 import { generateSettingsId } from "../utils/settingsIds";
-import { validateSettingPatch } from "../utils/settingsValidation";
+import { canRunSettingsAction } from "../utils/settingsPermissions";
+import { validateCollectionPatch, validateSettingPatch } from "../utils/settingsValidation";
 import { safeSettingsRead, safeSettingsWrite, settingsStorageKeys } from "../utils/settingsStorage";
 import useRecentSettings from "./useRecentSettings";
 import useSettingsAutosave from "./useSettingsAutosave";
@@ -14,7 +17,8 @@ import useSettingsStorage from "./useSettingsStorage";
 const now = () => new Date().toISOString();
 
 const useSettingsController = (pageId) => {
-  const { state, setState, resetState } = useSettingsStorage();
+  const dispatch = useDispatch();
+  const { state, setState, persistState, resetState } = useSettingsStorage();
   const { favorites, toggleFavorite } = useSettingsFavorites();
   const { recent, touchRecent } = useRecentSettings();
   const search = useSettingsSearch();
@@ -25,19 +29,31 @@ const useSettingsController = (pageId) => {
   const [activeModal, setActiveModal] = useState(null);
   const [progress, setProgress] = useState(null);
   const [dirtyCount, setDirtyCount] = useState(0);
+  const [selectedBackup, setSelectedBackup] = useState(null);
+  const toastTimer = useRef(null);
+  const backupTimers = useRef([]);
+
+  useEffect(
+    () => () => {
+      if (toastTimer.current) window.clearTimeout(toastTimer.current);
+      backupTimers.current.forEach((timer) => window.clearTimeout(timer));
+    },
+    [],
+  );
 
   const addAudit = useCallback(
-    ({ action, oldValue = "-", newValue = "-", reason = "Settings update", branch = "Toshkent HQ" }) => {
+    ({ action, oldValue = "-", newValue = "-", reason = "Sozlama yangilandi", branch = "" }) => {
       setState((current) => ({
         ...current,
         auditLog: [
           {
             id: generateSettingsId("audit"),
             action,
-            user: role,
+            user: "Tizim",
+            role,
             time: now(),
-            device: "Codex Browser",
-            ip: "192.168.1.77",
+            device: "Joriy sessiya",
+            ip: "",
             branch,
             oldValue,
             newValue,
@@ -51,13 +67,18 @@ const useSettingsController = (pageId) => {
   );
 
   const showToast = useCallback((message) => {
+    if (toastTimer.current) window.clearTimeout(toastTimer.current);
     setToast(message);
-    window.setTimeout(() => setToast(""), 2200);
+    toastTimer.current = window.setTimeout(() => setToast(""), 2200);
   }, []);
 
   const saveSnapshot = useCallback(
-    async () => settingsMockAdapter.save(pageId, state[pageId] || {}),
-    [pageId, state],
+    async () => {
+      const result = await settingsMockAdapter.save(pageId, state[pageId] || {});
+      persistState(state);
+      return result;
+    },
+    [pageId, persistState, state],
   );
 
   const { autosaveStatus, setAutosaveStatus } = useSettingsAutosave({
@@ -71,10 +92,47 @@ const useSettingsController = (pageId) => {
     safeSettingsWrite(settingsStorageKeys.role, nextRole);
   }, []);
 
+  const requireAction = useCallback(
+    (targetPage, action) => {
+      if (canRunSettingsAction(role, targetPage, action)) return true;
+      showToast("Bu amal uchun ruxsat yo'q.");
+      addAudit({
+        action: "ruxsat rad etildi",
+        oldValue: `${targetPage}.${action}`,
+        newValue: role,
+        reason: "Action-level permission tekshiruvi",
+      });
+      return false;
+    },
+    [addAudit, role, showToast],
+  );
+
+  const recordVersion = useCallback(
+    (current, targetPage, label, userRole = role) => ({
+      ...current,
+      versions: [
+        {
+          id: generateSettingsId("version"),
+          pageId: targetPage,
+          label,
+          time: now(),
+          user: userRole,
+        },
+        ...current.versions,
+      ],
+    }),
+    [role],
+  );
+
   const updatePageObject = useCallback(
     (targetPage, patch, options = {}) => {
+      if (!requireAction(targetPage, "edit")) return false;
       const validationErrors = validateSettingPatch(targetPage, patch);
-      setErrors(validationErrors);
+      setErrors((current) => {
+        const next = { ...current };
+        Object.keys(patch).forEach((key) => delete next[key]);
+        return { ...next, ...validationErrors };
+      });
       if (Object.keys(validationErrors).length) {
         setAutosaveStatus("error");
         return false;
@@ -85,115 +143,176 @@ const useSettingsController = (pageId) => {
         const nextValue = { ...previous, ...patch };
         history.pushHistory({ pageId: targetPage, oldValue: previous, newValue: nextValue });
 
-        return {
+        return recordVersion({
           ...current,
           [targetPage]: nextValue,
-          versions: [
-            {
-              id: generateSettingsId("version"),
-              pageId: targetPage,
-              label: `${Object.keys(patch).join(", ")} updated`,
-              time: now(),
-              user: role,
-            },
-            ...current.versions,
-          ],
-        };
+        }, targetPage, `${Object.keys(patch).join(", ")} maydonlari yangilandi`);
       });
 
       setDirtyCount((value) => value + 1);
+      if (targetPage === "finance" || targetPage === "localization" || targetPage === "business" || targetPage === "notifications") {
+        dispatch(
+          businessOSActions.settingsChanged({
+            ...(targetPage === "finance" && patch.baseCurrency ? { baseCurrency: patch.baseCurrency } : {}),
+            ...(targetPage === "localization" && patch.dateFormat ? { dateFormat: patch.dateFormat } : {}),
+            ...(targetPage === "business" && patch.defaultBranch ? { defaultBranchId: patch.defaultBranch } : {}),
+            ...(targetPage === "notifications" ? { notificationSettings: patch } : {}),
+          }),
+        );
+      }
       addAudit({
-        action: options.action || "setting changed",
-        oldValue: options.oldValue || "Previous settings",
+        action: options.action || "sozlama o'zgartirildi",
+        oldValue: options.oldValue || "Oldingi qiymat",
         newValue: Object.keys(patch).join(", "),
-        reason: options.reason || "Autosave flow",
+        reason: options.reason || "Autosave oqimi",
       });
       return true;
     },
-    [addAudit, history, role, setAutosaveStatus, setState],
+    [addAudit, dispatch, history, recordVersion, requireAction, setAutosaveStatus, setState],
   );
 
   const updateCollectionItem = useCallback(
-    (collection, itemId, patch, action = "setting changed") => {
-      setState((current) => ({
-        ...current,
-        [collection]: current[collection].map((item) =>
+    (collection, itemId, patch, action = "yozuv o'zgartirildi") => {
+      if (!requireAction(collection, "edit")) return false;
+      const validationErrors = validateCollectionPatch(collection, patch, state[collection], itemId);
+      setErrors((current) => {
+        const next = { ...current };
+        Object.keys(patch).forEach((key) => delete next[`${itemId}.${key}`]);
+        return {
+          ...next,
+          ...Object.fromEntries(Object.entries(validationErrors).map(([key, value]) => [`${itemId}.${key}`, value])),
+        };
+      });
+      if (Object.keys(validationErrors).length) {
+        setAutosaveStatus("error");
+        return false;
+      }
+      setState((current) => {
+        const previous = current[collection].find((item) => item.id === itemId);
+        const nextRows = current[collection].map((item) =>
           item.id === itemId ? { ...item, ...patch } : item,
-        ),
-      }));
+        );
+        history.pushHistory({ pageId: collection, oldValue: current[collection], newValue: nextRows });
+        return recordVersion({ ...current, [collection]: nextRows }, collection, `${previous?.name || previous?.code || itemId} yangilandi`);
+      });
       setDirtyCount((value) => value + 1);
+      if (collection === "branches" || collection === "warehouses" || collection === "users") {
+        dispatch(businessOSActions.settingsCollectionItemUpdated({ collection, itemId, patch }));
+      }
       addAudit({ action, oldValue: itemId, newValue: Object.keys(patch).join(", ") });
+      return true;
     },
-    [addAudit, setState],
+    [addAudit, dispatch, history, recordVersion, requireAction, setAutosaveStatus, setState, state],
   );
 
   const createCollectionItem = useCallback(
-    (collection, item, action = "item created") => {
+    (collection, item, action = "yozuv yaratildi") => {
+      if (!requireAction(collection, "create")) return false;
+      const validationErrors = validateCollectionPatch(collection, item, state[collection]);
+      setErrors((current) => ({ ...current, ...validationErrors }));
+      if (Object.keys(validationErrors).length) {
+        setAutosaveStatus("error");
+        return false;
+      }
       const next = { id: generateSettingsId(collection), status: "active", ...item };
-      setState((current) => ({ ...current, [collection]: [next, ...current[collection]] }));
+      setState((current) => {
+        const nextRows = [next, ...current[collection]];
+        history.pushHistory({ pageId: collection, oldValue: current[collection], newValue: nextRows });
+        return recordVersion({ ...current, [collection]: nextRows }, collection, `${next.name || next.code || next.id} yaratildi`);
+      });
       setDirtyCount((value) => value + 1);
+      if (collection === "branches" || collection === "warehouses" || collection === "users") {
+        dispatch(businessOSActions.settingsCollectionItemCreated({ collection, item: next }));
+      }
       addAudit({ action, oldValue: "-", newValue: next.name || next.code || next.id });
       showToast("Yangi yozuv yaratildi.");
+      return true;
     },
-    [addAudit, setState, showToast],
+    [addAudit, dispatch, history, recordVersion, requireAction, setAutosaveStatus, setState, showToast, state],
   );
 
   const deleteCollectionItem = useCallback(
-    (collection, itemId, action = "item deleted") => {
-      setState((current) => ({
-        ...current,
-        [collection]: current[collection].filter((item) => item.id !== itemId),
-      }));
+    (collection, itemId, action = "yozuv o'chirildi") => {
+      if (!requireAction(collection, "delete")) return false;
+      const target = state[collection]?.find((item) => item.id === itemId);
+      if (!window.confirm(`${target?.name || itemId} yozuvini arxivlashni tasdiqlaysizmi?`)) return false;
+      setState((current) => {
+        const nextRows = current[collection].map((item) =>
+          item.id === itemId ? { ...item, status: "archived", active: false } : item,
+        );
+        history.pushHistory({ pageId: collection, oldValue: current[collection], newValue: nextRows });
+        return recordVersion({ ...current, [collection]: nextRows }, collection, `${target?.name || itemId} arxivlandi`);
+      });
       setDirtyCount((value) => value + 1);
-      addAudit({ action, oldValue: itemId, newValue: "deleted" });
-      showToast("Yozuv o'chirildi.");
+      addAudit({ action, oldValue: itemId, newValue: "archived" });
+      showToast("Yozuv arxivlandi.");
+      return true;
     },
-    [addAudit, setState, showToast],
+    [addAudit, history, recordVersion, requireAction, setState, showToast, state],
   );
 
   const cyclePermission = useCallback(
     (moduleId, action) => {
+      if (!requireAction("permissions", "edit")) return;
       const order = ["allowed", "disabled", "hidden", "approval"];
+      let auditOld = "disabled";
+      let auditNext = "allowed";
       setState((current) => {
         const currentState = current.permissions[moduleId][action];
         const nextState = order[(order.indexOf(currentState) + 1) % order.length];
-        return {
-          ...current,
-          permissions: {
-            ...current.permissions,
-            [moduleId]: {
-              ...current.permissions[moduleId],
-              [action]: nextState,
-            },
+        auditOld = currentState;
+        auditNext = nextState;
+        const nextPermissions = {
+          ...current.permissions,
+          [moduleId]: {
+            ...current.permissions[moduleId],
+            [action]: nextState,
           },
         };
+        history.pushHistory({ pageId: "permissions", oldValue: current.permissions, newValue: nextPermissions });
+        return recordVersion({
+          ...current,
+          permissions: nextPermissions,
+        }, "permissions", `${moduleId}.${action} ruxsati yangilandi`);
       });
-      addAudit({ action: "permission changed", oldValue: `${moduleId}.${action}`, newValue: "cycled" });
-      showToast("Permission matrix yangilandi.");
+      addAudit({ action: "ruxsat o'zgartirildi", oldValue: `${moduleId}.${action}: ${auditOld}`, newValue: auditNext });
+      setDirtyCount((value) => value + 1);
+      showToast("Ruxsatlar matritsasi yangilandi.");
     },
-    [addAudit, setState, showToast],
+    [addAudit, history, recordVersion, requireAction, setState, showToast],
   );
 
   const toggleIntegration = useCallback(
     async (integrationId) => {
-      updateCollectionItem("integrations", integrationId, { status: "checking" }, "integration checking");
+      if (!requireAction("integrations", "edit")) return;
       const integration = state.integrations.find((item) => item.id === integrationId);
+      if (integration?.status === "checking") return;
+      updateCollectionItem("integrations", integrationId, { status: "checking" }, "integration checking");
       const result = await settingsMockAdapter.testIntegration(integration?.name || integrationId);
       updateCollectionItem(
         "integrations",
         integrationId,
-        { status: result.status, health: 97, lastSync: `${now().slice(0, 10)} ${now().slice(11, 16)}` },
-        "integration connected",
+        {
+          status: result.status,
+          health: result.status === "connected" ? 97 : 42,
+          lastSync: `${now().slice(0, 10)} ${now().slice(11, 16)}`,
+          lastError: result.status === "error" ? result.message : "",
+        },
+        result.status === "connected" ? "integratsiya ulandi" : "integratsiya xatosi",
       );
-      showToast(`${result.name} test ${result.latency}ms.`);
+      showToast(`${result.name}: ${result.message} (${result.latency}ms)`);
     },
-    [showToast, state.integrations, updateCollectionItem],
+    [requireAction, showToast, state.integrations, updateCollectionItem],
   );
 
   const runBackup = useCallback(async () => {
+    if (!requireAction("backup", "create")) return;
+    backupTimers.current.forEach((timer) => window.clearTimeout(timer));
     setProgress({ label: "Backup yaratilmoqda", value: 18 });
-    window.setTimeout(() => setProgress({ label: "Encrypting snapshot", value: 58 }), 380);
-    window.setTimeout(() => setProgress({ label: "Sync simulation", value: 86 }), 760);
+    backupTimers.current = [
+      window.setTimeout(() => setProgress({ label: "Zaxira nusxa shifrlanmoqda", value: 58 }), 380),
+      window.setTimeout(() => setProgress({ label: "Bulutga sinxronlanmoqda", value: 86 }), 760),
+    ];
     const backup = await settingsMockAdapter.runBackup();
     setState((current) => ({
       ...current,
@@ -204,32 +323,62 @@ const useSettingsController = (pageId) => {
       },
     }));
     setProgress(null);
-    addAudit({ action: "backup created", newValue: backup.version, reason: "Manual backup" });
-    showToast("Backup simulation yakunlandi.");
-  }, [addAudit, setState, showToast]);
+    addAudit({ action: "backup yaratildi", newValue: backup.version, reason: "Qo'lda backup" });
+    setDirtyCount((value) => value + 1);
+    showToast("Backup yaratildi.");
+  }, [addAudit, requireAction, setState, showToast]);
 
   const restoreBackup = useCallback((reason) => {
+    if (!requireAction("backup", "restore")) return false;
     if (!reason.trim()) {
-      showToast("Restore uchun reason majburiy.");
-      return;
+      showToast("Tiklash sababini kiriting.");
+      return false;
     }
-    setProgress({ label: "Restore approval simulation", value: 34 });
-    window.setTimeout(() => setProgress(null), 1300);
-    addAudit({ action: "restore started", oldValue: "current", newValue: "selected backup", reason });
-    showToast("Restore simulation approvalga yuborildi.");
+    setProgress({ label: "Tiklash tasdiqlashga yuborildi", value: 34 });
+    backupTimers.current.push(window.setTimeout(() => setProgress(null), 1300));
+    addAudit({ action: "tiklash boshlandi", oldValue: "joriy holat", newValue: selectedBackup?.version || "tanlangan backup", reason });
+    showToast("Tiklash so'rovi tasdiqlashga yuborildi.");
     setActiveModal(null);
-  }, [addAudit, showToast]);
+    setSelectedBackup(null);
+    return true;
+  }, [addAudit, requireAction, selectedBackup, showToast]);
+
+  const saveNow = useCallback(async () => {
+    if (!requireAction(pageId, "edit")) return false;
+    setAutosaveStatus("saving");
+    try {
+      await saveSnapshot();
+      addAudit({ action: "qo'lda saqlandi", newValue: pageId, reason: "Saqlash tugmasi" });
+      setAutosaveStatus("saved");
+      showToast("Sozlamalar saqlandi.");
+      return true;
+    } catch {
+      setAutosaveStatus("error");
+      showToast("Saqlashda xatolik yuz berdi.");
+      return false;
+    }
+  }, [addAudit, pageId, requireAction, saveSnapshot, setAutosaveStatus, showToast]);
 
   const applyHistoryEntry = useCallback(
     (entry, mode) => {
       setState((current) => ({
         ...current,
         [entry.pageId]: mode === "undo" ? entry.oldValue : entry.newValue,
+        versions: [
+          {
+            id: generateSettingsId("version"),
+            pageId: entry.pageId,
+            label: mode === "undo" ? "Undo bajarildi" : "Redo bajarildi",
+            time: now(),
+            user: role,
+          },
+          ...current.versions,
+        ],
       }));
       addAudit({ action: mode === "undo" ? "setting undo" : "setting redo", newValue: entry.pageId });
       setDirtyCount((value) => value + 1);
     },
-    [addAudit, setState],
+    [addAudit, role, setState],
   );
 
   const visibleMetrics = useMemo(
@@ -241,11 +390,13 @@ const useSettingsController = (pageId) => {
       warnings:
         state.integrations.filter((item) => ["error", "checking"].includes(item.status)).length +
         (state.security.twoFactor ? 0 : 1),
-      securityScore:
+      securityScore: Math.max(0, Math.min(100,
         72 +
         (state.security.twoFactor ? 10 : 0) +
         (state.security.minPasswordLength >= 12 ? 8 : 0) +
-        (state.backup.encryption ? 6 : 0),
+        (state.backup.encryption ? 6 : 0) -
+        (state.security.emergencyLocked ? 12 : 0),
+      )),
     }),
     [state],
   );
@@ -258,6 +409,7 @@ const useSettingsController = (pageId) => {
     progress,
     autosaveStatus,
     activeModal,
+    selectedBackup,
     favorites,
     recent,
     search,
@@ -266,6 +418,7 @@ const useSettingsController = (pageId) => {
     actions: {
       setRole,
       setActiveModal,
+      setSelectedBackup,
       touchRecent,
       toggleFavorite,
       updatePageObject,
@@ -276,6 +429,7 @@ const useSettingsController = (pageId) => {
       toggleIntegration,
       runBackup,
       restoreBackup,
+      saveNow,
       undo: () => history.undo(applyHistoryEntry),
       redo: () => history.redo(applyHistoryEntry),
       resetState,

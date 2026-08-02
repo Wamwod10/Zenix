@@ -1,0 +1,29 @@
+.supplier-bulk-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 11px 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  background:
+    linear-gradient(145deg, rgba(74, 103, 255, 0.1), rgba(255, 255, 255, 0.18)),
+    rgba(255, 255, 255, 0.08);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.76),
+    0 14px 38px rgba(64, 86, 136, 0.08);
+  color: var(--color-text);
+  font-size: 13px;
+  font-weight: 700;
+  backdrop-filter: blur(22px) saturate(165%);
+  -webkit-backdrop-filter: blur(22px) saturate(165%);
+
+  > button:not(.ui-button) {
+    border: none;
+    background: transparent;
+    color: #3650d8;
+    font: inherit;
+    cursor: pointer;
+  }
+}
+

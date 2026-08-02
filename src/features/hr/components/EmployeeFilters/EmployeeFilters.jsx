@@ -1,65 +1,111 @@
-import { SlidersHorizontal } from "lucide-react";
+import { SlidersHorizontal, X } from "lucide-react";
 
 import "./EmployeeFilters.scss";
 
-const EmployeeFilters = ({ filters, onChange, onReset, departments, positions, branches }) => (
+const probationLabels = {
+  active: "Faol sinov muddati",
+  "ending-soon": "Yaqinda tugaydi",
+  "decision-pending": "Qaror kutilmoqda",
+};
+
+const EmployeeFilters = ({ filters, normalizedFilters, activeFilters, onChange, onRemove, onReset, departments, positions, branches }) => (
   <section className="employee-filters" aria-label="Xodim filterlari">
-    <span>
+    <div className="employee-filters__title">
       <SlidersHorizontal size={15} />
-      Advanced filters
-    </span>
-    <select value={filters.department} onChange={(event) => onChange("department", event.target.value)} aria-label="Bo'lim">
-      <option value="all">Barcha bo'limlar</option>
-      {departments.map((item) => (
-        <option key={item.id} value={item.id}>
-          {item.name}
-        </option>
-      ))}
-    </select>
-    <select value={filters.position} onChange={(event) => onChange("position", event.target.value)} aria-label="Lavozim">
-      <option value="all">Barcha lavozimlar</option>
-      {positions.map((item) => (
-        <option key={item.id} value={item.id}>
-          {item.title}
-        </option>
-      ))}
-    </select>
-    <select value={filters.branch} onChange={(event) => onChange("branch", event.target.value)} aria-label="Filial">
-      <option value="all">Barcha filiallar</option>
-      {branches.map((item) => (
-        <option key={item.id} value={item.id}>
-          {item.name}
-        </option>
-      ))}
-    </select>
-    <select value={filters.status} onChange={(event) => onChange("status", event.target.value)} aria-label="Status">
-      <option value="all">Barcha statuslar</option>
-      <option value="active">Ishda</option>
-      <option value="late">Kechikkan</option>
-      <option value="leave">Ta'tilda</option>
-      <option value="sick">Kasal</option>
-      <option value="terminated">Bo'shagan</option>
-    </select>
-    <select value={filters.probation} onChange={(event) => onChange("probation", event.target.value)} aria-label="Probation">
-      <option value="all">Probation hammasi</option>
-      <option value="active">Active</option>
-      <option value="ending-soon">Ending soon</option>
-      <option value="decision-pending">Decision pending</option>
-    </select>
-    <select value={filters.document} onChange={(event) => onChange("document", event.target.value)} aria-label="Document expiry">
-      <option value="all">Hujjat hammasi</option>
-      <option value="risk">Risk bor</option>
-    </select>
-    <select value={filters.attendance} onChange={(event) => onChange("attendance", event.target.value)} aria-label="Attendance">
-      <option value="all">Davomat hammasi</option>
-      <option value="low">85% dan past</option>
-      <option value="high">90%+</option>
-    </select>
-    <input value={filters.salaryMin} onChange={(event) => onChange("salaryMin", event.target.value)} inputMode="numeric" placeholder="Min oylik" aria-label="Min oylik" />
-    <input value={filters.salaryMax} onChange={(event) => onChange("salaryMax", event.target.value)} inputMode="numeric" placeholder="Max oylik" aria-label="Max oylik" />
+      <span>Kengaytirilgan filtrlar</span>
+    </div>
+
+    <label>
+      Bo'lim
+      <select value={filters.department} onChange={(event) => onChange("department", event.target.value)}>
+        <option value="all">Barcha bo'limlar</option>
+        {departments.map((item) => (
+          <option key={item.id} value={item.id}>
+            {item.name}
+          </option>
+        ))}
+      </select>
+    </label>
+    <label>
+      Lavozim
+      <select value={filters.position} onChange={(event) => onChange("position", event.target.value)}>
+        <option value="all">Barcha lavozimlar</option>
+        {positions.map((item) => (
+          <option key={item.id} value={item.id}>
+            {item.title}
+          </option>
+        ))}
+      </select>
+    </label>
+    <label>
+      Filial
+      <select value={filters.branch} onChange={(event) => onChange("branch", event.target.value)}>
+        <option value="all">Barcha filiallar</option>
+        {branches.map((item) => (
+          <option key={item.id} value={item.id}>
+            {item.name}
+          </option>
+        ))}
+      </select>
+    </label>
+    <label>
+      Status
+      <select value={filters.status} onChange={(event) => onChange("status", event.target.value)}>
+        <option value="all">Barcha statuslar</option>
+        <option value="active">Ishda</option>
+        <option value="late">Kechikkan</option>
+        <option value="leave">Ta'tilda</option>
+        <option value="sick">Kasal</option>
+        <option value="terminated">Bo'shagan</option>
+      </select>
+    </label>
+    <label>
+      Sinov muddati
+      <select value={filters.probation} onChange={(event) => onChange("probation", event.target.value)}>
+        <option value="all">Barchasi</option>
+        <option value="active">{probationLabels.active}</option>
+        <option value="ending-soon">{probationLabels["ending-soon"]}</option>
+        <option value="decision-pending">{probationLabels["decision-pending"]}</option>
+      </select>
+    </label>
+    <label>
+      Hujjat muddati
+      <select value={filters.document} onChange={(event) => onChange("document", event.target.value)}>
+        <option value="all">Barchasi</option>
+        <option value="risk">Xavf bor</option>
+      </select>
+    </label>
+    <label>
+      Davomat
+      <select value={filters.attendance} onChange={(event) => onChange("attendance", event.target.value)}>
+        <option value="all">Barchasi</option>
+        <option value="low">85% dan past</option>
+        <option value="high">90% va yuqori</option>
+      </select>
+    </label>
+    <label className={normalizedFilters?.salaryRangeInvalid ? "is-invalid" : ""}>
+      Min oylik
+      <input type="number" min="0" value={filters.salaryMin} onChange={(event) => onChange("salaryMin", event.target.value)} />
+    </label>
+    <label className={normalizedFilters?.salaryRangeInvalid ? "is-invalid" : ""}>
+      Max oylik
+      <input type="number" min="0" value={filters.salaryMax} onChange={(event) => onChange("salaryMax", event.target.value)} />
+    </label>
     <button type="button" onClick={onReset}>
       Tozalash
     </button>
+
+    {(activeFilters?.length > 0 || normalizedFilters?.salaryRangeInvalid) && (
+      <div className="employee-filters__chips">
+        {activeFilters.map((item) => (
+          <button key={item.key} type="button" onClick={() => onRemove(item.key)}>
+            {item.key}: {probationLabels[item.value] || item.value}
+            <X size={12} />
+          </button>
+        ))}
+        {normalizedFilters?.salaryRangeInvalid && <span className="is-invalid">Min oylik max oylikdan katta.</span>}
+      </div>
+    )}
   </section>
 );
 

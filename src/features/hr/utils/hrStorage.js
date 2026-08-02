@@ -1,5 +1,5 @@
 export const hrStorageKeys = {
-  state: "zenix.hr.state.v1",
+  state: "zenix.hr.state.v2",
 };
 
 export const safeStorageRead = (key, fallback) => {

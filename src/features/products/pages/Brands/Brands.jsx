@@ -1,13 +1,29 @@
 import { useState } from "react";
 import { Factory, Plus } from "lucide-react";
 
-const Brands = ({ brands, units, onCreateBrand }) => {
+const Brands = ({ brands, units, onCreateBrand, onUpdateBrand, onDeleteBrand }) => {
   const [form, setForm] = useState({ name: "", code: "", manufacturer: "", country: "UZ" });
+  const [editingId, setEditingId] = useState("");
 
   const submit = () => {
     if (!form.name || !form.code) return;
-    onCreateBrand(form);
+    if (editingId) {
+      onUpdateBrand(editingId, form);
+    } else {
+      onCreateBrand(form);
+    }
     setForm({ name: "", code: "", manufacturer: "", country: "UZ" });
+    setEditingId("");
+  };
+
+  const startEdit = (brand) => {
+    setEditingId(brand.id);
+    setForm({
+      name: brand.name || "",
+      code: brand.code || "",
+      manufacturer: brand.manufacturer || "",
+      country: brand.country || "UZ",
+    });
   };
 
   return (
@@ -24,7 +40,12 @@ const Brands = ({ brands, units, onCreateBrand }) => {
           <label><span>Kod</span><input value={form.code} onChange={(event) => setForm({ ...form, code: event.target.value.toUpperCase() })} /></label>
           <label><span>Ishlab chiqaruvchi</span><input value={form.manufacturer} onChange={(event) => setForm({ ...form, manufacturer: event.target.value })} /></label>
           <label><span>Mamlakat</span><input value={form.country} onChange={(event) => setForm({ ...form, country: event.target.value })} /></label>
-          <button type="button" className="products-button is-primary" onClick={submit}><Plus size={15} /> Brend yaratish</button>
+          <button type="button" className="products-button is-primary" onClick={submit}><Plus size={15} /> {editingId ? "Brendni saqlash" : "Brend yaratish"}</button>
+          {editingId && (
+            <button type="button" className="products-mini-button" onClick={() => { setEditingId(""); setForm({ name: "", code: "", manufacturer: "", country: "UZ" }); }}>
+              Bekor qilish
+            </button>
+          )}
         </div>
       </section>
       <section className="products-dashboard-grid">
@@ -34,6 +55,12 @@ const Brands = ({ brands, units, onCreateBrand }) => {
               <strong>{brand.name}</strong>
               <span>{brand.code} · {brand.country}</span>
               <span>{brand.manufacturer}</span>
+              <div className="products-row-actions products-row-actions--text">
+                <button type="button" onClick={() => startEdit(brand)}>Tahrirlash</button>
+                <button type="button" onClick={() => window.confirm("Brendni o'chirishni tasdiqlaysizmi?") && onDeleteBrand(brand.id)}>
+                  O'chirish
+                </button>
+              </div>
             </article>
           ))}
         </div>

@@ -11,7 +11,7 @@
 
   &__heading {
     display: grid;
-    gap: 6px;
+    gap: 9px;
 
     h3 {
       margin: 0;
@@ -23,6 +23,7 @@
     p {
       margin: 0;
       font-size: 12.5px;
+      line-height: 1.55;
       color: rgba(5, 14, 35, 0.5);
       max-width: 640px;
     }
@@ -53,9 +54,18 @@
   }
 
   &__controls {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) minmax(180px, 220px) minmax(180px, 220px);
+    gap: 12px;
+    align-items: start;
+
+    @media (max-width: 860px) {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    @media (max-width: 560px) {
+      grid-template-columns: 1fr;
+    }
   }
 
   &__search {
@@ -79,33 +89,28 @@
       font-size: 12.5px;
       color: rgba(5, 14, 35, 0.82);
 
-      &:focus {
+      &:focus,
+      &:focus-visible {
         outline: none;
       }
+    }
+
+    &:focus-within {
+      border-color: rgba(74, 103, 255, 0.48);
+      box-shadow: 0 0 0 4px rgba(74, 103, 255, 0.1);
     }
   }
 
   &__select {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 0 10px;
-    height: 38px;
-    border-radius: 12px;
-    border: 1px solid rgba(100, 116, 139, 0.14);
-    background: rgba(255, 255, 255, 0.5);
-    color: rgba(5, 14, 35, 0.5);
-
-    select {
-      border: none;
-      background: none;
+    .ui-dropdown__control {
+      min-height: 38px;
+      border-radius: 12px;
       font-size: 12.5px;
-      font-weight: 600;
-      color: rgba(5, 14, 35, 0.78);
+      font-weight: 650;
+    }
 
-      &:focus {
-        outline: none;
-      }
+    .purchase-select-field__message {
+      display: none;
     }
   }
 

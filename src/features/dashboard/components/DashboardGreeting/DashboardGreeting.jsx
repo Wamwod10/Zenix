@@ -1,79 +1,88 @@
-import {
-  Activity,
-  CalendarDays,
-  MapPin,
-  Server,
-  Sparkles,
-  Wifi,
-} from "lucide-react";
+import { Activity, CalendarDays, MapPin, RefreshCw, Wifi } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import "./DashboardGreeting.scss";
 
-const liveStatus = [
-  { icon: Wifi, label: "Aloqa holati", value: "Faol" },
-  { icon: Activity, label: "Oxirgi yangilanish", value: "2 daq" },
-  { icon: Server, label: "Server", value: "99.9%" },
-];
+const formatUpdatedAt = (timestamp) => {
+  if (!timestamp) return "Yangilanish kutilmoqda";
 
-const DashboardGreeting = ({ summary }) => {
-  const userName = summary?.user?.fullName || "Akramov Akram";
-  const tenantName = summary?.tenant?.name || "ZENIX Workspace";
-  const city = summary?.tenant?.city || summary?.tenant?.name || "Toshkent filiali";
-  const recommendations = summary?.stats?.lowStockCount
-    ? `${summary.stats.lowStockCount} ta risk`
-    : "3 ta muhim tavsiya";
+  const diffMs = Date.now() - Number(timestamp);
+  const minutes = Math.max(0, Math.floor(diffMs / 60000));
+
+  if (minutes < 1) return "Hozirgina yangilandi";
+  if (minutes < 60) return `${minutes} daqiqa oldin yangilandi`;
+
+  const hours = Math.floor(minutes / 60);
+  return `${hours} soat oldin yangilandi`;
+};
+
+const DashboardGreeting = ({ isFetching, lastUpdated, onRefresh, summary }) => {
+  const navigate = useNavigate();
+  const userName = summary?.user?.fullName;
+  const tenantName = summary?.tenant?.name;
+  const city = summary?.tenant?.city || summary?.tenant?.branchName;
+  const lowStockCount = Number(summary?.stats?.lowStockCount ?? 0);
 
   return (
     <section className="dashboard-greeting">
       <div className="dashboard-greeting__content">
         <span className="dashboard-greeting__badge">
-          <Sparkles size={14} />
-          ZENIX Business OS
+          <CalendarDays size={14} />
+          Bugungi holat
         </span>
 
-        <h1>Xush kelibsiz, {userName}!</h1>
+        <h1>{userName ? `Xush kelibsiz, ${userName}!` : "Xush kelibsiz!"}</h1>
 
         <p>
-          {tenantName} uchun bugungi savdo, ombor, mijozlar va AI tavsiyalar
-          bir joyda jamlandi. ZENIX muhim o'zgarishlarni kuzatmoqda.
+          {tenantName
+            ? `${tenantName} bo'yicha asosiy savdo, foyda va operatsion risklar.`
+            : "Asosiy savdo, foyda va operatsion risklar shu yerda jamlanadi."}
         </p>
 
         <div className="dashboard-greeting__live">
-          {liveStatus.map((item) => {
-            const Icon = item.icon;
-
-            return (
-              <span key={item.label}>
-                <Icon size={13} />
-                <small>{item.label}</small>
-                <strong>{item.value}</strong>
-              </span>
-            );
-          })}
+          <span>
+            <Wifi size={13} />
+            <small>Aloqa</small>
+            <strong>{isFetching ? "Yangilanmoqda" : "Faol"}</strong>
+          </span>
+          <span>
+            <Activity size={13} />
+            <small>Holat</small>
+            <strong>{lowStockCount ? `${lowStockCount} ta risk` : "Barqaror"}</strong>
+          </span>
         </div>
       </div>
 
       <div className="dashboard-greeting__side">
         <div className="dashboard-greeting__filters">
-          <button type="button">
+          <button
+            type="button"
+            aria-label="Bugungi savdo hisobotini ochish"
+            title="Bugungi savdo hisobotini ochish"
+            onClick={() => navigate("/reports/sales")}
+          >
             <CalendarDays size={16} />
-            Bugun
+            Bugungi hisobot
           </button>
 
-          <button type="button">
+          <button
+            type="button"
+            aria-label="Filial omborlarini ochish"
+            title={city ? `${city} omborlarini ochish` : "Filial tanlanmagan"}
+            onClick={() => navigate("/warehouse/warehouses")}
+          >
             <MapPin size={16} />
-            {city}
+            <span>{city || "Filial tanlanmagan"}</span>
           </button>
-        </div>
 
-        <div className="dashboard-greeting__ai-note">
-          <span>
-            <Activity size={17} />
-          </span>
-
-          <div>
-            <strong>AI kuzatuv</strong>
-            <p>{recommendations} va real-time monitoring faol.</p>
-          </div>
+          <button
+            type="button"
+            aria-label="Dashboard ma'lumotlarini yangilash"
+            title={formatUpdatedAt(lastUpdated)}
+            onClick={onRefresh}
+          >
+            <RefreshCw size={16} />
+            <span>{isFetching ? "Yangilanmoqda" : formatUpdatedAt(lastUpdated)}</span>
+          </button>
         </div>
       </div>
     </section>

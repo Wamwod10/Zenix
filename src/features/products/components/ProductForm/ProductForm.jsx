@@ -10,6 +10,7 @@ import {
   Sparkles,
   Tag,
 } from "lucide-react";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import useProductForm from "../../hooks/useProductForm";
@@ -17,10 +18,13 @@ import {
   calculateMargin,
   calculateMarkup,
   calculateProfit,
+  createProductEntityId,
   formatMoney,
   labelProductStatus,
   toNumber,
 } from "../../utils/productCalculations";
+
+import "./ProductForm.scss";
 
 const steps = [
   { id: "basic", label: "Asosiy", icon: PackageCheck },
@@ -49,18 +53,72 @@ const ProductForm = ({
   allProducts,
   onSubmit,
   onGenerateCodes,
+  onCreateCategory,
+  onCreateBrand,
 }) => {
   const navigate = useNavigate();
+  const mediaInputRef = useRef(null);
+  const documentInputRef = useRef(null);
   const form = useProductForm({ product, products, onSubmit });
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [newBrandName, setNewBrandName] = useState("");
   const currentStep = steps[form.step];
   const CurrentStepIcon = currentStep.icon;
   const profit = calculateProfit(form.form.price, form.form.cost);
   const margin = calculateMargin(form.form.price, form.form.cost);
   const markup = calculateMarkup(form.form.price, form.form.cost);
+  const errorEntries = Object.entries(form.errors).filter(([, message]) => Boolean(message));
 
-  const updateNumber = (key, value) => form.actions.update(key, toNumber(value));
+  const requiredByStep = [
+    ["name"],
+    ["categoryId", "unitId"],
+    ["sku"],
+    ["price"],
+    [],
+    [],
+    [],
+  ];
+  const isStepComplete = (index) =>
+    requiredByStep[index].every((key) => {
+      const value = form.form[key];
+      if (key === "price") return toNumber(value) > 0;
+      return String(value || "").trim();
+    });
+  const maxUnlockedStep = requiredByStep.reduce(
+    (max, _fields, index) => (index === max && isStepComplete(index) ? max + 1 : max),
+    0,
+  );
+  const goToStep = (index) => {
+    if (index <= maxUnlockedStep) form.actions.setStep(index);
+  };
+
+  const updateNumber = (key, value) => form.actions.update(key, value === "" ? "" : toNumber(value));
+
+  const createInlineCategory = () => {
+    const name = newCategoryName.trim();
+    if (!name || typeof onCreateCategory !== "function") return;
+    const category = onCreateCategory({ name, code: name.slice(0, 3).toUpperCase() });
+    if (category?.id) form.actions.update("categoryId", category.id);
+    setNewCategoryName("");
+  };
+
+  const createInlineBrand = () => {
+    const name = newBrandName.trim();
+    if (!name || typeof onCreateBrand !== "function") return;
+    const brand = onCreateBrand({ name, manufacturer: name });
+    if (brand?.id) form.actions.update("brandId", brand.id);
+    setNewBrandName("");
+  };
 
   const generateCodes = () => {
+    const hasExistingCode = form.form.sku || form.form.barcodes?.some(Boolean) || form.form.qrCode;
+    const canReplace =
+      !hasExistingCode ||
+      typeof window === "undefined" ||
+      window.confirm("Mavjud artikul, shtrix-kod yoki QR almashtirilsinmi?");
+
+    if (!canReplace) return;
+
     const codes = onGenerateCodes({
       name: form.form.name,
       categoryId: form.form.categoryId,
@@ -96,8 +154,8 @@ const ProductForm = ({
       variants: [
         ...(current.variants || []),
         {
-          id: `var-${Date.now()}`,
-          combination: "Maxsus / Asosiy",
+          id: createProductEntityId("var"),
+          combination: "",
           sku: `${current.sku || "ART"}-V${(current.variants || []).length + 1}`,
           barcode: "",
           price: toNumber(current.price),
@@ -112,23 +170,45 @@ const ProductForm = ({
     form.actions.setForm((current) => ({
       ...current,
       variants: (current.variants || []).map((variant, itemIndex) =>
-        itemIndex === index ? { ...variant, [key]: key === "price" || key === "stock" ? toNumber(value) : value } : variant,
+        itemIndex === index ? { ...variant, [key]: key === "price" || key === "stock" ? (value === "" ? "" : toNumber(value)) : value } : variant,
       ),
     }));
   };
 
-  const addMedia = (kind) => {
+  const addMedia = (kind, file) => {
+    if (!file) return;
+    const allowedTypes =
+      kind === "media"
+        ? ["image/png", "image/jpeg", "image/webp"]
+        : ["application/pdf", "image/png", "image/jpeg", "image/webp"];
+
+    if (!allowedTypes.includes(file.type) || file.size > 8 * 1024 * 1024) {
+      form.actions.setErrors({
+        ...form.errors,
+        media: "Fayl turi yoki hajmi noto'g'ri. 8MB gacha PNG, JPG, WEBP yoki PDF tanlang.",
+      });
+      return;
+    }
+
+    form.actions.setErrors({ ...form.errors, media: "" });
     form.actions.setForm((current) => ({
       ...current,
       [kind]: [
         ...(current[kind] || []),
         {
-          id: `${kind}-${Date.now()}`,
-          name: kind === "media" ? "mahsulot-rasmi.webp" : "mahsulot-hujjati.pdf",
-          type: kind === "media" ? "image/webp" : "application/pdf",
-          size: kind === "media" ? 260000 : 180000,
+          id: createProductEntityId(kind),
+          name: file.name,
+          type: file.type,
+          size: file.size,
         },
       ],
+    }));
+  };
+
+  const removeFile = (kind, fileId) => {
+    form.actions.setForm((current) => ({
+      ...current,
+      [kind]: (current[kind] || []).filter((file) => file.id !== fileId),
     }));
   };
 
@@ -150,7 +230,8 @@ const ProductForm = ({
               key={step.id}
               className={form.step === index ? "is-active" : ""}
               aria-selected={form.step === index}
-              onClick={() => form.actions.setStep(index)}
+              disabled={index > maxUnlockedStep}
+              onClick={() => goToStep(index)}
             >
               <Icon size={16} />
               <span>{step.label}</span>
@@ -177,9 +258,20 @@ const ProductForm = ({
           </div>
         </div>
 
+        {errorEntries.length > 0 && (
+          <div className="products-form-errors" role="alert">
+            <strong>Saqlashdan oldin tekshiring</strong>
+            {errorEntries.map(([key, message]) => (
+              <button type="button" key={key} onClick={() => form.actions.setErrors({ ...form.errors, [key]: message })}>
+                {message}
+              </button>
+            ))}
+          </div>
+        )}
+
         {form.step === 0 && (
           <div className="products-form-grid">
-            <Field label="Nomi" error={form.errors.name}>
+            <Field label="Nomi" required error={form.errors.name}>
               <input value={form.form.name} onChange={(event) => form.actions.update("name", event.target.value)} />
             </Field>
             <Field label="Hayot sikli">
@@ -207,19 +299,39 @@ const ProductForm = ({
 
         {form.step === 1 && (
           <div className="products-form-grid">
-            <Field label="Kategoriya" error={form.errors.categoryId}>
+            <Field label="Kategoriya" required error={form.errors.categoryId}>
               <select value={form.form.categoryId} onChange={(event) => form.actions.update("categoryId", event.target.value)}>
                 <option value="">Tanlang</option>
                 {categories.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
               </select>
+              <div className="products-inline-create">
+                <input
+                  value={newCategoryName}
+                  placeholder="Yangi kategoriya nomi"
+                  onChange={(event) => setNewCategoryName(event.target.value)}
+                />
+                <button type="button" className="products-mini-button" onClick={createInlineCategory}>
+                  + Qo'shish
+                </button>
+              </div>
             </Field>
             <Field label="Brend / ishlab chiqaruvchi">
               <select value={form.form.brandId} onChange={(event) => form.actions.update("brandId", event.target.value)}>
                 <option value="">Tanlang</option>
                 {brands.map((item) => <option key={item.id} value={item.id}>{item.name} - {item.manufacturer}</option>)}
               </select>
+              <div className="products-inline-create">
+                <input
+                  value={newBrandName}
+                  placeholder="Yangi brend nomi"
+                  onChange={(event) => setNewBrandName(event.target.value)}
+                />
+                <button type="button" className="products-mini-button" onClick={createInlineBrand}>
+                  + Qo'shish
+                </button>
+              </div>
             </Field>
-            <Field label="O'lchov birligi" error={form.errors.unitId}>
+            <Field label="O'lchov birligi" required error={form.errors.unitId}>
               <select value={form.form.unitId} onChange={(event) => form.actions.update("unitId", event.target.value)}>
                 <option value="">Tanlang</option>
                 {units.map((item) => <option key={item.id} value={item.id}>{item.name} ({item.code})</option>)}
@@ -233,7 +345,7 @@ const ProductForm = ({
 
         {form.step === 2 && (
           <div className="products-form-grid">
-            <Field label="Artikul" error={form.errors.sku}>
+            <Field label="Artikul" required error={form.errors.sku}>
               <input value={form.form.sku} onChange={(event) => form.actions.update("sku", event.target.value)} />
             </Field>
             <Field label="Ichki kod">
@@ -263,7 +375,7 @@ const ProductForm = ({
 
         {form.step === 3 && (
           <div className="products-form-grid">
-            <Field label="Sotuv narxi" error={form.errors.price}>
+            <Field label="Sotuv narxi" required error={form.errors.price}>
               <input type="number" value={form.form.price} onChange={(event) => updateNumber("price", event.target.value)} />
             </Field>
             <Field label="Tannarx">
@@ -318,16 +430,39 @@ const ProductForm = ({
               <strong>Rasm va fayl yuklash namoyishi</strong>
               <span>PNG, JPG, WEBP va PDF. Hajm 8MB dan oshmasligi kerak.</span>
               {form.errors.media && <small>{form.errors.media}</small>}
+              <input
+                ref={mediaInputRef}
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                className="products-file-input"
+                onChange={(event) => addMedia("media", event.target.files?.[0])}
+              />
+              <input
+                ref={documentInputRef}
+                type="file"
+                accept="application/pdf,image/png,image/jpeg,image/webp"
+                className="products-file-input"
+                onChange={(event) => addMedia("documents", event.target.files?.[0])}
+              />
               <div>
-                <button type="button" className="products-mini-button" onClick={() => addMedia("media")}>Rasm qo'shish</button>
-                <button type="button" className="products-mini-button" onClick={() => addMedia("documents")}>Hujjat qo'shish</button>
+                <button type="button" className="products-mini-button" onClick={() => mediaInputRef.current?.click()}>Rasm qo'shish</button>
+                <button type="button" className="products-mini-button" onClick={() => documentInputRef.current?.click()}>Hujjat qo'shish</button>
               </div>
             </div>
-            {[...(form.form.media || []), ...(form.form.documents || [])].map((file) => (
+            {(form.form.media || []).map((file) => (
               <article className="products-mini-card" key={file.id}>
                 <strong>{file.name}</strong>
                 <span>{file.type}</span>
                 <span>{Math.round(file.size / 1024)} KB</span>
+                <button type="button" className="products-mini-button" onClick={() => removeFile("media", file.id)}>Olib tashlash</button>
+              </article>
+            ))}
+            {(form.form.documents || []).map((file) => (
+              <article className="products-mini-card" key={file.id}>
+                <strong>{file.name}</strong>
+                <span>{file.type}</span>
+                <span>{Math.round(file.size / 1024)} KB</span>
+                <button type="button" className="products-mini-button" onClick={() => removeFile("documents", file.id)}>Olib tashlash</button>
               </article>
             ))}
           </div>
@@ -377,7 +512,7 @@ const ProductForm = ({
             Orqaga
           </button>
           {form.step < steps.length - 1 ? (
-            <button type="button" className="products-mini-button is-primary" onClick={() => form.actions.setStep(form.step + 1)}>
+            <button type="button" className="products-mini-button is-primary" disabled={form.step + 1 > maxUnlockedStep} onClick={() => goToStep(form.step + 1)}>
               Keyingi
             </button>
           ) : (
@@ -392,9 +527,9 @@ const ProductForm = ({
   );
 };
 
-const Field = ({ label, error, wide = false, children }) => (
+const Field = ({ label, required = false, error, wide = false, children }) => (
   <label className={wide ? "products-form-grid__wide" : ""}>
-    <span>{label}</span>
+    <span>{label}{required ? " *" : ""}</span>
     {children}
     {error && <small>{error}</small>}
   </label>

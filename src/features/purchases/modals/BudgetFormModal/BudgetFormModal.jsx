@@ -179,6 +179,7 @@ const BudgetFormModal = ({
             className="purchase-btn purchase-btn--primary"
             type="button"
             disabled={errors.length > 0}
+            title={errors.length > 0 ? "Avval ko'rsatilgan xatolarni tuzating" : undefined}
             onClick={() => onSubmit?.(payload)}
           >
             <Wallet size={15} />

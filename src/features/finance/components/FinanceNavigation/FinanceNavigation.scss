@@ -12,19 +12,38 @@
 
   &__group {
     display: grid;
-    grid-template-columns: 112px minmax(0, 1fr);
-    gap: 8px;
-    align-items: center;
+    gap: 7px;
   }
 
-  h2 {
-    margin: 0;
+  &__group-trigger {
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 0 10px;
+    border: 1px solid rgba(255, 255, 255, 0.66);
+    border-radius: 13px;
+    background: rgba(255, 255, 255, 0.14);
     color: rgba(15, 23, 42, 0.42);
     font-size: 10px;
     font-weight: 820;
     line-height: 1;
     letter-spacing: 0.07em;
     text-transform: uppercase;
+
+    svg {
+      transition: transform 180ms ease;
+    }
+
+    &.is-active {
+      color: rgba(43, 79, 188, 0.86);
+      background: rgba(255, 255, 255, 0.26);
+    }
+  }
+
+  &__group.is-open &__group-trigger svg {
+    transform: rotate(180deg);
   }
 
   div[role="tablist"] {
@@ -55,6 +74,14 @@
       border-color: rgba(255, 255, 255, 0.84);
       background: rgba(255, 255, 255, 0.42);
     }
+  }
+
+  &__group-trigger {
+    cursor: pointer;
+  }
+
+  &__group-trigger + div[role="tablist"] {
+    padding-left: 3px;
   }
 }
 

@@ -3,13 +3,28 @@ import { FolderTree, Plus } from "lucide-react";
 
 import { labelProductStatus } from "../../utils/productCalculations";
 
-const Categories = ({ categories, onCreateCategory }) => {
+const Categories = ({ categories, onCreateCategory, onUpdateCategory, onDeleteCategory }) => {
   const [form, setForm] = useState({ name: "", code: "", parentId: "" });
+  const [editingId, setEditingId] = useState("");
 
   const submit = () => {
     if (!form.name || !form.code) return;
-    onCreateCategory(form);
+    if (editingId) {
+      onUpdateCategory(editingId, form);
+    } else {
+      onCreateCategory(form);
+    }
     setForm({ name: "", code: "", parentId: "" });
+    setEditingId("");
+  };
+
+  const startEdit = (category) => {
+    setEditingId(category.id);
+    setForm({
+      name: category.name || "",
+      code: category.code || "",
+      parentId: category.parentId || "",
+    });
   };
 
   return (
@@ -31,7 +46,12 @@ const Categories = ({ categories, onCreateCategory }) => {
               {categories.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
             </select>
           </label>
-          <button type="button" className="products-button is-primary" onClick={submit}><Plus size={15} /> Kategoriya yaratish</button>
+          <button type="button" className="products-button is-primary" onClick={submit}><Plus size={15} /> {editingId ? "Kategoriyani saqlash" : "Kategoriya yaratish"}</button>
+          {editingId && (
+            <button type="button" className="products-mini-button" onClick={() => { setEditingId(""); setForm({ name: "", code: "", parentId: "" }); }}>
+              Bekor qilish
+            </button>
+          )}
         </div>
       </section>
       <section className="products-card-grid">
@@ -40,6 +60,12 @@ const Categories = ({ categories, onCreateCategory }) => {
             <strong>{item.name}</strong>
             <span>{item.code} · {item.parentId ? "Ichki kategoriya" : "Asosiy"}</span>
             <span>{item.productCount || 0} mahsulot · {labelProductStatus(item.status)}</span>
+            <div className="products-row-actions products-row-actions--text">
+              <button type="button" onClick={() => startEdit(item)}>Tahrirlash</button>
+              <button type="button" onClick={() => window.confirm("Kategoriyani o'chirishni tasdiqlaysizmi?") && onDeleteCategory(item.id)}>
+                O'chirish
+              </button>
+            </div>
           </article>
         ))}
       </section>

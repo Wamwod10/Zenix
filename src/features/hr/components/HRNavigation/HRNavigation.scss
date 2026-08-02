@@ -24,18 +24,18 @@
     text-transform: uppercase;
   }
 
-  div[role="tablist"] {
+  &__group > div {
     display: flex;
     gap: 7px;
     overflow-x: auto;
     scrollbar-width: none;
   }
 
-  div[role="tablist"]::-webkit-scrollbar {
+  &__group > div::-webkit-scrollbar {
     display: none;
   }
 
-  button {
+  a {
     min-height: 36px;
     display: inline-flex;
     align-items: center;
@@ -49,6 +49,7 @@
     cursor: pointer;
     font-size: 12px;
     font-weight: 740;
+    text-decoration: none;
 
     &.is-active {
       color: rgba(5, 14, 35, 0.82);

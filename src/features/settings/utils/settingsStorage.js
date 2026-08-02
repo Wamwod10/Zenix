@@ -1,7 +1,7 @@
 const canUseStorage = () => typeof window !== "undefined" && window.localStorage;
 
 export const settingsStorageKeys = {
-  state: "zenix.settings.state",
+  state: "zenix.settings.state.v2",
   favorites: "zenix.settings.favorites",
   recent: "zenix.settings.recent",
   history: "zenix.settings.history",

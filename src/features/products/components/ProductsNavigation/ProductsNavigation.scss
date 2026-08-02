@@ -1,0 +1,11 @@
+.products-navigation {
+  overflow: visible;
+}
+
+.products-navigation__group div {
+  scrollbar-width: none;
+}
+
+.products-navigation__group div::-webkit-scrollbar {
+  display: none;
+}

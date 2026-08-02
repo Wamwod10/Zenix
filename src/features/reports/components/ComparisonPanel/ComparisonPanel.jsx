@@ -10,8 +10,8 @@ const modes = [
   ["year-year", "Yil"],
   ["branch-branch", "Filial"],
   ["product-product", "Mahsulot"],
-  ["employee-employee", "Employee"],
-  ["supplier-supplier", "Supplier"],
+  ["employee-employee", "Xodim"],
+  ["supplier-supplier", "Yetkazib beruvchi"],
 ];
 
 const ComparisonPanel = ({ comparison, mode, onMode }) => {
@@ -22,9 +22,9 @@ const ComparisonPanel = ({ comparison, mode, onMode }) => {
       <div className="comparison-panel__head">
         <span className="reports-eyebrow">
           <GitCompareArrows size={14} />
-          Comparison
+          Taqqoslash
         </span>
-        <div role="tablist" aria-label="Comparison modes">
+        <div role="tablist" aria-label="Taqqoslash rejimlari">
           {modes.map(([id, label]) => (
             <button key={id} type="button" role="tab" aria-selected={mode === id} className={mode === id ? "is-active" : ""} onClick={() => onMode(id)}>
               {label}

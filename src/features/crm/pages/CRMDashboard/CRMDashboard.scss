@@ -183,7 +183,7 @@
       font-size: clamp(1.02rem, 1.4vw, 1.22rem);
       font-weight: 640;
       line-height: 1.15;
-      letter-spacing: -0.035em;
+      letter-spacing: 0;
     }
 
     p {
@@ -289,7 +289,7 @@
         font-size: 15px;
         font-weight: 660;
         line-height: 1;
-        letter-spacing: -0.035em;
+        letter-spacing: 0;
         font-variant-numeric: tabular-nums;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -445,7 +445,7 @@
         font-size: 30px;
         font-weight: 640;
         line-height: 1;
-        letter-spacing: -0.06em;
+        letter-spacing: 0;
         font-variant-numeric: tabular-nums;
       }
 

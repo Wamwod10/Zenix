@@ -233,7 +233,7 @@ const CustomerForm = ({
   );
 
   const normalizedManagers = useMemo(
-    () => normalizeOptions(managers),
+    () => normalizeOptions(managers).filter((manager) => manager.value && manager.label),
     [managers],
   );
 

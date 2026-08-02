@@ -1,24 +1,26 @@
-import { useEffect, useState } from "react";
+import { useCallback } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
-import { initialWarehouseState } from "../data/warehouseMockData";
 import {
-  safeStorageRead,
-  safeStorageWrite,
-  warehouseStorageKeys,
-} from "../utils/warehouseStorage";
-
-const cloneInitialState = () => JSON.parse(JSON.stringify(initialWarehouseState));
+  businessOSActions,
+  selectWarehouseModuleState,
+} from "../../../core/businessOS/businessOSSlice";
 
 const useWarehouseStorage = () => {
-  const [state, setState] = useState(() =>
-    safeStorageRead(warehouseStorageKeys.state, cloneInitialState()),
-  );
+  const dispatch = useDispatch();
+  const state = useSelector(selectWarehouseModuleState);
+  const setState = useCallback((updater) => {
+    const nextState = typeof updater === "function" ? updater(state) : updater;
+    dispatch(businessOSActions.warehouseModuleCommitted(nextState));
+  }, [dispatch, state]);
 
-  useEffect(() => {
-    safeStorageWrite(warehouseStorageKeys.state, state);
-  }, [state]);
-
-  const resetState = () => setState(cloneInitialState());
+  const resetState = useCallback(() => {
+    dispatch(businessOSActions.warehouseModuleCommitted({
+      warehouses: [],
+      products: [],
+      movements: [],
+    }));
+  }, [dispatch]);
 
   return {
     state,

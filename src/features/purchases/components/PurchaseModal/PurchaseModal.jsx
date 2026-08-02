@@ -1,6 +1,6 @@
 // Xaridlar moduli umumiy modal qobig'i (backdrop, Escape, scroll-lock).
 
-import { useEffect } from "react";
+import { useEffect, useId, useRef } from "react";
 import { X } from "lucide-react";
 
 import "./PurchaseModal.scss";
@@ -15,10 +15,21 @@ const PurchaseModal = ({
   children,
   footer,
 }) => {
+  const dialogRef = useRef(null);
+  const titleId = useId();
+  const descriptionId = useId();
+
   useEffect(() => {
     if (!open) {
       return undefined;
     }
+
+    const previouslyFocused = document.activeElement;
+    const previousOverflow = document.body.style.overflow;
+
+    window.setTimeout(() => {
+      dialogRef.current?.focus();
+    }, 0);
 
     const handleEscape = (event) => {
       if (event.key === "Escape") {
@@ -31,7 +42,8 @@ const PurchaseModal = ({
 
     return () => {
       window.removeEventListener("keydown", handleEscape);
-      document.body.style.overflow = "";
+      document.body.style.overflow = previousOverflow;
+      previouslyFocused?.focus?.();
     };
   }, [onClose, open]);
 
@@ -45,6 +57,31 @@ const PurchaseModal = ({
     }
   };
 
+  const handleDialogKeyDown = (event) => {
+    if (event.key !== "Tab") return;
+
+    const focusable = dialogRef.current?.querySelectorAll(
+      'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    );
+    const nodes = Array.from(focusable || []);
+
+    if (!nodes.length) {
+      event.preventDefault();
+      return;
+    }
+
+    const first = nodes[0];
+    const last = nodes[nodes.length - 1];
+
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  };
+
   return (
     <div
       className="purchase-modal"
@@ -52,15 +89,20 @@ const PurchaseModal = ({
       onMouseDown={handleBackdropClick}
     >
       <section
+        ref={dialogRef}
         className={`purchase-modal__dialog purchase-modal__dialog--${size}`}
         role="dialog"
         aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={description ? descriptionId : undefined}
+        tabIndex={-1}
+        onKeyDown={handleDialogKeyDown}
       >
         <div className="purchase-modal__header">
           <div>
             {eyebrow && <span className="purchase-modal__eyebrow">{eyebrow}</span>}
-            <h2>{title}</h2>
-            {description && <p>{description}</p>}
+            <h2 id={titleId}>{title}</h2>
+            {description && <p id={descriptionId}>{description}</p>}
           </div>
 
           <button

@@ -4,12 +4,15 @@ import {
   useMemo,
   useState,
 } from "react";
+import { useSelector } from "react-redux";
 
+import { store } from "../../../app/store/store";
+import { businessOSActions } from "../../../core/businessOS/businessOSSlice";
 import * as crmCustomerData from "../data/crmCustomers";
 
 const PROFILE_LOAD_DELAY = 420;
 const CRM_CUSTOMERS_STORAGE_KEY =
-  "zenix.crm.customers.v1";
+  "zenix.crm.customers.v2";
 
 const staticCustomers =
   crmCustomerData.crmCustomers ??
@@ -82,6 +85,19 @@ export const getCRMCustomerRecords = () => {
     });
   });
 
+  const sharedCustomers = store.getState().businessOS?.entities?.customers;
+  (sharedCustomers?.allIds || []).forEach((id) => {
+    const customer = sharedCustomers.byId[id];
+    if (!customer || customer.archived) return;
+    const existingCustomer = customerMap.get(String(customer.id));
+    customerMap.set(String(customer.id), {
+      ...(existingCustomer ?? {}),
+      ...customer,
+      fullName: customer.fullName || customer.name,
+      tags: [...(customer.tags ?? [])],
+    });
+  });
+
   return [...customerMap.values()];
 };
 
@@ -126,7 +142,19 @@ export const saveCRMCustomerRecord = (customer) => {
     ]);
   }
 
+  store.dispatch(businessOSActions.upsertCustomer(normalizedCustomer));
+
   return normalizedCustomer;
+};
+
+export const deleteCRMCustomerRecord = (customerId) => {
+  const normalizedId = String(customerId ?? "");
+  const nextCustomers = readStoredCustomers().filter(
+    (customer) => String(customer.id) !== normalizedId,
+  );
+
+  writeStoredCustomers(nextCustomers);
+  store.dispatch(businessOSActions.archiveCustomer(normalizedId));
 };
 
 const calculateRelationshipDays = (createdAt) => {
@@ -231,6 +259,10 @@ const getContactCompleteness = (customer) => {
 };
 
 const useCustomerProfile = (customerId) => {
+  const customerRevision = useSelector((state) => {
+    const customer = state.businessOS?.entities?.customers?.byId?.[customerId];
+    return `${customer?.updatedAt || ""}:${customer?.totalSpent || 0}:${customer?.orderCount || 0}`;
+  });
   const [customer, setCustomer] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -285,7 +317,7 @@ const useCustomerProfile = (customerId) => {
       active = false;
       window.clearTimeout(loadTimer);
     };
-  }, [customerId, refreshIndex]);
+  }, [customerId, customerRevision, refreshIndex]);
 
   const metrics = useMemo(() => {
     if (!customer) {

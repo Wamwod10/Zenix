@@ -1,6 +1,7 @@
 // PDF 2: Purchase Orders Dashboard jadvali — ustunlar: PO raqami, supplier,
 // sana, summa, holat, yetkazish sanasi, to'lov holati. Bulk + quick actions.
 
+import { useEffect, useMemo, useRef } from "react";
 import {
   Copy,
   Eye,
@@ -60,6 +61,34 @@ const PurchaseOrdersTable = ({
   onReceive,
   onPrint,
 }) => {
+  const selectAllRef = useRef(null);
+  const allOnPageSelected = orders.length > 0 && orders.every((order) =>
+    selectedIds.includes(order.id),
+  );
+  const someOnPageSelected = orders.some((order) =>
+    selectedIds.includes(order.id),
+  );
+  const pageNumbers = useMemo(() => {
+    const pages = new Set([1, page - 1, page, page + 1, totalPages]);
+
+    return Array.from(pages)
+      .filter((entry) => entry >= 1 && entry <= totalPages)
+      .sort((a, b) => a - b);
+  }, [page, totalPages]);
+
+  useEffect(() => {
+    if (selectAllRef.current) {
+      selectAllRef.current.indeterminate = someOnPageSelected && !allOnPageSelected;
+    }
+  }, [allOnPageSelected, someOnPageSelected]);
+
+  const handleRowKeyDown = (event, order) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      onView?.(order);
+    }
+  };
+
   if (!orders.length) {
     return (
       <EmptyState
@@ -69,10 +98,6 @@ const PurchaseOrdersTable = ({
       />
     );
   }
-
-  const allOnPageSelected = orders.every((order) =>
-    selectedIds.includes(order.id),
-  );
 
   return (
     <div
@@ -89,9 +114,11 @@ const PurchaseOrdersTable = ({
         role="row"
       >
         <input
+          ref={selectAllRef}
           className="purchase-table__checkbox"
           type="checkbox"
           aria-label="Sahifadagi barchasini tanlash"
+          aria-checked={someOnPageSelected && !allOnPageSelected ? "mixed" : allOnPageSelected}
           checked={allOnPageSelected}
           onChange={onToggleAll}
         />
@@ -122,9 +149,11 @@ const PurchaseOrdersTable = ({
             ]
               .filter(Boolean)
               .join(" ")}
-            role="row"
+            role="button"
+            tabIndex={0}
             key={order.id}
             onClick={() => onView?.(order)}
+            onKeyDown={(event) => handleRowKeyDown(event, order)}
           >
             <input
               className="purchase-table__checkbox"
@@ -174,6 +203,7 @@ const PurchaseOrdersTable = ({
               <button
                 type="button"
                 title="Ko'rish"
+                aria-label={`${order.number} buyurtmasini ko'rish`}
                 onClick={() => onView?.(order)}
               >
                 <Eye size={15} />
@@ -182,6 +212,7 @@ const PurchaseOrdersTable = ({
               <button
                 type="button"
                 title="Tahrirlash (faqat draft)"
+                aria-label={`${order.number} qoralamasini tahrirlash`}
                 disabled={!isDraft}
                 onClick={() => onEditDraft?.(order)}
               >
@@ -191,6 +222,7 @@ const PurchaseOrdersTable = ({
               <button
                 type="button"
                 title="Nusxalash"
+                aria-label={`${order.number} buyurtmasidan nusxa olish`}
                 onClick={() => onDuplicate?.(order)}
               >
                 <Copy size={15} />
@@ -199,6 +231,7 @@ const PurchaseOrdersTable = ({
               <button
                 type="button"
                 title="Yetkazish qabul"
+                aria-label={`${order.number} bo'yicha yetkazishni qabul qilish`}
                 disabled={!receivable}
                 onClick={() => onReceive?.(order)}
               >
@@ -208,6 +241,7 @@ const PurchaseOrdersTable = ({
               <button
                 type="button"
                 title="PDF / chop etish"
+                aria-label={`${order.number} buyurtmasini PDF yoki chop etish`}
                 onClick={() => onPrint?.(order)}
               >
                 <Printer size={15} />
@@ -228,6 +262,21 @@ const PurchaseOrdersTable = ({
         >
           Oldingi
         </button>
+        {pageNumbers.map((pageNumber) => (
+          <button
+            className={
+              pageNumber === page
+                ? "purchase-table__page-btn purchase-table__page-btn--active"
+                : "purchase-table__page-btn"
+            }
+            type="button"
+            key={pageNumber}
+            aria-current={pageNumber === page ? "page" : undefined}
+            onClick={() => onPageChange?.(pageNumber)}
+          >
+            {pageNumber}
+          </button>
+        ))}
         <button
           type="button"
           disabled={page >= totalPages}

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
   RefreshCw,
@@ -37,10 +37,7 @@ const CustomerForm = () => {
   const [loadError, setLoadError] = useState(null);
   const [reloadIndex, setReloadIndex] = useState(0);
 
-  const availableCustomers = useMemo(
-    () => getCRMCustomerRecords(),
-    [customer, reloadIndex],
-  );
+  const availableCustomers = getCRMCustomerRecords();
 
   useEffect(() => {
     if (loadTimerRef.current) {

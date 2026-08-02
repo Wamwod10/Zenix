@@ -16,7 +16,7 @@ const ReportBarChart = ({ data = [], valueFormatter = (value) => value, onBarCli
   return (
     <div className={`report-bar-chart report-bar-chart--${tone}`}>
       {data.map((entry, index) => {
-        const percent = Math.max((entry.value / max) * 100, entry.value > 0 ? 4 : 0);
+        const percent = entry.value > 0 ? Math.max((entry.value / max) * 100, 2) : 0;
 
         return (
           <div
@@ -27,11 +27,19 @@ const ReportBarChart = ({ data = [], valueFormatter = (value) => value, onBarCli
               .filter(Boolean)
               .join(" ")}
             key={entry.key || entry.label || index}
+            style={{ "--bar-height": `${percent}%` }}
             onClick={onBarClick ? () => onBarClick(entry) : undefined}
           >
             <span className="report-bar-chart__value">{valueFormatter(entry.value)}</span>
             <span className="report-bar-chart__track">
-              <span className="report-bar-chart__fill" style={{ height: `${percent}%` }} />
+              <span
+                className={[
+                  "report-bar-chart__fill",
+                  entry.value === 0 ? "report-bar-chart__fill--zero" : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+              />
             </span>
             <span className="report-bar-chart__label">{entry.label}</span>
           </div>

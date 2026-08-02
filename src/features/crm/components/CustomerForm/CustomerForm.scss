@@ -103,7 +103,7 @@
     display: flex;
     min-width: 0;
     flex-direction: column;
-    gap: 6px;
+    gap: 8px;
 
     &--wide {
       grid-column: 1 / -1;
@@ -123,8 +123,8 @@
 
     > small {
       color: var(--color-text-muted);
-      font-size: 0.59rem;
-      line-height: 1.4;
+      font-size: 0.66rem;
+      line-height: 1.45;
     }
 
     input,
@@ -191,6 +191,10 @@
 
     select {
       padding-right: 34px;
+      appearance: none;
+      background:
+        linear-gradient(135deg, transparent calc(100% - 24px), color-mix(in srgb, var(--color-primary) 12%, transparent) 0),
+        color-mix(in srgb, var(--color-surface-solid) 65%, transparent);
       cursor: pointer;
     }
 
@@ -224,6 +228,7 @@
 
   &__error {
     color: var(--color-danger) !important;
+    font-weight: 620;
   }
 
   &__tags {
@@ -364,6 +369,7 @@
         border: 1px solid var(--color-border);
         border-radius: 10px;
         background: var(--color-surface-muted);
+        appearance: none;
         color: var(--color-text);
         font: inherit;
         font-size: 0.68rem;
@@ -665,6 +671,9 @@
     }
 
     &__sidebar {
+      position: sticky;
+      bottom: 10px;
+      z-index: 8;
       grid-template-columns: minmax(0, 1fr);
       border-radius: 17px;
     }

@@ -4,10 +4,16 @@ let counter = 0;
 
 export const createEntityId = (prefix = "ent") => {
   counter += 1;
+  const cryptoPart = globalThis.crypto?.randomUUID?.();
 
-  return `${prefix}-${Date.now().toString(36)}-${counter}${Math.random()
-    .toString(36)
-    .slice(2, 6)}`;
+  if (cryptoPart) {
+    return `${prefix}-${cryptoPart}`;
+  }
+
+  const timePart = Date.now().toString(36);
+  const randomPart = Math.random().toString(36).slice(2, 10);
+
+  return `${prefix}-${timePart}-${counter}-${randomPart}`;
 };
 
 export const createDocumentNumber = (prefix, sequence) => {

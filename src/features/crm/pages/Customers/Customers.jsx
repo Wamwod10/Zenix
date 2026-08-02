@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import {
   AlertTriangle,
@@ -129,36 +129,21 @@ const Customers = () => {
 
   const activeFilterCount =
     filterState.activeFilterCount ?? filterState.activeFiltersCount ?? 0;
+  const noop = useCallback(() => {}, []);
 
   const setPage =
-    filterActions.setPage ?? filterActions.changePage ?? (() => {});
+    useMemo(
+      () => filterActions.setPage ?? filterActions.changePage ?? noop,
+      [filterActions.changePage, filterActions.setPage, noop],
+    );
 
   const setPageSize =
-    filterActions.setPageSize ?? filterActions.changePageSize ?? (() => {});
+    useMemo(
+      () => filterActions.setPageSize ?? filterActions.changePageSize ?? noop,
+      [filterActions.changePageSize, filterActions.setPageSize, noop],
+    );
 
   const setView = filterActions.setView ?? filterActions.changeView;
-
-  useEffect(() => {
-    if (typeof window === "undefined" || typeof setView !== "function") {
-      return undefined;
-    }
-
-    const mediaQuery = window.matchMedia("(max-width: 680px)");
-
-    const applyMobileView = (event) => {
-      if (event.matches) {
-        setView("cards");
-      }
-    };
-
-    applyMobileView(mediaQuery);
-
-    mediaQuery.addEventListener("change", applyMobileView);
-
-    return () => {
-      mediaQuery.removeEventListener("change", applyMobileView);
-    };
-  }, [setView]);
 
   useEffect(() => {
     if (currentPage > totalPages) {
@@ -228,7 +213,7 @@ const Customers = () => {
       <CRMPageHeader
         eyebrow="CRM · Mijozlar"
         title="Mijozlar bazasi"
-        description="Mijozlar bilan munosabatlar, xarid faolligi, qarzdorlik va sodiqlik holatini bitta ish maydonida boshqaring."
+        description="Mijoz profillari, xarid faolligi va qarzdorlikni bitta ish maydonida boshqaring."
         action={headerAction}
         actions={headerAction}
       />
@@ -298,7 +283,7 @@ const Customers = () => {
           <div className="crm-customers__summary-content">
             <span>Qarzdor mijozlar</span>
             <strong>{formatNumber(summary.debtors)}</strong>
-            <small>{formatCurrency(summary.totalDebt)} qarzdorlik</small>
+            <small>Umumiy qarz: {formatCurrency(summary.totalDebt)}</small>
           </div>
         </article>
 
@@ -308,9 +293,9 @@ const Customers = () => {
           </span>
 
           <div className="crm-customers__summary-content">
-            <span>Yuqori xavf</span>
+            <span>Yo'qotish xavfi yuqori</span>
             <strong>{formatNumber(summary.highRisk)}</strong>
-            <small>Yo‘qotilishi mumkin bo‘lgan mijozlar</small>
+            <small>Tezkor aloqa talab qilinadi</small>
           </div>
         </article>
       </section>
@@ -324,8 +309,10 @@ const Customers = () => {
         managers={customerManagers}
         activeFilterCount={activeFilterCount}
         activeFiltersCount={activeFilterCount}
+        activeFilters={filterState.activeFilters}
         resultCount={filteredCustomers.length}
         resultsCount={filteredCustomers.length}
+        totalResults={filteredCustomers.length}
         onSearchChange={filterActions.setSearch}
         onFilterChange={filterActions.setFilter}
         onReset={filterActions.resetFilters}
@@ -353,6 +340,7 @@ const Customers = () => {
               onSelectionChange={selectionActions.handleSelectionChange}
               onBulkGroupChange={selectionActions.changeSelectedGroup}
               onBulkStatusChange={selectionActions.changeSelectedStatus}
+              onDeleteCustomer={selectionActions.deleteCustomer}
             />
 
             <div

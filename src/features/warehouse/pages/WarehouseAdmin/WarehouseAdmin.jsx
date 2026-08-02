@@ -1,11 +1,18 @@
-import { useState } from "react";
-
 import StatusBadge from "../../components/StatusBadge/StatusBadge";
 import WarehouseTable from "../../components/WarehouseTable/WarehouseTable";
 import { warehousePermissionMatrix, warehouseRoles } from "../../utils/warehousePermissions";
 import { formatDateTime } from "../../utils/warehouseFormatters";
 
 const tabs = ["Hisobotlar", "Import / eksport", "Sozlamalar", "Bildirishnomalar", "Ruxsatlar", "Audit jurnali"];
+const tabSegments = {
+  "Hisobotlar": "reports",
+  "Import / eksport": "import-export",
+  "Sozlamalar": "settings",
+  "Bildirishnomalar": "notifications",
+  "Ruxsatlar": "permissions",
+  "Audit jurnali": "audit",
+};
+const segmentTabs = Object.fromEntries(Object.entries(tabSegments).map(([label, segment]) => [segment, label]));
 
 const reports = [
   "Zaxira holati",
@@ -48,19 +55,30 @@ const permissionStateLabels = {
   hidden: "Yashirilgan",
 };
 
+const settingsLabels = {
+  expiryWarningDays: "Muddat tugashidan oldin ogohlantirish kuni",
+  lowStockThreshold: "Kam qoldiq chegarasi",
+  autoReorder: "Avtomatik qayta buyurtma signali",
+  requireApprovalForAdjustment: "Tuzatish uchun tasdiq talab qilinsin",
+  allowNegativeStock: "Manfiy qoldiqqa ruxsat berish",
+  barcodeStrictMode: "Shtrix-kod majburiy nazorati",
+};
+
 const WarehouseAdmin = ({
   state,
   productsById,
   warehousesById,
   importPreview,
   asyncStatus,
+  activeSection = "reports",
+  onNavigateAdmin,
   onExport,
   onValidateImport,
   onConfirmImport,
   onUpdateSettings,
   onMarkNotificationRead,
 }) => {
-  const [tab, setTab] = useState("Hisobotlar");
+  const tab = segmentTabs[activeSection] || "Hisobotlar";
 
   return (
     <div className="warehouse-view">
@@ -81,7 +99,7 @@ const WarehouseAdmin = ({
               role="tab"
               aria-selected={tab === item}
               className={tab === item ? "is-active" : ""}
-              onClick={() => setTab(item)}
+              onClick={() => onNavigateAdmin?.(tabSegments[item])}
             >
               {item}
             </button>
@@ -151,9 +169,10 @@ const WarehouseAdmin = ({
           <div className="warehouse-settings-grid">
             {Object.entries(state.settings).map(([key, value]) => (
               <label key={key}>
-                <span>{key}</span>
+                <span>{settingsLabels[key] || key}</span>
                 {typeof value === "boolean" ? (
                   <input
+                    className="warehouse-switch"
                     type="checkbox"
                     checked={value}
                     onChange={(event) => onUpdateSettings({ [key]: event.target.checked })}

@@ -48,6 +48,7 @@ import {
   formatQuantity,
   normalizeNumber,
 } from "../../utils/purchaseMoney";
+import { createEntityId } from "../../utils/purchaseIds";
 
 import "./ReceiveGoodsModal.scss";
 
@@ -77,9 +78,8 @@ const buildLines = (order) =>
     volumePerUnit: "",
   }));
 
-let costEntrySeq = 0;
 const makeCostEntry = () => ({
-  id: `cost-${Date.now()}-${costEntrySeq++}`,
+  id: createEntityId("cost"),
   type: LANDED_COST_TYPES[0].id,
   amount: "",
 });

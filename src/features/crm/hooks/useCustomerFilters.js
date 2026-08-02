@@ -2,6 +2,17 @@ import { useCallback, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 
 const allowedPageSizes = [10, 20, 50];
+const viewPreferenceKey = "zenix-crm-customers-view";
+
+const getStoredViewPreference = () => {
+  if (typeof window === "undefined") {
+    return defaultFilters.view;
+  }
+
+  return window.localStorage.getItem(viewPreferenceKey) === "cards"
+    ? "cards"
+    : defaultFilters.view;
+};
 
 const defaultFilters = {
   query: "",
@@ -72,7 +83,11 @@ const useCustomerFilters = (customers = []) => {
         ? requestedPageSize
         : defaultFilters.pageSize,
       view:
-        searchParams.get("view") === "cards" ? "cards" : defaultFilters.view,
+        searchParams.get("view") === "cards"
+          ? "cards"
+          : searchParams.get("view") === "table"
+            ? "table"
+            : getStoredViewPreference(),
     };
   }, [searchParams]);
 
@@ -325,8 +340,14 @@ const useCustomerFilters = (customers = []) => {
 
   const setView = useCallback(
     (view) => {
+      const nextView = view === "cards" ? "cards" : "table";
+
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem(viewPreferenceKey, nextView);
+      }
+
       updateSearchParams({
-        view: view === "cards" ? "cards" : "table",
+        view: nextView,
       });
     },
     [updateSearchParams],

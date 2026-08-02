@@ -1,8 +1,8 @@
-import { Edit3, Eye, Plus, Power } from "lucide-react";
+import { Edit3, Eye, Plus, Power, RotateCcw } from "lucide-react";
 
 import StatusBadge from "../../components/StatusBadge/StatusBadge";
 import WarehouseTable from "../../components/WarehouseTable/WarehouseTable";
-import { formatMoney, percent } from "../../utils/warehouseFormatters";
+import { formatMoney } from "../../utils/warehouseFormatters";
 
 const Warehouses = ({
   warehouses,
@@ -10,6 +10,7 @@ const Warehouses = ({
   onCreate,
   onEdit,
   onDeactivate,
+  onActivate,
   onOpenDetail,
 }) => {
   const rows = warehouses.map((warehouse) => {
@@ -63,7 +64,6 @@ const Warehouses = ({
             { key: "manager", label: "Mas'ul" },
             { key: "skuCount", label: "SKU" },
             { key: "value", label: "Qiymat", render: (row) => formatMoney(row.value) },
-            { key: "capacity", label: "Capacity", render: (row) => percent(row.capacityPercent) },
             { key: "status", label: "Holat", render: (row) => <StatusBadge status={row.status} /> },
             {
               key: "actions",
@@ -76,9 +76,15 @@ const Warehouses = ({
                   <button type="button" aria-label="Omborni tahrirlash" onClick={(event) => { event.stopPropagation(); onEdit(row); }}>
                     <Edit3 size={15} />
                   </button>
-                  <button type="button" aria-label="Omborni nofaollashtirish" onClick={(event) => { event.stopPropagation(); onDeactivate(row.id); }}>
-                    <Power size={15} />
-                  </button>
+                  {row.status === "inactive" ? (
+                    <button type="button" aria-label="Omborni faollashtirish" onClick={(event) => { event.stopPropagation(); onActivate(row.id); }}>
+                      <RotateCcw size={15} />
+                    </button>
+                  ) : (
+                    <button type="button" aria-label="Omborni nofaollashtirish" onClick={(event) => { event.stopPropagation(); onDeactivate(row.id); }}>
+                      <Power size={15} />
+                    </button>
+                  )}
                 </div>
               ),
             },

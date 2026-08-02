@@ -1,9 +1,14 @@
 import { UserCheck } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { formatNumber } from "../../dashboardApi";
 import "./EmployeeStatus.scss";
 
 const EmployeeStatus = ({ employees }) => {
-  const total = Number(employees?.total ?? 21);
-  const active = Number(employees?.activeToday ?? 18);
+  const navigate = useNavigate();
+  const hasEmployeeData = employees?.total != null || employees?.activeToday != null;
+  const total = Number(employees?.total ?? 0);
+  const active = Number(employees?.activeToday ?? 0);
+  const inactive = Math.max(total - active, 0);
   const progress = total > 0 ? Math.round((active / total) * 100) : 0;
 
   return (
@@ -11,7 +16,7 @@ const EmployeeStatus = ({ employees }) => {
       <div className="zenix-dashboard__panel-head">
         <div className="zenix-dashboard__panel-title">
           <span>Jamoa</span>
-          <h3>Smena ritmi</h3>
+          <h3>Smena holati</h3>
         </div>
 
         <span className="zenix-dashboard__panel-icon">
@@ -21,15 +26,29 @@ const EmployeeStatus = ({ employees }) => {
 
       <div className="dashboard-widget__body">
         <strong>
-          {active} / {total}
+          {hasEmployeeData
+            ? `${formatNumber(active)} / ${formatNumber(total)}`
+            : "Ma'lumot yo'q"}
         </strong>
-        <p>{Math.max(total - active, 0)} xodim bugun hali faol emas</p>
+        <p>
+          {hasEmployeeData
+            ? `${formatNumber(inactive)} xodim bugun hali faol emas`
+            : "Smena va davomat endpointi ulanganda ko'rinadi"}
+        </p>
         <span
           className="dashboard-widget__meter"
           style={{ "--widget-progress": `${progress}%` }}
         >
           <i />
         </span>
+        <button
+          type="button"
+          aria-label="Smena sahifasini ochish"
+          title="Smena sahifasini ochish"
+          onClick={() => navigate("/hr/shifts")}
+        >
+          Smenalarni ko'rish
+        </button>
       </div>
     </article>
   );

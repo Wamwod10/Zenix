@@ -8,10 +8,7 @@ import {
   Wallet,
 } from "lucide-react";
 import "./Activity.scss";
-// ✅ BACKEND INTEGRATION: real faoliyat oqimi (audit_logs jadvalidan)
-import { useDashboardSummaryQuery } from "../../dashboardApi";
 
-// Backend action kodlarini o'zbekcha matnga o'girish
 const actionLabels = {
   AUTH_REGISTER: { title: "Yangi akkaunt yaratildi", icon: UserPlus, tone: "green" },
   AUTH_VERIFY_EMAIL: { title: "Email tasdiqlandi", icon: MailCheck, tone: "blue" },
@@ -29,8 +26,24 @@ const actionLabels = {
 };
 
 function timeAgo(dateString) {
-  const diffMs = Date.now() - new Date(dateString).getTime();
-  const minutes = Math.floor(diffMs / 60000);
+  const date = new Date(dateString);
+
+  if (!dateString || Number.isNaN(date.getTime())) {
+    return "Vaqt ko'rsatilmagan";
+  }
+
+  const diffMs = Date.now() - date.getTime();
+
+  if (diffMs < -60000) {
+    return date.toLocaleString("uz-UZ", {
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      month: "short",
+    });
+  }
+
+  const minutes = Math.floor(Math.max(diffMs, 0) / 60000);
 
   if (minutes < 1) return "Hozirgina";
   if (minutes < 60) return `${minutes} daqiqa oldin`;
@@ -41,9 +54,8 @@ function timeAgo(dateString) {
   return `${Math.floor(hours / 24)} kun oldin`;
 }
 
-const Activity = () => {
-  const { data } = useDashboardSummaryQuery();
-  const feed = data?.activity ?? [];
+const Activity = ({ items = [] }) => {
+  const feed = Array.isArray(items) ? items : [];
 
   return (
     <article className="zenix-dashboard__panel dashboard-activity">
@@ -51,7 +63,7 @@ const Activity = () => {
         <div className="zenix-dashboard__panel-title">
           <span>
             <ActivityIcon size={14} />
-            Jonli faoliyat
+            Oxirgi faoliyat
           </span>
           <h3>Operatsiyalar oqimi</h3>
         </div>
@@ -76,7 +88,7 @@ const Activity = () => {
 
         {feed.slice(0, 6).map((item, index) => {
           const meta = actionLabels[item.action] ?? {
-            title: item.action,
+            title: "Tizim amali bajarildi",
             icon: ActivityIcon,
             tone: "blue",
           };
@@ -85,7 +97,7 @@ const Activity = () => {
           return (
             <div
               className={`dashboard-activity__item dashboard-activity__item--${meta.tone}`}
-              key={item.id}
+              key={item.id || `${item.action}-${index}`}
               style={{ "--item-index": index }}
             >
               <span>

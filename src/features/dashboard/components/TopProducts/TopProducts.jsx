@@ -1,30 +1,32 @@
 import { PackageCheck, Sparkles } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { formatMoney } from "../../dashboardApi";
 import "./TopProducts.scss";
 
-const fallbackProducts = [
-  { name: "Premium kofe", value: "3.2m", progress: 88, tone: "green" },
-  { name: "Smart sensor", value: "2.7m", progress: 74, tone: "blue" },
-  { name: "Office set", value: "1.9m", progress: 58, tone: "gold" },
-  { name: "Cloud tarif", value: "1.4m", progress: 46, tone: "cyan" },
-];
+const toProducts = (products = [], currency = "uzs") => {
+  if (!products.length) return [];
 
-const toProducts = (products) => {
-  if (!products?.length) {
-    return fallbackProducts;
-  }
+  const maxTotal = Math.max(
+    ...products.map((product) => Number(product.total ?? product.value ?? 0)),
+    1,
+  );
 
-  const maxTotal = Math.max(...products.map((product) => Number(product.total || 0)), 1);
+  return products.map((product, index) => {
+    const total = Number(product.total ?? product.value ?? 0);
 
-  return products.map((product, index) => ({
-    name: product.name,
-    value: `${Number(product.total || 0).toLocaleString("ru-RU")} so'm`,
-    progress: Math.max(12, Math.round((Number(product.total || 0) / maxTotal) * 100)),
-    tone: ["green", "blue", "gold", "cyan"][index % 4],
-  }));
+    return {
+      id: product.id,
+      name: product.name || "Nomsiz mahsulot",
+      value: formatMoney(total, currency),
+      progress: Math.round((total / maxTotal) * 100),
+      tone: ["green", "blue", "gold", "cyan"][index % 4],
+    };
+  });
 };
 
-const TopProducts = ({ products }) => {
-  const items = toProducts(products);
+const TopProducts = ({ currency = "uzs", products }) => {
+  const navigate = useNavigate();
+  const items = toProducts(products, currency);
 
   return (
     <article className="zenix-dashboard__panel top-products">
@@ -42,26 +44,40 @@ const TopProducts = ({ products }) => {
         </span>
       </div>
 
-      <div className="top-products__list">
-        {items.map((product, index) => (
-          <div
-            className={`top-products__item top-products__item--${product.tone}`}
-            key={product.name}
-            style={{
-              "--item-index": index,
-              "--product-progress": `${product.progress}%`,
-            }}
-          >
-            <div>
-              <strong>{product.name}</strong>
-              <small>{product.value}</small>
-            </div>
-            <span>
-              <i />
-            </span>
-          </div>
-        ))}
-      </div>
+      {items.length ? (
+        <div className="top-products__list">
+          {items.map((product, index) => (
+            <button
+              className={`top-products__item top-products__item--${product.tone}`}
+              key={`${product.id || product.name}-${index}`}
+              style={{
+                "--item-index": index,
+                "--product-progress": `${product.progress}%`,
+              }}
+              type="button"
+              aria-label={`${product.name} mahsulotini ochish`}
+              title={`${product.name}: eng yuqori savdoga nisbatan ${product.progress}%`}
+              onClick={() =>
+                navigate(product.id ? `/products/${product.id}` : "/products")
+              }
+            >
+              <div>
+                <strong>{product.name}</strong>
+                <small>{product.value}</small>
+              </div>
+              <span aria-hidden="true">
+                <i />
+              </span>
+            </button>
+          ))}
+        </div>
+      ) : (
+        <div className="top-products__empty">
+          <PackageCheck size={18} />
+          <strong>Top mahsulotlar hali yo'q</strong>
+          <span>Savdo ma'lumotlari yig'ilgach ro'yxat ko'rinadi.</span>
+        </div>
+      )}
     </article>
   );
 };

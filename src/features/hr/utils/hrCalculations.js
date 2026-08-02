@@ -1,5 +1,7 @@
 const DAY = 24 * 60 * 60 * 1000;
 
+export const getTodayISO = () => new Date().toISOString().slice(0, 10);
+
 export const daysBetween = (from, to = new Date()) => {
   if (!from) return 0;
   const start = new Date(from);
@@ -11,11 +13,22 @@ export const calculatePayroll = (entry, config) => {
   const baseSalary = Number(entry.baseSalary || 0);
   const workedDays = Number(entry.workedDays || 0);
   const standardDays = Number(config.standardDays || 22);
-  const proratedBase = standardDays > 0 ? (baseSalary / standardDays) * workedDays : baseSalary;
+  const safeWorkedDays = Math.min(Math.max(workedDays, 0), standardDays);
+  const overtimeAmount =
+    Number(entry.overtime || 0) ||
+    Math.round(Number(entry.overtimeHours || 0) * Number(entry.overtimeRate || 0) * Number(config.overtimeMultiplier || 1));
+  const validationErrors = [];
+
+  if (workedDays > standardDays) validationErrors.push("Ishlangan kun standart kundan oshmasligi kerak.");
+  if (Number(entry.penalty || 0) < 0 || Number(entry.deductions || 0) < 0) {
+    validationErrors.push("Jarima va ushlanmalar manfiy bo'lishi mumkin emas.");
+  }
+
+  const proratedBase = standardDays > 0 ? (baseSalary / standardDays) * safeWorkedDays : baseSalary;
   const gross =
     proratedBase +
     Number(entry.bonus || 0) +
-    Number(entry.overtime || 0) +
+    overtimeAmount +
     Number(entry.compensation || 0);
   const tax = Math.round(gross * Number(config.taxRate || 0));
   const inps = Math.round(gross * Number(config.inpsRate || 0));
@@ -25,7 +38,9 @@ export const calculatePayroll = (entry, config) => {
     Number(entry.deductions || 0) +
     tax +
     inps;
-  const net = Math.max(0, Math.round(gross - reductions));
+  const net = Math.round(gross - reductions);
+
+  if (net < 0) validationErrors.push("Net oylik manfiy chiqdi. Uni qarzdorlik yoki xato sifatida ko'rib chiqing.");
 
   return {
     baseSalary,
@@ -33,8 +48,11 @@ export const calculatePayroll = (entry, config) => {
     gross: Math.round(gross),
     tax,
     inps,
-    reductions,
+    reductions: Math.round(reductions),
     net,
+    overtime: overtimeAmount,
+    hasDebt: net < 0,
+    validationErrors,
   };
 };
 
@@ -62,6 +80,16 @@ export const calculateProbationDays = (probation) => {
   };
 };
 
+export const isBirthdayWithinDays = (birthDate, days, fromDate = getTodayISO()) => {
+  if (!birthDate) return false;
+  const today = new Date(`${fromDate}T00:00:00`);
+  const birthday = new Date(`${birthDate}T00:00:00`);
+  birthday.setFullYear(today.getFullYear());
+  if (birthday < today) birthday.setFullYear(today.getFullYear() + 1);
+  const diff = Math.round((birthday - today) / DAY);
+  return diff >= 0 && diff <= days;
+};
+
 export const calculateDocumentExpiry = (document) => {
   const remaining = daysBetween(new Date(), document.expiryDate);
   let status = "normal";
@@ -73,18 +101,31 @@ export const calculateDocumentExpiry = (document) => {
 };
 
 export const buildHRAnalytics = (state) => {
+  const currentDate = state.settings.currentDate || getTodayISO();
+  const currentPeriod = state.settings.period || currentDate.slice(0, 7);
   const activeEmployees = state.employees.filter((item) => item.status !== "terminated");
   const todayPresent = state.attendance.filter((item) =>
-    ["present", "late", "remote"].includes(item.status),
+    item.date === currentDate && ["present", "late", "remote"].includes(item.status),
   ).length;
-  const leavesToday = state.employees.filter((item) => item.status === "leave").length;
-  const sickToday = state.employees.filter((item) => item.status === "sick").length;
-  const lateToday = state.employees.filter((item) => item.status === "late").length;
-  const newHires = state.employees.filter((item) => item.hireDate?.startsWith("2026-07")).length;
-  const terminated = state.employees.filter((item) => item.terminationDate?.startsWith("2026-07")).length;
-  const payrollFund = activeEmployees.reduce((sum, item) => sum + Number(item.salary || 0), 0);
+  const leavesToday = state.leaves.filter(
+    (item) => item.status === "Approved" && item.from <= currentDate && item.to >= currentDate,
+  ).length;
+  const sickToday = state.leaves.filter(
+    (item) => item.type === "sick leave" && item.status === "Approved" && item.from <= currentDate && item.to >= currentDate,
+  ).length;
+  const lateToday = state.attendance.filter((item) => item.date === currentDate && item.status === "late").length;
+  const newHires = state.employees.filter((item) => item.hireDate?.startsWith(currentPeriod)).length;
+  const terminated = state.employees.filter((item) => item.terminationDate?.startsWith(currentPeriod)).length;
+  const payrollFund = state.payroll
+    .filter((item) => item.period === currentPeriod)
+    .reduce((sum, item) => sum + calculatePayroll(item, state.settings.payrollConfig).gross, 0);
   const attendanceRate = activeEmployees.length
-    ? Math.round(activeEmployees.reduce((sum, item) => sum + Number(item.attendanceRate || 0), 0) / activeEmployees.length)
+    ? Math.round(
+        activeEmployees.reduce(
+          (sum, item) => sum + calculateAttendanceRate(state.attendance, item.id),
+          0,
+        ) / activeEmployees.length,
+      )
     : 0;
 
   return {
@@ -97,6 +138,8 @@ export const buildHRAnalytics = (state) => {
     terminated,
     attendanceRate,
     payrollFund,
+    currentDate,
+    currentPeriod,
     pendingApprovals: state.approvals.filter((item) => item.status === "Pending").length,
     openVacancies: state.vacancies.filter((item) => item.status === "open").length,
   };
@@ -107,7 +150,7 @@ export const buildAIInsights = (state) => {
     (employee) => employee.status !== "terminated" && (employee.attendanceRate < 85 || employee.kpiScore < 75),
   );
   const expiringDocs = state.employees.flatMap((employee) =>
-    employee.documents
+    (employee.documents || [])
       .map((document) => ({ employee, document, expiry: calculateDocumentExpiry(document) }))
       .filter((item) => ["critical", "expired"].includes(item.expiry.status)),
   );
@@ -143,14 +186,5 @@ export const buildAIInsights = (state) => {
       action: "open employee",
       status: "open",
     })),
-    {
-      id: "ai-staffing-imbalance",
-      tone: "info",
-      title: "Branch staffing imbalance",
-      message: "Farg'ona filialida attendance 88%, ochiq vakansiya va sick leave bir vaqtda. Smena optimizatsiyasi tavsiya qilinadi.",
-      targetId: "br-fergana",
-      action: "create task",
-      status: "open",
-    },
   ];
 };

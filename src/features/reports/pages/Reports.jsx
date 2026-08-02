@@ -6,11 +6,12 @@ import DrillDownBreadcrumb from "../components/DrillDownBreadcrumb/DrillDownBrea
 import ExportModal from "../components/ExportModal/ExportModal";
 import FilterDrawer from "../components/FilterDrawer/FilterDrawer";
 import GlobalFilterBar from "../components/GlobalFilterBar/GlobalFilterBar";
+import ReportsEmptyState from "../components/ReportsEmptyState/ReportsEmptyState";
 import ReportsHeader from "../components/ReportsHeader/ReportsHeader";
 import ReportsNavigation from "../components/ReportsNavigation/ReportsNavigation";
 import ReportsSkeleton from "../components/ReportsSkeleton/ReportsSkeleton";
 import ShareReportModal from "../components/ShareReportModal/ShareReportModal";
-import { reportsNavigationGroups } from "../data/reportsMockData";
+import { reportsNavigationGroups, reportsRouteConfig } from "../data/reportsMockData";
 import { useReportsController } from "../hooks/useReportsController";
 import "./Reports.scss";
 
@@ -32,116 +33,80 @@ const FavoriteReports = lazy(() => import("./FavoriteReports/FavoriteReports"));
 const AuditLogs = lazy(() => import("./AuditLogs/AuditLogs"));
 const ReportDetails = lazy(() => import("./ReportDetails/ReportDetails"));
 
-const segmentToView = {
-  "": "dashboard",
-  "business-health": "dashboard",
-  sales: "sales",
-  inventory: "inventory",
-  purchases: "purchases",
-  crm: "crm",
-  finance: "finance",
-  profit: "profit",
-  "cash-flow": "cash-flow",
-  budget: "budget",
-  debt: "debt",
-  hr: "hr",
-  executive: "executive",
-  ai: "ai",
-  forecast: "forecast",
-  comparison: "comparison",
-  kpi: "kpi",
-  builder: "builder",
-  templates: "templates",
-  scheduled: "scheduled",
-  export: "export",
-  saved: "saved",
-  favorites: "favorites",
-  recent: "recent",
-  sharing: "sharing",
-  permissions: "permissions",
-  audit: "audit",
-  settings: "settings",
-};
+const routeByPath = new Map(reportsRouteConfig.map((item) => [item.path, item]));
+const routeByView = new Map(reportsRouteConfig.map((item) => [item.view, item]));
 
-const viewToPath = {
-  dashboard: "",
-  health: "business-health",
-  sales: "sales",
-  inventory: "inventory",
-  purchases: "purchases",
-  crm: "crm",
-  finance: "finance",
-  profit: "profit",
-  "cash-flow": "cash-flow",
-  budget: "budget",
-  debt: "debt",
-  hr: "hr",
-  executive: "executive",
-  ai: "ai",
-  forecast: "forecast",
-  comparison: "comparison",
-  kpi: "kpi",
-  builder: "builder",
-  templates: "templates",
-  scheduled: "scheduled",
-  export: "export",
-  saved: "saved",
-  favorites: "favorites",
-  recent: "recent",
-  sharing: "sharing",
-  permissions: "permissions",
-  audit: "audit",
-  settings: "settings",
-};
+const PermissionDenied = ({ route, controller }) => (
+  <ReportsEmptyState
+    title="Bu hisobotga ruxsat yo'q"
+    text={`${controller.state.roles.find((item) => item.id === controller.state.role)?.label || controller.state.role} roli uchun "${route.title}" sahifasini ochish cheklangan.`}
+    actionLabel="Dashboardga qaytish"
+    onAction={() => controller.actions.openReport("dashboard")}
+  />
+);
+
+const ReportsNotFound = ({ onBack }) => (
+  <ReportsEmptyState
+    title="Hisobot sahifasi topilmadi"
+    text="URL noto'g'ri yoki bu report konfiguratsiyasi hali mavjud emas."
+    actionLabel="Dashboardga qaytish"
+    onAction={onBack}
+  />
+);
 
 const Reports = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const controller = useReportsController({ navigate });
-  const pathParts = location.pathname.replace(/^\/reports\/?/, "").split("/").filter(Boolean);
-  const segment = pathParts[0] || "";
-  const detailId = pathParts[1];
-  const activeView = segmentToView[segment] || "details";
+  const relativePath = location.pathname.replace(/^\/reports\/?/, "").replace(/\/$/, "");
+  const activeRoute = routeByPath.get(relativePath) || (relativePath.startsWith("details/") ? { view: "details", path: "details/:reportId" } : null);
+  const detailId = relativePath.startsWith("details/") ? relativePath.split("/").slice(1).join("/") : "";
+  const activeView = activeRoute?.view || "not-found";
+  const {
+    setSelectedReport,
+    setComparisonMode,
+  } = controller.actions;
 
   useEffect(() => {
-    controller.actions.setSelectedReport(activeView);
-  }, [activeView, controller.actions]);
+    setSelectedReport(activeRoute?.reportType || activeRoute?.view || "not-found");
+  }, [activeRoute?.reportType, activeRoute?.view, setSelectedReport]);
+
+  useEffect(() => {
+    if (activeView === "comparison") setComparisonMode("month-month");
+  }, [activeView, setComparisonMode]);
 
   const navigateView = (view) => {
-    navigate(`/reports/${viewToPath[view] || ""}`.replace(/\/$/, ""));
-  };
-
-  const applyCustomFilter = (id) => {
-    const item = controller.state.customFilters.find((filter) => filter.id === id);
-    if (item) controller.actions.applyFilters(item.filters);
+    const route = routeByView.get(view);
+    navigate(`/reports/${route?.path || ""}`.replace(/\/$/, ""));
   };
 
   const commonProps = { controller };
   const views = {
     dashboard: <ReportsDashboard {...commonProps} />,
+    health: <ExecutiveReports {...commonProps} compactHealth />,
     sales: <SalesReports {...commonProps} />,
     inventory: <InventoryReports {...commonProps} />,
     purchases: <PurchaseReports {...commonProps} />,
     crm: <CRMReports {...commonProps} />,
-    finance: <FinanceReports {...commonProps} />,
-    profit: <FinanceReports {...commonProps} />,
-    "cash-flow": <FinanceReports {...commonProps} />,
-    budget: <FinanceReports {...commonProps} />,
-    debt: <FinanceReports {...commonProps} />,
+    finance: <FinanceReports {...commonProps} reportType="finance" />,
+    profit: <FinanceReports {...commonProps} reportType="profit" />,
+    "cash-flow": <FinanceReports {...commonProps} reportType="cash-flow" />,
+    budget: <FinanceReports {...commonProps} reportType="budget" />,
+    debt: <FinanceReports {...commonProps} reportType="debt" />,
     hr: <HRReports {...commonProps} />,
-    executive: controller.permissions.can("executive") ? <ExecutiveReports {...commonProps} /> : <AuditLogs {...commonProps} mode="permissions" />,
-    ai: controller.permissions.can("ai") ? <AIAnalytics {...commonProps} /> : <AuditLogs {...commonProps} mode="permissions" />,
-    forecast: <AIAnalytics {...commonProps} />,
-    comparison: <ReportsDashboard {...commonProps} />,
-    kpi: controller.permissions.can("builder") ? <KPICenter {...commonProps} /> : <AuditLogs {...commonProps} mode="permissions" />,
-    builder: controller.permissions.can("builder") ? <ReportBuilder {...commonProps} /> : <AuditLogs {...commonProps} mode="permissions" />,
-    templates: <SavedReports {...commonProps} />,
+    executive: <ExecutiveReports {...commonProps} />,
+    ai: <AIAnalytics {...commonProps} />,
+    forecast: <AIAnalytics {...commonProps} mode="forecast" />,
+    comparison: <ReportsDashboard {...commonProps} initialMode="comparison" />,
+    kpi: <KPICenter {...commonProps} />,
+    builder: <ReportBuilder {...commonProps} />,
+    templates: <SavedReports {...commonProps} mode="templates" />,
     scheduled: <ScheduledReports {...commonProps} />,
     export: <ExportCenter {...commonProps} />,
     saved: <SavedReports {...commonProps} />,
     favorites: <FavoriteReports {...commonProps} />,
     recent: <SavedReports {...commonProps} mode="recent" />,
-    sharing: <SavedReports {...commonProps} />,
+    sharing: <SavedReports {...commonProps} mode="sharing" />,
     permissions: <AuditLogs {...commonProps} mode="permissions" />,
     audit: <AuditLogs {...commonProps} />,
     settings: (
@@ -151,8 +116,12 @@ const Reports = () => {
         backendPayload={controller.state.backendPayload}
       />
     ),
-    details: <ReportDetails {...commonProps} reportId={detailId || segment || "report"} />,
+    details: <ReportDetails controller={controller} reportId={detailId || "report"} />,
   };
+
+  const guardedView = activeRoute?.permission && !controller.permissions.can(activeRoute.permission)
+    ? <PermissionDenied route={activeRoute} controller={controller} />
+    : views[activeView] || <ReportsNotFound onBack={() => navigate("/reports")} />;
 
   return (
     <main className="zenix-reports">
@@ -174,15 +143,20 @@ const Reports = () => {
       <GlobalFilterBar
         filters={controller.state.filters}
         customFilters={controller.state.customFilters}
+        activeCustomFilter={controller.state.activeCustomFilter}
         onFilter={controller.actions.updateFilter}
         onSaveCustom={controller.actions.saveCustomFilter}
-        onApplyCustom={applyCustomFilter}
+        onApplyCustom={controller.actions.applyCustomFilter}
+        onDeleteCustom={controller.actions.deleteCustomFilter}
+        onReset={controller.actions.resetFilters}
         onOpenDrawer={() => controller.actions.setActiveModal("filters")}
       />
 
-      <DrillDownBreadcrumb level={controller.state.drillLevel} onLevel={controller.actions.setDrillLevel} />
+      {activeView !== "details" && (
+        <DrillDownBreadcrumb level={controller.state.drillLevel} onLevel={controller.actions.setDrillLevel} />
+      )}
 
-      <Suspense fallback={<ReportsSkeleton />}>{views[activeView] || views.details}</Suspense>
+      <Suspense fallback={<ReportsSkeleton />}>{guardedView}</Suspense>
 
       <FilterDrawer
         open={controller.state.activeModal === "filters"}
@@ -193,19 +167,22 @@ const Reports = () => {
       <ExportModal
         open={controller.state.activeModal === "export"}
         reportName={controller.state.selectedReport}
+        filters={controller.state.filters}
+        pending={controller.state.pendingAction === "export"}
         onClose={controller.actions.closeModal}
         onExport={(format) => controller.actions.exportReport(format)}
       />
       <ShareReportModal
         open={controller.state.activeModal === "share"}
         reportName={controller.state.selectedReport}
+        pending={controller.state.pendingAction === "share"}
         onClose={controller.actions.closeModal}
         onShare={controller.actions.shareReport}
       />
 
-      {controller.state.toast && (
+      {(controller.state.toast || controller.state.storageNotice) && (
         <div className="zenix-reports__toast" role="status">
-          {controller.state.toast}
+          {controller.state.toast || controller.state.storageNotice}
         </div>
       )}
     </main>

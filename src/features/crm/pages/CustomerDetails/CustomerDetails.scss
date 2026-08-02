@@ -67,7 +67,8 @@
   &__profile-main {
     position: relative;
     z-index: 1;
-    display: flex;
+    display: grid;
+    grid-template-columns: auto auto minmax(0, 1fr) auto;
     align-items: flex-start;
     gap: 15px;
     min-width: 0;
@@ -123,7 +124,7 @@
     > span {
       font-size: 1.15rem;
       font-weight: 700;
-      letter-spacing: -0.04em;
+      letter-spacing: 0;
     }
   }
 
@@ -159,7 +160,7 @@
       color: var(--color-text);
       font-size: clamp(1.25rem, 2vw, 1.62rem);
       font-weight: 690;
-      letter-spacing: -0.04em;
+      letter-spacing: 0;
       line-height: 1.15;
     }
   }
@@ -241,7 +242,7 @@
     flex: 0 0 auto;
     align-items: center;
     gap: 7px;
-    margin-left: auto;
+    justify-self: end;
   }
 
   &__segment {
@@ -322,7 +323,7 @@
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 10px;
-    margin-top: 21px;
+    margin-top: 24px;
 
     article {
       display: grid;
@@ -371,8 +372,8 @@
 
   &__workspace {
     display: grid;
-    grid-template-columns: 225px minmax(0, 1fr);
-    gap: 14px;
+    grid-template-columns: minmax(210px, 240px) minmax(0, 1fr);
+    gap: 18px;
     align-items: start;
   }
 
@@ -649,6 +650,7 @@
       grid-column: 1 / -1;
       width: 100%;
       justify-content: space-between;
+      justify-self: stretch;
       margin: 4px 0 0;
     }
 

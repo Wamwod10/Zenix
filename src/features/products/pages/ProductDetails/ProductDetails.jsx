@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Archive, Copy, History, Pencil, RotateCcw } from "lucide-react";
+import { useMemo } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { Archive, ArrowLeft, Copy, History, Pencil, RotateCcw } from "lucide-react";
 
 import {
   calculateProjectedStock,
@@ -22,7 +22,12 @@ const detailTabs = [
 
 const ProductDetails = ({ product, productsById, canViewCost, onDuplicate, onArchive, onRestore }) => {
   const navigate = useNavigate();
-  const [tab, setTab] = useState("overview");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tab = useMemo(() => {
+    const requestedTab = searchParams.get("tab");
+    return detailTabs.some((item) => item.id === requestedTab) ? requestedTab : "overview";
+  }, [searchParams]);
+  const setTab = (nextTab) => setSearchParams(nextTab === "overview" ? {} : { tab: nextTab });
 
   if (!product) {
     return (
@@ -35,6 +40,11 @@ const ProductDetails = ({ product, productsById, canViewCost, onDuplicate, onArc
 
   return (
     <div className="products-view">
+      <button type="button" className="products-mini-button" onClick={() => navigate("/products/list")}>
+        <ArrowLeft size={15} />
+        Mahsulotlarga qaytish
+      </button>
+
       <section className="products-panel products-detail-hero">
         <div className="products-detail-hero__visual">{product.name.slice(0, 2).toUpperCase()}</div>
         <div>
@@ -156,7 +166,10 @@ const Matrix = ({ rows }) => (
         <span>{variant.stock}</span>
       </article>
     )) : (
-      <article><span>Variant yo'q</span></article>
+      <article>
+        <strong>Variant yo'q</strong>
+        <span>Variant qo'shish uchun mahsulotni tahrirlash oynasini oching.</span>
+      </article>
     )}
   </div>
 );

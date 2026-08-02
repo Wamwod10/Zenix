@@ -36,6 +36,13 @@ let storeState = loadedState?.notifications
   ? loadedState
   : createInitialState();
 const listeners = new Set();
+const notificationLogger = {
+  warn: (...args) => {
+    if (import.meta.env?.DEV) {
+      globalThis.console?.warn?.(...args);
+    }
+  },
+};
 
 const emit = () => {
   saveNotificationsState(storeState);
@@ -67,9 +74,7 @@ const isValidPayload = (payload) => {
 // mutatsiyasini to'xtatib qo'ymasligi uchun).
 export const pushNotification = (payload) => {
   if (!isValidPayload(payload)) {
-    if (import.meta.env?.DEV) {
-      console.warn("[notifications] rad etildi — noto'g'ri payload", payload);
-    }
+    notificationLogger.warn("[notifications] rad etildi - noto'g'ri payload", payload);
     return null;
   }
 

@@ -1,5 +1,4 @@
 .supplier-filters {
-  // Ochiq dropdown jadval qatorlari/badge'lardan yuqorida turishi uchun
   position: relative;
   z-index: 10;
   display: flex;
@@ -7,62 +6,25 @@
   align-items: center;
   gap: 10px;
 
-  // Point: qidiruv maydoni Purchases moduli bilan bir xil "canonical"
-  // retsept (PurchaseTextField) — balandlik/padding/radius/fokus/hover
-  // butun ilova bo'ylab bir xil bo'lishi uchun.
   &__search {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex: 1 1 260px;
-    min-width: 220px;
-    min-height: 46px;
-    padding: 0 14px;
-    border-radius: 15px;
-    border: 1px solid var(--color-border);
-    background: var(--color-bg-soft);
-    color: var(--color-text-muted);
-    transition:
-      border-color 180ms ease,
-      box-shadow 180ms ease,
-      background 180ms ease;
+    flex: 1 1 280px;
+    min-width: 240px;
 
-    &:hover {
-      border-color: rgba(74, 103, 255, 0.28);
-      background: var(--color-bg-muted);
-    }
-
-    &:focus-within {
-      border-color: var(--color-primary);
-      box-shadow: 0 0 0 3px var(--color-primary-soft);
-    }
-
-    input {
-      appearance: none;
-      flex: 1;
-      min-width: 0;
-      height: 44px;
-      border: none;
-      background: transparent;
-      outline: none;
-      color: var(--color-text);
-      font-size: 13.5px;
-      color-scheme: light;
-
-      &::placeholder {
-        color: var(--color-text-muted);
-      }
+    .ui-input__control {
+      min-height: 46px;
+      border-radius: 15px;
     }
   }
 
   &__select {
-    flex: 0 0 220px;
+    flex: 0 0 210px;
   }
 
   &__archived-toggle {
+    position: relative;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     min-height: 46px;
     padding: 0 14px;
     border-radius: 15px;
@@ -70,26 +32,62 @@
     background: var(--color-bg-soft);
     color: var(--color-text-muted);
     font-size: 13px;
-    font-weight: 600;
+    font-weight: 650;
     cursor: pointer;
     white-space: nowrap;
 
-    input[type="checkbox"] {
-      width: 15px;
-      height: 15px;
-      accent-color: #4a67ff;
-      cursor: pointer;
+    input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    input:checked + .supplier-filters__switch {
+      background: rgba(74, 103, 255, 0.88);
+
+      &::after {
+        transform: translateX(17px);
+      }
+    }
+
+    input:focus-visible + .supplier-filters__switch {
+      box-shadow: 0 0 0 3px var(--color-primary-soft);
+    }
+  }
+
+  &__switch {
+    position: relative;
+    width: 36px;
+    height: 20px;
+    border-radius: 999px;
+    background: rgba(100, 116, 139, 0.22);
+    box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.12);
+    transition: background 160ms ease, box-shadow 160ms ease;
+
+    &::after {
+      content: "";
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #ffffff;
+      box-shadow: 0 2px 7px rgba(15, 23, 42, 0.24);
+      transition: transform 160ms ease;
     }
   }
 }
 
 @media (max-width: 720px) {
-  .supplier-filters__select {
+  .supplier-filters__select,
+  .supplier-filters__archived-toggle,
+  .supplier-filters .ui-button {
     flex: 1 1 100%;
   }
 
-  .supplier-filters__archived-toggle {
-    flex: 1 1 100%;
+  .supplier-filters__archived-toggle,
+  .supplier-filters .ui-button {
     justify-content: center;
   }
 }

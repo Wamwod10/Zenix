@@ -1,32 +1,32 @@
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
-import { initialProductsState } from "../data/productsMockData";
 import {
-  productStorageKeys,
-  safeStorageRead,
-  safeStorageWrite,
-} from "../utils/productStorage";
-
-const cloneInitialState = () => JSON.parse(JSON.stringify(initialProductsState));
+  businessOSActions,
+  selectProductsModuleState,
+} from "../../../core/businessOS/businessOSSlice";
+import { withProductSchema } from "../utils/productStorage";
 
 const useProductsStorage = () => {
-  const [state, setStoredState] = useState(() =>
-    safeStorageRead(productStorageKeys.state, cloneInitialState()),
-  );
+  const dispatch = useDispatch();
+  const state = useSelector(selectProductsModuleState);
 
   const setState = useCallback((updater) => {
-    setStoredState((current) => {
-      const nextState = typeof updater === "function" ? updater(current) : updater;
-      safeStorageWrite(productStorageKeys.state, nextState);
-      return nextState;
-    });
-  }, []);
+    const nextState = typeof updater === "function" ? updater(state) : updater;
+    dispatch(businessOSActions.productsModuleCommitted(withProductSchema(nextState)));
+  }, [dispatch, state]);
 
   const resetState = useCallback(() => {
-    const nextState = cloneInitialState();
-    setStoredState(nextState);
-    safeStorageWrite(productStorageKeys.state, nextState);
-  }, []);
+    dispatch(businessOSActions.productsModuleCommitted(withProductSchema({
+      categories: [],
+      brands: [],
+      units: state.units || [],
+      products: [],
+      notifications: [],
+      auditLog: [],
+      settings: state.settings || {},
+    })));
+  }, [dispatch, state.settings, state.units]);
 
   return { state, setState, resetState };
 };

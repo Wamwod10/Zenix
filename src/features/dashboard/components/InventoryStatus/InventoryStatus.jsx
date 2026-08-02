@@ -1,14 +1,15 @@
 import { Boxes } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { formatNumber } from "../../dashboardApi";
 import "./InventoryStatus.scss";
-// ✅ BACKEND INTEGRATION: ombor statistikasi (products/warehouse'dan)
-import { useDashboardSummaryQuery } from "../../dashboardApi";
 
-const InventoryStatus = () => {
-  const { data } = useDashboardSummaryQuery();
-
-  const total = data?.stats?.inventoryTotal ?? 0;
-  const lowStock = data?.stats?.lowStockCount ?? 0;
-  const progress = total > 0 ? Math.round(((total - lowStock) / total) * 100) : 0;
+const InventoryStatus = ({ stats = {} }) => {
+  const navigate = useNavigate();
+  const total = Number(stats?.inventoryTotal ?? 0);
+  const lowStock = Number(stats?.lowStockCount ?? 0);
+  const outOfStock = Number(stats?.outOfStockCount ?? 0);
+  const healthy = Math.max(total - lowStock - outOfStock, 0);
+  const progress = total > 0 ? Math.round((healthy / total) * 100) : 0;
 
   return (
     <article className="zenix-dashboard__panel dashboard-widget dashboard-widget--blue inventory-status">
@@ -24,11 +25,11 @@ const InventoryStatus = () => {
       </div>
 
       <div className="dashboard-widget__body">
-        <strong>{total.toLocaleString("ru-RU")}</strong>
+        <strong>{formatNumber(total)}</strong>
         <p>
           {total === 0
-            ? "Mahsulot qo'shilganda ko'rinadi"
-            : `${lowStock} ta mahsulot kam qolgan`}
+            ? "SKU ma'lumoti kelganda ombor holati ko'rinadi"
+            : `${formatNumber(lowStock)} kam, ${formatNumber(outOfStock)} tugagan`}
         </p>
         <span
           className="dashboard-widget__meter"
@@ -36,6 +37,14 @@ const InventoryStatus = () => {
         >
           <i />
         </span>
+        <button
+          type="button"
+          aria-label="Ombor qoldiqlarini ochish"
+          title="Ombor qoldiqlarini ochish"
+          onClick={() => navigate("/warehouse/stock")}
+        >
+          Qoldiqlarni ko'rish
+        </button>
       </div>
     </article>
   );

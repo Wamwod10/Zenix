@@ -38,6 +38,7 @@
     box-shadow: none !important;
     appearance: none;
     caret-color: var(--color-text);
+    font: inherit;
 
     &::placeholder {
       color: var(--color-text-muted);
@@ -71,7 +72,13 @@
 
   &__icon {
     display: inline-flex;
+    align-items: center;
     color: var(--color-text-muted);
+    line-height: 0;
+
+    svg {
+      display: block;
+    }
   }
 
   &__message {

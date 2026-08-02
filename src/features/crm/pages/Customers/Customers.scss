@@ -23,7 +23,7 @@
     height: 300px;
     background: radial-gradient(
       circle,
-      color-mix(in srgb, var(--color-primary) 6%, transparent),
+        color-mix(in srgb, var(--color-primary) 3%, transparent),
       transparent 70%
     );
   }
@@ -35,7 +35,7 @@
     height: 250px;
     background: radial-gradient(
       circle,
-      rgba(142, 96, 128, 0.055),
+      rgba(142, 96, 128, 0.025),
       transparent 72%
     );
   }
@@ -140,7 +140,7 @@
         background: color-mix(
           in srgb,
           var(--color-success) 11%,
-          transparent-success
+          transparent
         );
         color: var(--color-success);
       }
@@ -200,7 +200,7 @@
   &__summary {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 10px;
+    gap: 12px;
   }
 
   &__summary-card {
@@ -209,8 +209,8 @@
     min-width: 0;
     min-height: 94px;
     align-items: center;
-    gap: 12px;
-    padding: 15px;
+    gap: 14px;
+    padding: 17px;
     overflow: hidden;
     border: 1px solid var(--color-border);
     border-radius: 18px;
@@ -223,8 +223,7 @@
     backdrop-filter: var(--blur-surface);
     transition:
       border-color 200ms ease,
-      box-shadow 200ms ease,
-      transform 200ms ease;
+      box-shadow 200ms ease;
 
     &::after {
       position: absolute;
@@ -242,14 +241,35 @@
       content: "";
     }
 
+    &:first-child {
+      border-color: color-mix(
+        in srgb,
+        var(--color-primary) 22%,
+        var(--color-border)
+      );
+      background: linear-gradient(
+        145deg,
+        color-mix(in srgb, var(--color-primary-soft) 62%, var(--color-surface-solid)),
+        color-mix(in srgb, var(--color-surface-solid) 78%, transparent)
+      );
+
+      .crm-customers__summary-icon {
+        background: var(--color-primary);
+        color: var(--color-text-inverse);
+      }
+
+      .crm-customers__summary-content strong {
+        font-size: clamp(1.18rem, 1.55vw, 1.45rem);
+      }
+    }
+
     &:hover {
       border-color: color-mix(
         in srgb,
         var(--color-primary) 16%,
         var(--color-border)
       );
-      box-shadow: 0 19px 46px rgba(15, 23, 42, 0.065);
-      transform: translateY(-2px);
+      box-shadow: 0 18px 42px rgba(15, 23, 42, 0.06);
     }
 
     &--success {
@@ -302,8 +322,8 @@
     position: relative;
     z-index: 1;
     display: inline-flex;
-    width: 44px;
-    height: 44px;
+    width: 48px;
+    height: 48px;
     flex: 0 0 auto;
     align-items: center;
     justify-content: center;
@@ -325,14 +345,14 @@
     min-width: 0;
     flex: 1;
     flex-direction: column;
-    gap: 3px;
+    gap: 5px;
 
     span,
     small {
       overflow: hidden;
       color: var(--color-text-muted);
-      font-size: 0.7rem;
-      line-height: 1.35;
+      font-size: 0.74rem;
+      line-height: 1.45;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
@@ -340,7 +360,7 @@
     strong {
       overflow: hidden;
       color: var(--color-text);
-      font-size: clamp(1rem, 1.3vw, 1.24rem);
+      font-size: clamp(1.04rem, 1.3vw, 1.28rem);
       font-weight: 680;
       line-height: 1.25;
       text-overflow: ellipsis;
@@ -351,7 +371,7 @@
 
   &__results {
     min-width: 0;
-    overflow: hidden;
+    overflow: visible;
     border: 1px solid var(--color-border);
     border-radius: 22px;
     background: linear-gradient(
@@ -364,10 +384,10 @@
   }
 
   &__pagination {
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(180px, 1fr) auto auto;
     min-height: 68px;
     align-items: center;
-    justify-content: space-between;
     gap: 14px;
     padding: 11px 16px;
     border-top: 1px solid var(--color-border);
@@ -454,11 +474,10 @@
       padding: 0 34px 0 11px;
       border: 1px solid var(--color-border);
       border-radius: 12px;
-      background-color: color-mix(
-        in srgb,
-        var(--color-surface-solid) 72%,
-        transparent
-      );
+      appearance: none;
+      background:
+        linear-gradient(135deg, transparent calc(100% - 22px), color-mix(in srgb, var(--color-primary) 12%, transparent) 0),
+        color-mix(in srgb, var(--color-surface-solid) 72%, transparent);
       color: var(--color-text);
       font: inherit;
       font-size: 0.73rem;
@@ -555,7 +574,7 @@
     }
 
     &__pagination {
-      flex-wrap: wrap;
+      grid-template-columns: 1fr;
     }
   }
 }
@@ -597,6 +616,10 @@
     &__pagination {
       align-items: stretch;
       padding: 12px;
+
+      > p {
+        min-width: 0;
+      }
     }
 
     &__pagination-controls {

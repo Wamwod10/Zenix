@@ -1,6 +1,19 @@
 import { Download, Upload } from "lucide-react";
+import { useRef, useState } from "react";
 
-const ProductImportExport = ({ importPreview, asyncStatus, canImport, onValidateImport, onConfirmImport, onExport }) => (
+const ProductImportExport = ({ importPreview, asyncStatus, canImport, onValidateImport, onConfirmImport, onExport }) => {
+  const fileInputRef = useRef(null);
+  const [selectedFile, setSelectedFile] = useState(null);
+
+  const handleFileChange = (event) => {
+    const file = event.target.files?.[0] || null;
+    setSelectedFile(file);
+    if (file) {
+      onValidateImport(file);
+    }
+  };
+
+  return (
   <div className="products-view">
     <section className="products-dashboard-grid">
       <section className="products-panel">
@@ -11,10 +24,17 @@ const ProductImportExport = ({ importPreview, asyncStatus, canImport, onValidate
           </div>
         </div>
         <div className="products-import-box">
-          <strong>mahsulotlar-kiritish-namuna.csv</strong>
+          <strong>{selectedFile?.name || "mahsulotlar-kiritish-namuna.csv"}</strong>
           <span>Jadval ustunlarini moslash, tekshirish va takror shtrix-kod nazorati.</span>
-          <button type="button" className="products-button is-primary" disabled={!canImport} onClick={onValidateImport}>
-            Namunani tekshirish
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".csv,.xlsx,.xls,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
+            className="products-file-input"
+            onChange={handleFileChange}
+          />
+          <button type="button" className="products-button is-primary" disabled={!canImport} onClick={() => fileInputRef.current?.click()}>
+            Fayl tanlash va tekshirish
           </button>
         </div>
         {importPreview && (
@@ -43,6 +63,7 @@ const ProductImportExport = ({ importPreview, asyncStatus, canImport, onValidate
       </section>
     </section>
   </div>
-);
+  );
+};
 
 export default ProductImportExport;

@@ -1,0 +1,159 @@
+.sales-product-card {
+  position: relative;
+  min-width: 0;
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto auto auto auto;
+  align-content: start;
+  gap: 0;
+  overflow: hidden;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.64);
+  border-radius: 17px;
+  color: rgba(5, 14, 35, 0.82);
+  background:
+    radial-gradient(circle at 18% 12%, rgba(255, 255, 255, 0.62), transparent 7rem),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.11)),
+    rgba(255, 255, 255, 0.09);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.86),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.14),
+    0 10px 26px rgba(64, 86, 136, 0.07),
+    0 0 0 1px rgba(255, 255, 255, 0.12);
+  text-align: left;
+  transition:
+    transform var(--sales-pos-transition),
+    border-color var(--sales-pos-transition),
+    box-shadow var(--sales-pos-transition),
+    background var(--sales-pos-transition);
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      linear-gradient(120deg, rgba(255, 255, 255, 0.32), transparent 40%, rgba(92, 134, 245, 0.06)),
+      radial-gradient(circle at 92% 88%, rgba(92, 134, 245, 0.08), transparent 7rem);
+    opacity: 0.46;
+    transition: opacity var(--sales-pos-transition);
+  }
+
+  > * {
+    position: relative;
+    z-index: 2;
+  }
+
+  &:hover:not(:disabled),
+  &:focus-visible {
+    transform: scale(1.01);
+    border-color: rgba(255, 255, 255, 0.84);
+    background:
+      radial-gradient(circle at 18% 12%, rgba(255, 255, 255, 0.76), transparent 7rem),
+      linear-gradient(145deg, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0.16)),
+      rgba(255, 255, 255, 0.14);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.94),
+      0 15px 34px rgba(64, 86, 136, 0.1),
+      0 0 24px rgba(92, 134, 245, 0.1);
+    outline: 0;
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.995);
+  }
+
+  &.is-added {
+    border-color: rgba(255, 255, 255, 0.88);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.94),
+      0 15px 34px rgba(64, 86, 136, 0.1),
+      0 0 30px rgba(31, 153, 112, 0.14);
+  }
+
+  &.is-disabled {
+    color: rgba(15, 23, 42, 0.38);
+    background:
+      linear-gradient(145deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.07)),
+      rgba(255, 255, 255, 0.06);
+  }
+
+  &__visual {
+    width: 36px;
+    height: 36px;
+    margin-bottom: 8px;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.72);
+    border-radius: 14px;
+    color: rgba(43, 79, 188, 0.74);
+    background:
+      radial-gradient(circle at 30% 22%, rgba(255, 255, 255, 0.86), transparent 34%),
+      rgba(255, 255, 255, 0.18);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.8),
+      0 0 0 5px rgba(92, 134, 245, 0.05);
+  }
+
+  strong {
+    display: -webkit-box;
+    overflow: hidden;
+    color: rgba(5, 14, 35, 0.82);
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    font-size: 12.5px;
+    font-weight: 720;
+    line-height: 1.2;
+    letter-spacing: 0;
+  }
+
+  small {
+    margin-top: 6px;
+    color: rgba(43, 79, 188, 0.92);
+    font-size: 17px;
+    font-weight: 760;
+    line-height: 1;
+    letter-spacing: 0;
+    font-variant-numeric: tabular-nums;
+  }
+
+  &__stock {
+    margin-top: 10px;
+    width: fit-content;
+    max-width: 100%;
+    min-height: 22px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    overflow: hidden;
+    padding: 0 7px;
+    border: 1px solid rgba(255, 255, 255, 0.58);
+    border-radius: 999px;
+    color: rgba(15, 23, 42, 0.48);
+    background: rgba(255, 255, 255, 0.22);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.74);
+    font-size: 11px;
+    font-weight: 680;
+    line-height: 1;
+    white-space: nowrap;
+
+    i {
+      width: 6px;
+      height: 6px;
+      flex: 0 0 6px;
+      border-radius: 999px;
+      background: rgba(31, 153, 112, 0.72);
+      box-shadow:
+        0 0 0 3px rgba(31, 153, 112, 0.08),
+        0 0 14px rgba(31, 153, 112, 0.16);
+
+      &.is-low {
+        background: rgba(210, 124, 36, 0.76);
+        box-shadow:
+          0 0 0 3px rgba(240, 160, 72, 0.1),
+          0 0 14px rgba(210, 124, 36, 0.16);
+      }
+    }
+  }
+}

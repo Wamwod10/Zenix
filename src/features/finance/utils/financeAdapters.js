@@ -16,7 +16,7 @@ export const financeAdapter = {
     await wait(620);
     return {
       ok: true,
-      imported: 6,
+      imported: 0,
       source: "bank-statement-preview.csv",
     };
   },
@@ -34,9 +34,9 @@ export const financeAdapter = {
     return {
       ok: true,
       rates: {
-        USD: 12650,
-        EUR: 13740,
-        RUB: 142,
+        USD: 0,
+        EUR: 0,
+        RUB: 0,
       },
     };
   },
@@ -49,6 +49,6 @@ export const financeAdapter = {
 
   uzbekistanIntegrationAdapter: {
     providers: ["Click", "Payme", "Uzum", "Humo", "Uzcard", "Fiscal", "EHF"],
-    status: "mock-contract-ready",
+    status: "disconnected",
   },
 };

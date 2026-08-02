@@ -41,14 +41,26 @@ const SupplierNotesTab = ({
   const notify = useNotification();
   const [noteText, setNoteText] = useState("");
   const [isIssueNote, setIsIssueNote] = useState(false);
+  const [noteError, setNoteError] = useState("");
 
   const handleAddNote = () => {
-    if (!noteText.trim()) return;
+    const text = noteText.trim();
 
-    onAddNote?.(noteText, isIssueNote);
+    if (text.length < 3) {
+      setNoteError("Izoh kamida 3 ta belgidan iborat bo'lishi kerak.");
+      return;
+    }
+
+    if (text.length > 500) {
+      setNoteError("Izoh 500 ta belgidan oshmasligi kerak.");
+      return;
+    }
+
+    onAddNote?.(text, isIssueNote);
     notify.success(isIssueNote ? "Muammo sifatida izoh qo'shildi." : "Izoh qo'shildi.");
     setNoteText("");
     setIsIssueNote(false);
+    setNoteError("");
   };
 
   const handleClaimStatusChange = (note, nextStatus) => {
@@ -147,8 +159,18 @@ const SupplierNotesTab = ({
           type="text"
           placeholder="Izoh yozing..."
           value={noteText}
-          onChange={(event) => setNoteText(event.target.value)}
-          onKeyDown={(event) => event.key === "Enter" && handleAddNote()}
+          maxLength={500}
+          aria-invalid={!!noteError}
+          onChange={(event) => {
+            setNoteText(event.target.value);
+            if (noteError) setNoteError("");
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              event.preventDefault();
+              handleAddNote();
+            }
+          }}
         />
         <label className="supplier-profile__note-issue-toggle">
           <input
@@ -162,11 +184,13 @@ const SupplierNotesTab = ({
           type="button"
           title="Izohni qo'shish"
           aria-label="Izohni qo'shish"
+          disabled={noteText.trim().length < 3}
           onClick={handleAddNote}
         >
           <MessageSquarePlus size={15} />
         </button>
       </div>
+      {noteError && <p className="supplier-profile__field-error">{noteError}</p>}
     </Card>
   );
 };

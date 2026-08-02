@@ -10,6 +10,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 
+import { store } from "../../app/store/store";
+import { businessOSActions } from "../../core/businessOS/businessOSSlice";
 import { RETURN_STATUSES } from "../purchases/constants/paymentTerms";
 import {
   PURCHASE_ROLES,
@@ -21,7 +23,7 @@ import { createEntityId } from "../purchases/utils/purchaseIds";
 import { normalizeNumber } from "../purchases/utils/purchaseMoney";
 import { notifySupplierIssue } from "../purchases/notifications/notificationTriggers";
 
-const STORAGE_KEY = "zenix:suppliers:v1";
+const STORAGE_KEY = "zenix:suppliers:v2";
 
 const isBrowser = () => typeof window !== "undefined" && !!window.localStorage;
 
@@ -147,6 +149,40 @@ const describeSupplierUpdate = (payload = {}) => {
 
   return "Profil ma'lumotlari yangilandi";
 };
+
+const SUPPLIER_DIFF_LABELS = {
+  name: "nom",
+  phone: "telefon",
+  email: "email",
+  address: "manzil",
+  contactPerson: "aloqa shaxsi",
+  stir: "STIR",
+  productIds: "bog'langan mahsulotlar",
+  productOverrides: "mahsulot shartlari",
+  creditLimit: "kredit limiti",
+  leadTimeDays: "yetkazish muddati",
+  categories: "kategoriyalar",
+  status: "holat",
+  score: "manual reyting",
+};
+
+const normalizeForDiff = (value) =>
+  Array.isArray(value) || (value && typeof value === "object")
+    ? JSON.stringify(value)
+    : String(value ?? "");
+
+const buildSupplierDiff = (before = {}, after = {}, payload = {}) =>
+  Object.keys(payload)
+    .filter((key) => normalizeForDiff(before[key]) !== normalizeForDiff(after[key]))
+    .map((key) => ({
+      field: key,
+      label: SUPPLIER_DIFF_LABELS[key] || key,
+      oldValue: before[key],
+      newValue: after[key],
+    }));
+
+const describeSupplierDiff = (diffs = []) =>
+  diffs.length ? `Yangilandi: ${diffs.map((diff) => diff.label).join(", ")}` : "";
 
 // ---------- Kategoriyalar ----------
 
@@ -469,180 +505,9 @@ export const computeSupplierScore = (supplier = {}, metrics = {}) => {
   return Math.min(Math.round(composite), ceiling);
 };
 
-// ---------- Boshlang'ich ma'lumot (Purchases'dan ko'chirildi, Task 2/5) ----------
+// ---------- Boshlang'ich ma'lumot ----------
 
-const SEED_SUPPLIERS = [
-  {
-    id: "sup-agrofood",
-    name: "AgroFood Distribution",
-    phone: "+998 90 123 45 67",
-    email: "info@agrofood.uz",
-    address: "Toshkent sh., Sergeli tumani, Katortol ko'chasi 12",
-    contactPerson: "Bekzod Rashidov",
-    stir: "301234567",
-    categories: ["food"],
-    category: "Oziq-ovqat",
-    productIds: [],
-    score: 92,
-    leadTimeDays: 2,
-    creditLimit: 80_000_000,
-    status: SUPPLIER_STATUSES.active,
-    blocked: false,
-    notes: [],
-    documents: [],
-    archived: false,
-    archivedAt: null,
-    archivedBy: null,
-    archivedReason: "",
-    timeline: [],
-    createdBy: "Aziz Karimov",
-    createdAt: "2025-11-02T09:00:00.000Z",
-  },
-  {
-    id: "sup-toshkent-sut",
-    name: "Toshkent Sut Mahsulotlari",
-    phone: "+998 71 200 11 22",
-    email: "sales@toshkentsut.uz",
-    address: "Toshkent sh., Yunusobod tumani, Amir Temur shoh ko'chasi 45",
-    contactPerson: "Nodira Yusupova",
-    stir: "302345678",
-    categories: ["food"],
-    category: "Sut mahsulotlari",
-    productIds: [],
-    score: 87,
-    leadTimeDays: 1,
-    creditLimit: 40_000_000,
-    status: SUPPLIER_STATUSES.active,
-    blocked: false,
-    notes: [],
-    documents: [],
-    archived: false,
-    archivedAt: null,
-    archivedBy: null,
-    archivedReason: "",
-    timeline: [],
-    createdBy: "Aziz Karimov",
-    createdAt: "2025-11-10T09:00:00.000Z",
-  },
-  {
-    id: "sup-uzbev",
-    name: "UzBeverage Trade",
-    phone: "+998 93 555 44 33",
-    email: "contact@uzbeverage.uz",
-    address: "Toshkent sh., Chilonzor tumani, Bunyodkor shoh ko'chasi 78",
-    contactPerson: "Sardor Aliyev",
-    stir: "303456789",
-    categories: ["beverages"],
-    category: "Ichimliklar",
-    productIds: [],
-    score: 78,
-    leadTimeDays: 3,
-    creditLimit: 60_000_000,
-    status: SUPPLIER_STATUSES.active,
-    blocked: false,
-    notes: [],
-    documents: [],
-    archived: false,
-    archivedAt: null,
-    archivedBy: null,
-    archivedReason: "",
-    timeline: [],
-    createdBy: "Aziz Karimov",
-    createdAt: "2025-12-01T09:00:00.000Z",
-  },
-  {
-    id: "sup-samarqand",
-    name: "Samarqand Non Kombinati",
-    phone: "+998 66 233 77 88",
-    email: "info@samnon.uz",
-    address: "Samarqand sh., Registon ko'chasi 5",
-    contactPerson: "Otabek Qodirov",
-    stir: "304567890",
-    categories: ["food"],
-    category: "Non mahsulotlari",
-    productIds: [],
-    score: 95,
-    leadTimeDays: 1,
-    creditLimit: 25_000_000,
-    status: SUPPLIER_STATUSES.active,
-    blocked: false,
-    notes: [],
-    documents: [],
-    archived: false,
-    archivedAt: null,
-    archivedBy: null,
-    archivedReason: "",
-    timeline: [],
-    createdBy: "Aziz Karimov",
-    createdAt: "2026-01-05T09:00:00.000Z",
-  },
-  {
-    id: "sup-global",
-    name: "Global Import LLC",
-    phone: "+998 90 777 66 55",
-    email: "export@globalimport.com",
-    address: "Toshkent sh., Mirzo Ulug'bek tumani, Kichik Halqa yo'li 3",
-    contactPerson: "Jasur Normatov",
-    stir: "305678901",
-    categories: ["raw_materials", "equipment"],
-    category: "Import tovarlar",
-    productIds: [],
-    score: 61,
-    leadTimeDays: 14,
-    creditLimit: 120_000_000,
-    status: SUPPLIER_STATUSES.active,
-    blocked: false,
-    notes: [
-      {
-        id: "note-global-1",
-        text: "Oxirgi 3 oyda narx 15% oshdi — muqobil supplier ko'rib chiqilsin.",
-        author: "Aziz Karimov",
-        createdAt: "2026-06-15T09:00:00.000Z",
-      },
-    ],
-    documents: [],
-    archived: false,
-    archivedAt: null,
-    archivedBy: null,
-    archivedReason: "",
-    timeline: [],
-    createdBy: "Aziz Karimov",
-    createdAt: "2025-09-20T09:00:00.000Z",
-  },
-  {
-    id: "sup-blocked",
-    name: "Eski Savdo MChJ",
-    phone: "+998 90 000 00 00",
-    email: "",
-    address: "",
-    contactPerson: "",
-    stir: "306789012",
-    categories: ["other"],
-    category: "Universal",
-    productIds: [],
-    score: 24,
-    leadTimeDays: 7,
-    creditLimit: 0,
-    status: SUPPLIER_STATUSES.blocked, // PDF 6: bloklangan supplier tanlanmaydi
-    blocked: true,
-    notes: [
-      {
-        id: "note-blocked-1",
-        text: "Bir necha marta buzuq tovar yetkazdi, sifat nazorati muvaffaqiyatsiz.",
-        author: "Aziz Karimov",
-        createdAt: "2026-05-01T09:00:00.000Z",
-      },
-    ],
-    documents: [],
-    archived: false,
-    archivedAt: null,
-    archivedBy: null,
-    archivedReason: "",
-    timeline: [],
-    createdBy: "Aziz Karimov",
-    createdAt: "2025-06-10T09:00:00.000Z",
-  },
-];
+const SEED_SUPPLIERS = [];
 
 // ---------- Lokal saqlash ----------
 
@@ -723,10 +588,39 @@ const SUPPLIER_CSV_COLUMNS = [
   "leadTimeDays",
 ];
 
-const splitCsvLine = (line) =>
-  line
-    .split(";")
-    .map((cell) => cell.trim().replace(/^"(.*)"$/, "$1").trim());
+const splitCsvLine = (line) => {
+  const cells = [];
+  let current = "";
+  let quoted = false;
+
+  for (let index = 0; index < line.length; index += 1) {
+    const char = line[index];
+    const next = line[index + 1];
+
+    if (char === '"' && quoted && next === '"') {
+      current += '"';
+      index += 1;
+      continue;
+    }
+
+    if (char === '"') {
+      quoted = !quoted;
+      continue;
+    }
+
+    if (char === ";" && !quoted) {
+      cells.push(current.trim());
+      current = "";
+      continue;
+    }
+
+    current += char;
+  }
+
+  cells.push(current.trim());
+
+  return cells;
+};
 
 export const parseSuppliersCsv = (text) => {
   const lines = (text || "")
@@ -745,8 +639,9 @@ export const parseSuppliersCsv = (text) => {
   // standart tartib (SUPPLIER_CSV_COLUMNS) bo'yicha o'qiladi — birinchi
   // qator baribir sarlavha deb hisoblanadi va o'tkazib yuboriladi.
   const columns = knownColumns.length ? header : SUPPLIER_CSV_COLUMNS;
+  const dataLines = knownColumns.length ? lines.slice(1) : lines;
 
-  return lines.slice(1).map((line) => {
+  return dataLines.map((line) => {
     const cells = splitCsvLine(line);
 
     return columns.reduce((row, column, index) => {
@@ -782,15 +677,32 @@ export const useSuppliers = () => {
   // mantiq ikki joyda yozilmaydi.
   const createSupplier = useCallback((payload, actor = purchaseCurrentUser) => {
     let created = null;
+    let error = "";
 
     setStoreState((current) => {
       const stir = payload.stir?.trim() || "";
+      const phone = payload.phone?.trim() || "";
+      const email = payload.email?.trim().toLowerCase() || "";
 
       // Business rule: bitta STIR - bitta supplier (takror oldini olish).
       // Foydalanuvchiga ko'rinadigan xato SupplierForm'da (submit'dan oldin)
       // ko'rsatiladi — bu yerda faqat data-integrity so'nggi chegara sifatida
       // yozishni to'xtatadi (`created` null qoladi, mavjud ma'lumot buzilmaydi).
       if (stir && current.suppliers.some((entry) => entry.stir === stir)) {
+        error = "Bu STIR bilan yetkazib beruvchi allaqachon mavjud.";
+        return current;
+      }
+
+      if (phone && current.suppliers.some((entry) => entry.phone?.trim() === phone)) {
+        error = "Bu telefon bilan yetkazib beruvchi allaqachon mavjud.";
+        return current;
+      }
+
+      if (
+        email &&
+        current.suppliers.some((entry) => entry.email?.trim().toLowerCase() === email)
+      ) {
+        error = "Bu email bilan yetkazib beruvchi allaqachon mavjud.";
         return current;
       }
 
@@ -857,14 +769,29 @@ export const useSuppliers = () => {
       return { ...current, suppliers: [created, ...current.suppliers] };
     });
 
-    return created;
+    if (created) {
+      store.dispatch(businessOSActions.upsertSupplier(created));
+      return { ok: true, supplier: created };
+    }
+
+    return { ok: false, error: error || "Yetkazib beruvchi yaratilmadi." };
   }, []);
 
   const updateSupplier = useCallback((id, payload, actor = purchaseCurrentUser) => {
+    let result = { ok: false, error: "Yetkazib beruvchi topilmadi." };
+
     setStoreState((current) => ({
       ...current,
       suppliers: current.suppliers.map((entry) => {
         if (entry.id !== id) return entry;
+
+        if (entry.archived) {
+          result = {
+            ok: false,
+            error: "Arxivlangan yetkazib beruvchini tahrirlash uchun avval tiklang.",
+          };
+          return entry;
+        }
 
         // Data integrity backstop: SupplierForm allaqachon duplicate STIR'ni
         // taqdim etishdan oldin tekshiradi, lekin store — yagona manba —
@@ -878,6 +805,47 @@ export const useSuppliers = () => {
           current.suppliers.some(
             (other) => other.id !== id && other.stir === incomingStir,
           );
+
+        if (stirTaken) {
+          result = {
+            ok: false,
+            error: "Bu STIR boshqa yetkazib beruvchiga biriktirilgan.",
+          };
+          return entry;
+        }
+
+        const incomingPhone =
+          payload.phone !== undefined ? payload.phone.trim() : undefined;
+        const phoneTaken =
+          incomingPhone &&
+          current.suppliers.some(
+            (other) => other.id !== id && other.phone?.trim() === incomingPhone,
+          );
+
+        if (phoneTaken) {
+          result = {
+            ok: false,
+            error: "Bu telefon boshqa yetkazib beruvchiga biriktirilgan.",
+          };
+          return entry;
+        }
+
+        const incomingEmail =
+          payload.email !== undefined ? payload.email.trim().toLowerCase() : undefined;
+        const emailTaken =
+          incomingEmail &&
+          current.suppliers.some(
+            (other) =>
+              other.id !== id && other.email?.trim().toLowerCase() === incomingEmail,
+          );
+
+        if (emailTaken) {
+          result = {
+            ok: false,
+            error: "Bu email boshqa yetkazib beruvchiga biriktirilgan.",
+          };
+          return entry;
+        }
 
         // Consistency bug fix: createSupplier har doim matn maydonlarini
         // (name/phone/email/address/contactPerson) trim qiladi, lekin
@@ -898,10 +866,18 @@ export const useSuppliers = () => {
         // data-integrity backstop; foydalanuvchiga ko'rinadigan cheklov
         // SupplierProfile'dagi Dropdown variantlarida — faqat ruxsat etilgan
         // keyingi holatlar ko'rsatiladi).
-        const status =
-          payload.status && canTransitionSupplierStatus(entry.status, payload.status)
-            ? payload.status
-            : entry.status;
+        if (
+          payload.status &&
+          !canTransitionSupplierStatus(entry.status, payload.status)
+        ) {
+          result = {
+            ok: false,
+            error: "Bu holatga o'tish lifecycle bo'yicha ruxsat etilmagan.",
+          };
+          return entry;
+        }
+
+        const status = payload.status || entry.status;
 
         const merged = {
           ...entry,
@@ -926,33 +902,71 @@ export const useSuppliers = () => {
         const productIds = Array.isArray(payload.productIds)
           ? payload.productIds
           : entry.productIds || [];
-
-        return {
+        const nextEntry = {
           ...merged,
           categories,
           category,
           productIds,
           status,
           blocked: status === SUPPLIER_STATUSES.blocked,
+        };
+        const diffs = buildSupplierDiff(entry, nextEntry, payload);
+
+        if (!diffs.length) {
+          result = { ok: true, supplier: entry, changed: false };
+          return entry;
+        }
+
+        result = { ok: true, supplier: nextEntry, changed: true, diffs };
+
+        return {
+          ...nextEntry,
           timeline: [
             ...(entry.timeline || []),
-            buildTimelineEntry("updated", describeSupplierUpdate(payload), actor),
+            {
+              ...buildTimelineEntry("updated", describeSupplierDiff(diffs), actor),
+              diffs,
+            },
           ],
         };
       }),
     }));
+
+    if (result.ok && result.supplier) {
+      store.dispatch(businessOSActions.upsertSupplier(result.supplier));
+    }
+
+    return result;
   }, []);
 
   const setSupplierStatus = useCallback((id, status, actor = purchaseCurrentUser) => {
+    let result = { ok: false, error: "Yetkazib beruvchi topilmadi." };
+
     setStoreState((current) => ({
       ...current,
       suppliers: current.suppliers.map((entry) => {
         if (entry.id !== id) return entry;
 
+        if (entry.archived) {
+          result = {
+            ok: false,
+            error: "Arxivlangan yetkazib beruvchi holatini o'zgartirib bo'lmaydi.",
+          };
+          return entry;
+        }
+
         // Invalid transition bo'lmasin — updateSupplier bilan bir xil qoida
         // (SUPPLIER_STATUS_FLOW), bu action to'g'ridan-to'g'ri chaqirilganda
         // ham chetlab o'tilmaydi.
-        if (!canTransitionSupplierStatus(entry.status, status)) return entry;
+        if (!canTransitionSupplierStatus(entry.status, status)) {
+          result = {
+            ok: false,
+            error: "Bu holatga o'tish lifecycle bo'yicha ruxsat etilmagan.",
+          };
+          return entry;
+        }
+
+        result = { ok: true };
 
         return {
           ...entry,
@@ -969,6 +983,13 @@ export const useSuppliers = () => {
         };
       }),
     }));
+
+    if (result.ok) {
+      const supplier = getSupplierSnapshot(id);
+      if (supplier) store.dispatch(businessOSActions.upsertSupplier(supplier));
+    }
+
+    return result;
   }, []);
 
   // ---------- Archive / Restore (soft-delete workflow) ----------
@@ -983,10 +1004,19 @@ export const useSuppliers = () => {
   // Suppliers moduli).
   const archiveSupplier = useCallback(
     (id, reason = "", actor = purchaseCurrentUser) => {
+      let result = { ok: false, error: "Yetkazib beruvchi topilmadi." };
+
       setStoreState((current) => ({
         ...current,
         suppliers: current.suppliers.map((entry) => {
-          if (entry.id !== id || entry.archived) return entry;
+          if (entry.id !== id) return entry;
+
+          if (entry.archived) {
+            result = { ok: false, error: "Yetkazib beruvchi allaqachon arxivlangan." };
+            return entry;
+          }
+
+          result = { ok: true };
 
           return {
             ...entry,
@@ -995,6 +1025,8 @@ export const useSuppliers = () => {
             archivedBy: actor.name,
             archivedReason: reason?.trim() || "",
             blocked: true,
+            statusBeforeArchive: entry.status,
+            blockedBeforeArchive: entry.blocked,
             timeline: [
               ...(entry.timeline || []),
               buildTimelineEntry(
@@ -1008,15 +1040,26 @@ export const useSuppliers = () => {
           };
         }),
       }));
+
+      return result;
     },
     [],
   );
 
   const restoreSupplier = useCallback((id, actor = purchaseCurrentUser) => {
+    let result = { ok: false, error: "Yetkazib beruvchi topilmadi." };
+
     setStoreState((current) => ({
       ...current,
       suppliers: current.suppliers.map((entry) => {
-        if (entry.id !== id || !entry.archived) return entry;
+        if (entry.id !== id) return entry;
+
+        if (!entry.archived) {
+          result = { ok: false, error: "Yetkazib beruvchi arxivda emas." };
+          return entry;
+        }
+
+        result = { ok: true };
 
         return {
           ...entry,
@@ -1027,7 +1070,13 @@ export const useSuppliers = () => {
           // Blok holati asl `status` maydoniga qarab tiklanadi — agar
           // arxivlashdan OLDIN supplier haqiqatan bloklangan bo'lsa (status
           // === "blocked"), tiklashdan keyin ham bloklangan qoladi.
-          blocked: entry.status === SUPPLIER_STATUSES.blocked,
+          blocked:
+            entry.blockedBeforeArchive !== undefined
+              ? entry.blockedBeforeArchive
+              : entry.status === SUPPLIER_STATUSES.blocked,
+          status: entry.statusBeforeArchive || entry.status,
+          statusBeforeArchive: null,
+          blockedBeforeArchive: null,
           timeline: [
             ...(entry.timeline || []),
             buildTimelineEntry("restored", "Arxivdan tiklandi", actor),
@@ -1035,6 +1084,8 @@ export const useSuppliers = () => {
         };
       }),
     }));
+
+    return result;
   }, []);
 
   // `type` ixtiyoriy — "issue" bo'lsa (masalan Supplier profilida "Muammo
@@ -1158,21 +1209,39 @@ export const useSuppliers = () => {
   const addSupplierDocument = useCallback(
     (id, file, actor = purchaseCurrentUser) => {
       const name = file?.name || "";
+      const size = Number(file?.size) || 0;
+      const extension = name.split(".").pop()?.toLowerCase() || "";
+      const allowedExtensions = ["pdf", "doc", "docx", "xls", "xlsx", "png", "jpg", "jpeg"];
 
-      if (!name?.trim()) return;
+      if (!name?.trim()) {
+        return { ok: false, error: "Hujjat nomi topilmadi." };
+      }
+
+      if (size > 10 * 1024 * 1024) {
+        return { ok: false, error: "Hujjat hajmi 10 MBdan oshmasligi kerak." };
+      }
+
+      if (extension && !allowedExtensions.includes(extension)) {
+        return { ok: false, error: "Bu fayl turi qo'llab-quvvatlanmaydi." };
+      }
+
+      let result = { ok: false, error: "Yetkazib beruvchi topilmadi." };
 
       setStoreState((current) => ({
         ...current,
         suppliers: current.suppliers.map((entry) =>
           entry.id === id
-            ? {
+            ? (() => {
+                result = { ok: true };
+
+                return {
                 ...entry,
                 documents: [
                   ...(entry.documents || []),
                   {
                     id: createEntityId("sdoc"),
                     name: name.trim(),
-                    size: Number(file.size) || 0,
+                    size,
                     type: file.type || name.split(".").pop() || "file",
                     extension:
                       file.extension || name.split(".").pop()?.toLowerCase() || "",
@@ -1193,10 +1262,13 @@ export const useSuppliers = () => {
                   ...(entry.timeline || []),
                   buildTimelineEntry("document_add", `Hujjat qo'shildi: ${name.trim()}`, actor),
                 ],
-              }
+              };
+              })()
             : entry,
         ),
       }));
+
+      return result;
     },
     [],
   );
@@ -1223,20 +1295,42 @@ export const useSuppliers = () => {
     }));
   }, []);
 
-  const updateSupplierDocumentExpiry = useCallback((id, documentId, expiryDate) => {
+  const updateSupplierDocumentExpiry = useCallback((id, documentId, expiryDate, actor = purchaseCurrentUser) => {
+    let result = { ok: false, error: "Hujjat topilmadi." };
+
     setStoreState((current) => ({
       ...current,
-      suppliers: current.suppliers.map((entry) =>
-        entry.id === id
-          ? {
-              ...entry,
-              documents: (entry.documents || []).map((file) =>
-                file.id === documentId ? { ...file, expiryDate: expiryDate || "" } : file,
-              ),
-            }
-          : entry,
-      ),
+      suppliers: current.suppliers.map((entry) => {
+        if (entry.id !== id) return entry;
+
+        const currentFile = (entry.documents || []).find((file) => file.id === documentId);
+
+        if (!currentFile) return entry;
+        if ((currentFile.expiryDate || "") === (expiryDate || "")) {
+          result = { ok: true, changed: false };
+          return entry;
+        }
+
+        result = { ok: true, changed: true };
+
+        return {
+          ...entry,
+          documents: (entry.documents || []).map((file) =>
+            file.id === documentId ? { ...file, expiryDate: expiryDate || "" } : file,
+          ),
+          timeline: [
+            ...(entry.timeline || []),
+            {
+              ...buildTimelineEntry("document_expiry", `Hujjat muddati yangilandi: ${currentFile.name}`, actor),
+              oldValue: currentFile.expiryDate || "",
+              newValue: expiryDate || "",
+            },
+          ],
+        };
+      }),
     }));
+
+    return result;
   }, []);
 
   // ---------- Import (CSV) ----------
@@ -1259,7 +1353,7 @@ export const useSuppliers = () => {
 
         const created = createSupplier(row, actor);
 
-        if (created) result.created += 1;
+        if (created?.ok) result.created += 1;
         else {
           result.skipped += 1;
           result.errors.push(

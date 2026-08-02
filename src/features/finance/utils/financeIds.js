@@ -9,3 +9,7 @@ export const generateTransactionId = () => generateFinanceId("TRX");
 export const generateJournalId = () => generateFinanceId("JRN");
 export const generateAuditId = () => generateFinanceId("AUD");
 export const generateNotificationId = () => generateFinanceId("NTF");
+export const generateInvoiceId = () => generateFinanceId("INV");
+export const generatePaymentOrderId = () => generateFinanceId("PO");
+export const generateBudgetId = () => generateFinanceId("BDG");
+export const generateAccountId = () => generateFinanceId("ACC");

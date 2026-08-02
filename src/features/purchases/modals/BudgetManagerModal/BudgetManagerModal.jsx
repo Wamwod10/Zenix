@@ -54,6 +54,8 @@ const BudgetManagerModal = ({
         excludeOrderId: null,
       })
     : null;
+  const totalAllocated = budgets.reduce((sum, budget) => sum + Number(budget.allocated || 0), 0);
+  const activeBudgets = budgets.filter((budget) => budget.active).length;
 
   const handleSubmit = (payload) => {
     const result = editingBudget
@@ -95,6 +97,21 @@ const BudgetManagerModal = ({
           </>
         }
       >
+        <div className="budget-manager__summary">
+          <div>
+            <span>Jami byudjet</span>
+            <strong>{budgets.length} ta</strong>
+          </div>
+          <div>
+            <span>Faol nazorat</span>
+            <strong>{activeBudgets} ta</strong>
+          </div>
+          <div>
+            <span>Ajratilgan summa</span>
+            <strong>{totalAllocated.toLocaleString("uz-UZ")} UZS</strong>
+          </div>
+        </div>
+
         <PurchaseTabs tabs={tabs} activeTab={scopeFilter} onChange={setScopeFilter} />
 
         <div className="budget-manager__list">

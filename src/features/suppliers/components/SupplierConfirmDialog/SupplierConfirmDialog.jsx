@@ -7,6 +7,7 @@
 // tasodifan riskli amalni bajarib yubormaydi (professional ERP naqshi).
 // Escape — Modal orqali allaqachon yopadi (bekor qilish bilan bir xil).
 
+import { useEffect, useState } from "react";
 import { AlertTriangle, ShieldAlert } from "lucide-react";
 
 import { Button } from "../../../../components/ui/Button/Button";
@@ -26,10 +27,19 @@ const SupplierConfirmDialog = ({
   description,
   confirmLabel = "Tasdiqlash",
   cancelLabel = "Bekor qilish",
+  reasonLabel = "",
+  reasonRequired = false,
   onConfirm,
   onClose,
 }) => {
   const Icon = TONE_ICONS[tone] || ShieldAlert;
+  const [reason, setReason] = useState("");
+  const trimmedReason = reason.trim();
+  const reasonInvalid = reasonRequired && !trimmedReason;
+
+  useEffect(() => {
+    if (open) setReason("");
+  }, [open]);
 
   return (
     <Modal
@@ -44,7 +54,8 @@ const SupplierConfirmDialog = ({
           </Button>
           <Button
             variant={tone === "danger" ? "danger" : "primary"}
-            onClick={onConfirm}
+            disabled={reasonInvalid}
+            onClick={() => onConfirm?.(trimmedReason)}
           >
             {confirmLabel}
           </Button>
@@ -57,7 +68,25 @@ const SupplierConfirmDialog = ({
         <span className="supplier-confirm-dialog__icon">
           <Icon size={20} />
         </span>
-        <p>{description}</p>
+        <div>
+          <p>{description}</p>
+          {reasonLabel && (
+            <label className="supplier-confirm-dialog__reason">
+              <span>
+                {reasonLabel}
+                {reasonRequired ? " *" : ""}
+              </span>
+              <textarea
+                value={reason}
+                rows={3}
+                maxLength={240}
+                placeholder="Masalan: shartnoma muddati tugadi, sifat muammosi, faol hamkorlik yo'q..."
+                onChange={(event) => setReason(event.target.value)}
+              />
+              <small>{trimmedReason.length}/240</small>
+            </label>
+          )}
+        </div>
       </div>
     </Modal>
   );

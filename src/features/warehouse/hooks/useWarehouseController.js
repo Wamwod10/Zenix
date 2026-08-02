@@ -34,6 +34,19 @@ const defaultFilters = {
 
 const now = () => new Date().toISOString();
 
+const createWarehouseCode = (warehouses = []) => {
+  const used = new Set(warehouses.map((warehouse) => warehouse.code).filter(Boolean));
+  let sequence = warehouses.length + 1;
+  let code = "";
+
+  do {
+    code = `WH-${String(sequence).padStart(6, "0")}`;
+    sequence += 1;
+  } while (used.has(code));
+
+  return code;
+};
+
 const getProductStock = (product, warehouseId = "all") => {
   const entries = Object.entries(product.stocks || {}).filter(
     ([id]) => warehouseId === "all" || id === warehouseId,
@@ -120,6 +133,11 @@ const useWarehouseController = () => {
     (key, value) => writeFilters({ ...filters, [key]: value }),
     [filters, writeFilters],
   );
+
+  const resetFilters = useCallback(() => {
+    setGlobalSearch("");
+    writeFilters(defaultFilters);
+  }, [writeFilters]);
 
   const updateRole = useCallback((nextRole) => {
     setRole(nextRole);
@@ -367,10 +385,9 @@ const useWarehouseController = () => {
       const isEdit = Boolean(payload.id);
       const warehouse = {
         id: payload.id || generateWarehouseId("warehouse"),
-        code: payload.code || `WH-${state.warehouses.length + 1}`.padStart(6, "0"),
+        code: payload.code || createWarehouseCode(state.warehouses),
         status: payload.status || "active",
         ...payload,
-        capacity: toNumber(payload.capacity, 0),
       };
 
       setState((current) => ({
@@ -395,25 +412,11 @@ const useWarehouseController = () => {
       });
       closeModal();
     },
-    [addAudit, addNotification, closeModal, setState, state.warehouses.length],
+    [addAudit, addNotification, closeModal, setState, state.warehouses],
   );
 
   const deactivateWarehouse = useCallback(
     (warehouseId) => {
-      const hasStock = state.products.some(
-        (product) => toNumber(product.stocks?.[warehouseId]?.onHand) > 0,
-      );
-
-      if (hasStock) {
-        addNotification({
-          type: "warehouse",
-          level: "critical",
-          title: "Omborni nofaollashtirib bo'lmaydi",
-          message: "Omborda tovar bor. Avval bo'shating yoki transfer qiling.",
-        });
-        return;
-      }
-
       setState((current) => ({
         ...current,
         warehouses: current.warehouses.map((warehouse) =>
@@ -428,7 +431,32 @@ const useWarehouseController = () => {
         reason: "Manual action",
       });
     },
-    [addAudit, addNotification, setState, state.products],
+    [addAudit, setState],
+  );
+
+  const activateWarehouse = useCallback(
+    (warehouseId) => {
+      setState((current) => ({
+        ...current,
+        warehouses: current.warehouses.map((warehouse) =>
+          warehouse.id === warehouseId ? { ...warehouse, status: "active" } : warehouse,
+        ),
+      }));
+      addAudit({
+        action: "Warehouse activated",
+        warehouseId,
+        oldValue: "inactive",
+        newValue: "active",
+        reason: "Manual action",
+      });
+      addNotification({
+        type: "warehouse",
+        level: "normal",
+        title: "Ombor faollashtirildi",
+        message: warehouseId,
+      });
+    },
+    [addAudit, addNotification, setState],
   );
 
   const applyStockChange = useCallback(
@@ -554,6 +582,16 @@ const useWarehouseController = () => {
       const sourceStock = getProductStock(product, payload.sourceWarehouseId);
       const available = calculateAvailableStock(sourceStock.onHand, sourceStock.reserved);
       const quantity = toNumber(payload.quantity);
+
+      if (payload.sourceWarehouseId === payload.destinationWarehouseId) {
+        addNotification({
+          type: "transfer",
+          level: "critical",
+          title: "Transfer bloklandi",
+          message: "Yuboruvchi va qabul qiluvchi ombor bir xil bo'lmasligi kerak.",
+        });
+        return;
+      }
 
       if (quantity > available) {
         addNotification({
@@ -1025,10 +1063,12 @@ const useWarehouseController = () => {
       setSelectedWarehouseId,
       setGlobalSearch,
       updateFilter,
+      resetFilters,
       writeFilters,
       updateRole,
       createOrUpdateWarehouse,
       deactivateWarehouse,
+      activateWarehouse,
       confirmGoodsReceipt,
       confirmGoodsIssue,
       createTransfer,

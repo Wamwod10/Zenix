@@ -28,10 +28,12 @@ export const settingsMockAdapter = {
   },
   async testIntegration(name) {
     await wait(900);
+    const failed = Math.random() < 0.28;
     return {
       name,
-      status: "connected",
+      status: failed ? "error" : "connected",
       latency: Math.round(80 + Math.random() * 220),
+      message: failed ? "Sinov ulanishi rad etildi. Qayta urinib ko'ring." : "Ulanish muvaffaqiyatli tekshirildi.",
     };
   },
   async runBackup(type = "manual") {

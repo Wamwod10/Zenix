@@ -2,8 +2,11 @@
 // Barcha business qoidalar PDF bo'yicha shu yerda: state machine (18),
 // approval matrix (5), qabul (21-26), qaytarish (36-37), invoys/to'lov (41-46).
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useSelector } from "react-redux";
 
+import { store } from "../../../app/store/store";
+import { businessOSActions } from "../../../core/businessOS/businessOSSlice";
 import {
   APPROVAL_STEP_STATUSES,
   resolveApprovalSteps,
@@ -290,6 +293,21 @@ const resolveOrderStatusAfterInvoices = (state, orderId) => {
 
 export const usePurchasesStore = () => {
   const [state, setState] = useState(storeState);
+  const businessWarehouses = useSelector((reduxState) => {
+    const warehouses = reduxState.businessOS?.entities?.warehouses;
+
+    return (warehouses?.allIds || [])
+      .map((id) => warehouses.byId[id])
+      .filter((warehouse) => warehouse && warehouse.status !== "inactive")
+      .map((warehouse) => ({
+        ...warehouse,
+        branch: warehouse.branch || warehouse.branchName || warehouse.branchId || "Filial belgilanmagan",
+      }));
+  });
+  const availableWarehouses = useMemo(
+    () => (businessWarehouses.length ? businessWarehouses : purchaseWarehouses),
+    [businessWarehouses],
+  );
   // Task 5: suppliers Suppliers modulidan reaktiv o'qiladi (yagona manba) —
   // supplier o'zgarishi (Suppliers sahifasida) avtomatik shu yerda ham
   // ko'rinadi, Purchases o'z nusxasini saqlamaydi.
@@ -402,6 +420,7 @@ export const usePurchasesStore = () => {
       const supplierName = getSupplierSnapshot(created.supplierId)?.name;
 
       notifyPurchaseOrderCreated({ order: created, supplierName });
+      store.dispatch(businessOSActions.purchaseOrderUpserted(created));
 
       if (created.status === PURCHASE_STATUSES.pendingApproval) {
         notifyPurchaseOrderSubmitted({ order: created, supplierName });
@@ -1051,6 +1070,14 @@ export const usePurchasesStore = () => {
             notifyInvoiceMismatch({ invoice: notifyPayload.autoInvoice, supplierName });
           }
         }
+
+        store.dispatch(
+          businessOSActions.purchaseReceived({
+            order: notifyPayload.order,
+            receipt,
+            actorId: actor.id || actor.name || "system",
+          }),
+        );
       }
 
       return receipt;
@@ -1787,6 +1814,15 @@ export const usePurchasesStore = () => {
       products: [product, ...current.products],
     }));
 
+    store.dispatch(
+      businessOSActions.upsertProduct({
+        ...product,
+        price: product.lastPrice,
+        categoryId: product.category,
+        status: "active",
+      }),
+    );
+
     return product;
   }, []);
 
@@ -1928,7 +1964,7 @@ export const usePurchasesStore = () => {
   return {
     currentUser: purchaseCurrentUser,
     suppliers,
-    warehouses: purchaseWarehouses,
+    warehouses: availableWarehouses,
     products: state.products,
     orders: state.orders,
     receipts: state.receipts,

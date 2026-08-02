@@ -7,8 +7,11 @@ import {
   Check,
   ChevronRight,
   Minus,
+  MoreHorizontal,
   Pencil,
+  ReceiptText,
   ShoppingBag,
+  Trash2,
   WalletCards,
 } from "lucide-react";
 
@@ -193,15 +196,15 @@ const CustomerIdentity = ({ customer }) => (
         {customer.fullName}
       </Link>
 
-      <span className="crm-customer-table__company">
-        {customer.company || "Jismoniy mijoz"}
-      </span>
-
       <span className="crm-customer-table__phone">
         {formatPhoneNumber(customer.phone)}
       </span>
 
-      <CustomerTags tags={customer.tags} maxVisible={2} size="sm" />
+      <span className="crm-customer-table__company">
+        {customer.company || "Jismoniy mijoz"}
+      </span>
+
+      <CustomerTags tags={customer.tags} maxVisible={1} size="sm" />
     </div>
   </div>
 );
@@ -209,7 +212,6 @@ const CustomerIdentity = ({ customer }) => (
 const CustomerRisk = ({ value = 0 }) => {
   const normalizedValue = Math.min(100, Math.max(0, value));
   const risk = getRiskMeta(normalizedValue);
-  const fillLevel = Math.min(10, Math.max(0, Math.ceil(normalizedValue / 10)));
 
   return (
     <div
@@ -217,21 +219,24 @@ const CustomerRisk = ({ value = 0 }) => {
       aria-label={`${risk.label}: ${normalizedValue}%`}
     >
       <div className="crm-customer-table__risk-header">
-        <span>{risk.label}</span>
+        <span aria-hidden="true" />
+        <em>{risk.label}</em>
         <strong>{normalizedValue}%</strong>
-      </div>
-
-      <div className="crm-customer-table__risk-track" aria-hidden="true">
-        <span
-          className={`crm-customer-table__risk-fill crm-customer-table__risk-fill--${fillLevel}`}
-        />
       </div>
     </div>
   );
 };
 
-const CustomerTableRow = ({ customer, selected, onToggleSelection }) => {
+const CustomerTableRow = ({
+  customer,
+  selected,
+  onToggleSelection,
+  onDeleteCustomer,
+}) => {
   const hasDebt = customer.debt > 0;
+  const handleDelete = () => {
+    onDeleteCustomer?.(customer.id);
+  };
 
   return (
     <tr className={selected ? "crm-customer-table__row--selected" : undefined}>
@@ -265,6 +270,7 @@ const CustomerTableRow = ({ customer, selected, onToggleSelection }) => {
         <div className="crm-customer-table__money">
           <strong>{formatCurrency(customer.totalSpent)}</strong>
           <span>{customer.orderCount} ta buyurtma</span>
+          <small>{formatCurrency(customer.averageCheck)} o'rtacha chek</small>
         </div>
       </td>
 
@@ -275,12 +281,14 @@ const CustomerTableRow = ({ customer, selected, onToggleSelection }) => {
           }`}
         >
           <strong>
-            {hasDebt ? formatCurrency(customer.debt) : "Qarzi yo‘q"}
+            {hasDebt ? formatCurrency(customer.debt) : "Qarzi yo'q"}
           </strong>
 
           {hasDebt && customer.debtLimit > 0 ? (
             <span>Limit: {formatCurrency(customer.debtLimit)}</span>
-          ) : null}
+          ) : (
+            <span>Hisob holati barqaror</span>
+          )}
         </div>
       </td>
 
@@ -292,11 +300,7 @@ const CustomerTableRow = ({ customer, selected, onToggleSelection }) => {
               : "Xarid qilmagan"}
           </strong>
 
-          <span>
-            {customer.averageCheck > 0
-              ? `O‘rtacha chek: ${formatCurrency(customer.averageCheck)}`
-              : "Xarid tarixi mavjud emas"}
-          </span>
+          <span>Oxirgi xarid</span>
         </div>
       </td>
 
@@ -307,15 +311,6 @@ const CustomerTableRow = ({ customer, selected, onToggleSelection }) => {
       <td>
         <div className="crm-customer-table__actions">
           <Link
-            className="crm-customer-table__action crm-customer-table__action--edit"
-            to={getCustomerEditPath(customer.id)}
-            aria-label={`${customer.fullName} ma’lumotlarini tahrirlash`}
-            title="Tahrirlash"
-          >
-            <Pencil aria-hidden="true" />
-          </Link>
-
-          <Link
             className="crm-customer-table__action crm-customer-table__action--open"
             to={getCustomerDetailsPath(customer.id)}
             aria-label={`${customer.fullName} profilini ochish`}
@@ -323,14 +318,39 @@ const CustomerTableRow = ({ customer, selected, onToggleSelection }) => {
           >
             <ChevronRight aria-hidden="true" />
           </Link>
+
+          <details className="crm-customer-table__more">
+            <summary aria-label={`${customer.fullName} uchun qo'shimcha amallar`}>
+              <MoreHorizontal aria-hidden="true" />
+            </summary>
+
+            <div className="crm-customer-table__menu">
+              <Link to={getCustomerEditPath(customer.id)}>
+                <Pencil aria-hidden="true" />
+                <span>Tahrirlash</span>
+              </Link>
+
+              <button type="button" className="is-danger" onClick={handleDelete}>
+                <Trash2 aria-hidden="true" />
+                <span>O'chirish</span>
+              </button>
+            </div>
+          </details>
         </div>
       </td>
     </tr>
   );
 };
-
-const CustomerCard = ({ customer, selected, onToggleSelection }) => {
+const CustomerCard = ({
+  customer,
+  selected,
+  onToggleSelection,
+  onDeleteCustomer,
+}) => {
   const hasDebt = customer.debt > 0;
+  const handleDelete = () => {
+    onDeleteCustomer?.(customer.id);
+  };
 
   return (
     <article
@@ -383,6 +403,22 @@ const CustomerCard = ({ customer, selected, onToggleSelection }) => {
           </div>
         </div>
 
+        <div className="crm-customer-table__card-metric">
+          <span className="crm-customer-table__card-metric-icon">
+            <ReceiptText aria-hidden="true" />
+          </span>
+
+          <div>
+            <span>O'rtacha chek</span>
+            <strong>{formatCurrency(customer.averageCheck)}</strong>
+            <small>
+              {customer.lastPurchase
+                ? formatRelativeDate(customer.lastPurchase)
+                : "Xarid qilmagan"}
+            </small>
+          </div>
+        </div>
+
         <div
           className={`crm-customer-table__card-metric ${
             hasDebt ? "crm-customer-table__card-metric--danger" : ""
@@ -395,7 +431,7 @@ const CustomerCard = ({ customer, selected, onToggleSelection }) => {
           <div>
             <span>Qarzdorlik</span>
             <strong>
-              {hasDebt ? formatCurrency(customer.debt) : "Qarzi yo‘q"}
+              {hasDebt ? formatCurrency(customer.debt) : "Qarzi yo'q"}
             </strong>
 
             <small>
@@ -407,20 +443,8 @@ const CustomerCard = ({ customer, selected, onToggleSelection }) => {
         </div>
       </div>
 
-      <div className="crm-customer-table__card-risk">
-        <CustomerRisk value={customer.churnRisk} />
-      </div>
-
       <div className="crm-customer-table__card-footer">
-        <div className="crm-customer-table__card-purchase">
-          <span>So‘nggi xarid</span>
-
-          <strong>
-            {customer.lastPurchase
-              ? formatRelativeDate(customer.lastPurchase)
-              : "Xarid qilmagan"}
-          </strong>
-        </div>
+        <CustomerRisk value={customer.churnRisk} />
 
         <div className="crm-customer-table__card-actions">
           <Link
@@ -438,12 +462,16 @@ const CustomerCard = ({ customer, selected, onToggleSelection }) => {
             <span>Profilni ochish</span>
             <ChevronRight aria-hidden="true" />
           </Link>
+
+          <button type="button" className="crm-customer-table__card-delete" onClick={handleDelete}>
+            <Trash2 aria-hidden="true" />
+            <span>O'chirish</span>
+          </button>
         </div>
       </div>
     </article>
   );
 };
-
 const CustomerTable = ({
   customers = [],
   view = "table",
@@ -458,6 +486,7 @@ const CustomerTable = ({
   onBulkGroupChange,
   onBulkStatusChange,
   onBulkExport,
+  onDeleteCustomer,
 }) => {
   const [internalSelection, setInternalSelection] = useState([]);
 
@@ -585,6 +614,7 @@ const CustomerTable = ({
               customer={customer}
               selected={selectedIdSet.has(customer.id)}
               onToggleSelection={handleToggleSelection}
+              onDeleteCustomer={onDeleteCustomer}
             />
           ))}
         </div>
@@ -698,6 +728,7 @@ const CustomerTable = ({
                 customer={customer}
                 selected={selectedIdSet.has(customer.id)}
                 onToggleSelection={handleToggleSelection}
+                onDeleteCustomer={onDeleteCustomer}
               />
             ))}
           </tbody>

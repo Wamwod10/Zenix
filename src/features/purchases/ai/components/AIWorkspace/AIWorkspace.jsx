@@ -11,7 +11,6 @@
 
 import { useMemo, useState } from "react";
 import {
-  Filter,
   Gauge,
   Gem,
   History,
@@ -21,6 +20,7 @@ import {
 } from "lucide-react";
 
 import PurchaseKpiCard from "../../../components/PurchaseKpiCard/PurchaseKpiCard";
+import PurchaseSelectField from "../../../components/PurchaseSelectField/PurchaseSelectField";
 import PurchaseTabs from "../../../components/PurchaseTabs/PurchaseTabs";
 import { EmptyState } from "../../../../../components/ui/EmptyState/EmptyState";
 import { formatPurchaseDate } from "../../../utils/purchaseMoney";
@@ -108,6 +108,20 @@ const AIWorkspace = ({
     label: AI_VIEW_TAB_LABELS[id],
     count: counts[id],
   }));
+  const categoryOptions = [
+    { value: "all", label: "Barcha kategoriya" },
+    ...availableCategories.map((id) => ({
+      value: id,
+      label: AI_CATEGORY_LABELS[id] || id,
+    })),
+  ];
+  const priorityOptions = [
+    { value: "all", label: "Barcha ustuvorlik" },
+    ...Object.values(AI_PRIORITY).map((id) => ({
+      value: id,
+      label: AI_PRIORITY_LABELS[id],
+    })),
+  ];
 
   return (
     <section className={["ai-workspace", compact ? "ai-workspace--compact" : ""].filter(Boolean).join(" ")}>
@@ -143,28 +157,21 @@ const AIWorkspace = ({
             />
           </div>
 
-          <label className="ai-workspace__select">
-            <Filter size={13} />
-            <select value={category} onChange={(event) => setCategory(event.target.value)}>
-              <option value="all">Barcha kategoriya</option>
-              {availableCategories.map((id) => (
-                <option key={id} value={id}>
-                  {AI_CATEGORY_LABELS[id] || id}
-                </option>
-              ))}
-            </select>
-          </label>
+          <PurchaseSelectField
+            className="ai-workspace__select"
+            value={category}
+            options={categoryOptions}
+            onChange={setCategory}
+            placeholder="Barcha kategoriya"
+          />
 
-          <label className="ai-workspace__select">
-            <select value={priority} onChange={(event) => setPriority(event.target.value)}>
-              <option value="all">Barcha ustuvorlik</option>
-              {Object.values(AI_PRIORITY).map((id) => (
-                <option key={id} value={id}>
-                  {AI_PRIORITY_LABELS[id]}
-                </option>
-              ))}
-            </select>
-          </label>
+          <PurchaseSelectField
+            className="ai-workspace__select"
+            value={priority}
+            options={priorityOptions}
+            onChange={setPriority}
+            placeholder="Barcha ustuvorlik"
+          />
         </div>
       )}
 

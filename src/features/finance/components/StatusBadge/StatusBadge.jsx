@@ -9,6 +9,8 @@ import {
   Send,
 } from "lucide-react";
 
+import { formatStatusLabel } from "../../utils/financeFormatters";
+
 import "./StatusBadge.scss";
 
 const statusIcons = {
@@ -30,7 +32,7 @@ const StatusBadge = ({ status, label }) => {
   return (
     <span className={`finance-status finance-status--${String(status).toLowerCase()}`}>
       <Icon size={13} />
-      {label || status}
+      {label || formatStatusLabel(status)}
     </span>
   );
 };

@@ -83,13 +83,16 @@ const AIInsightCard = ({ insight, onPin, onComplete, onDismiss, onRestore }) => 
 
         <button
           type="button"
-          className="ai-insight-card__reasoning-toggle"
+          className={[
+            "ai-insight-card__reasoning-toggle",
+            expanded ? "ai-insight-card__reasoning-toggle--open" : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+          aria-expanded={expanded}
           onClick={() => setExpanded((current) => !current)}
         >
-          <ChevronDown
-            size={13}
-            style={{ transform: expanded ? "rotate(180deg)" : "none" }}
-          />
+          <ChevronDown size={13} />
           Sabab-oqibat
         </button>
 

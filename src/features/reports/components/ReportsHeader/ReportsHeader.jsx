@@ -18,12 +18,12 @@ const ReportsHeader = ({
     <div className="reports-header__copy">
       <span className="reports-header__eyebrow">
         <Sparkles size={14} />
-        ZENIX Business Intelligence
+        ZENIX biznes tahlili
       </span>
       <h1>Hisobotlar markazi</h1>
       <p>
-        POS, Warehouse, CRM, Finance va HR signallarini yagona AI-ready BI workspace ichida
-        kuzating, solishtiring va saqlang.
+        POS, ombor, CRM, moliya va HR ko'rsatkichlarini yagona hisobot workspace ichida
+        kuzating, solishtiring va ulashing.
       </p>
     </div>
 
@@ -37,7 +37,7 @@ const ReportsHeader = ({
             if (event.key === "Enter") onSearch(event.currentTarget.value, true);
           }}
           placeholder="Bugungi savdo, profit, top 10 mijoz..."
-          aria-label="Reports smart search"
+          aria-label="Hisobotlar bo'yicha aqlli qidiruv"
         />
       </label>
 
@@ -55,9 +55,9 @@ const ReportsHeader = ({
         </button>
         <button type="button" onClick={onOpenExport} disabled={!canExport}>
           <Download size={16} />
-          Export
+          Eksport
         </button>
-        <button type="button" onClick={onOpenSettings} aria-label="Dashboard settings">
+        <button type="button" onClick={onOpenSettings} aria-label="Dashboard sozlamalari" title="Dashboard sozlamalari">
           <PanelTopOpen size={16} />
         </button>
       </div>
@@ -65,10 +65,10 @@ const ReportsHeader = ({
       <div className="reports-header__live" aria-label="Reports system status">
         <span>
           <ShieldCheck size={13} />
-          Permission-aware
+          Ruxsat nazoratida
         </span>
         <span>{unreadCount} signal</span>
-        <span>Local BI state</span>
+        <span>Mahalliy BI holati</span>
       </div>
     </div>
   </section>

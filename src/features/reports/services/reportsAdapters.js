@@ -36,6 +36,7 @@ export const reportsMockAdapter = {
       builder: state.builder,
       widgetLayout: state.widgetLayout,
       auditVersion: "reports-v1",
+      storageVersion: 2,
     };
   },
 };

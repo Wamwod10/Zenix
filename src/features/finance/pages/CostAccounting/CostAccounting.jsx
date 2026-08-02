@@ -8,11 +8,11 @@ const CostAccounting = ({ controller }) => {
       <section className="finance-panel">
         <div className="finance-panel__head">
           <div>
-            <span>Cost accounting</span>
+            <span>Tannarx hisobi</span>
             <h2>Tannarx usullari</h2>
           </div>
         </div>
-        <div className="finance-segmented" role="tablist" aria-label="Cost method">
+        <div className="finance-segmented" role="tablist" aria-label="Tannarx usuli">
           {controller.state.settings.costMethods.map((method) => (
             <button
               type="button"
@@ -27,11 +27,11 @@ const CostAccounting = ({ controller }) => {
           ))}
         </div>
         <div className="finance-card-grid">
-          <article className="finance-mini-card"><strong>{formatMoney(cost.inventoryValuation)}</strong><span>Inventory valuation</span></article>
-          <article className="finance-mini-card"><strong>{formatMoney(cost.cogs)}</strong><span>COGS</span></article>
-          <article className="finance-mini-card"><strong>{formatMoney(controller.costBreakdown.landedCost)}</strong><span>Landed cost</span></article>
-          <article className="finance-mini-card"><strong>{formatMoney(controller.costBreakdown.finalCost)}</strong><span>Final cost</span></article>
-          <article className="finance-mini-card"><strong>{formatMoney(controller.costBreakdown.unitCost)}</strong><span>Unit cost</span></article>
+          <article className="finance-mini-card"><strong>{formatMoney(cost.inventoryValuation)}</strong><span>Tovar qiymati</span></article>
+          <article className="finance-mini-card"><strong>{formatMoney(cost.cogs)}</strong><span>Sotilgan tovar tannarxi</span></article>
+          <article className="finance-mini-card"><strong>{formatMoney(controller.costBreakdown.landedCost)}</strong><span>Yetkazish va bojxona xarajati</span></article>
+          <article className="finance-mini-card"><strong>{formatMoney(controller.costBreakdown.finalCost)}</strong><span>Yakuniy tannarx</span></article>
+          <article className="finance-mini-card"><strong>{formatMoney(controller.costBreakdown.unitCost)}</strong><span>Birlik tannarxi</span></article>
         </div>
       </section>
     </section>

@@ -160,7 +160,10 @@ const SupplierOverviewTab = ({
       return;
     }
 
-    onUpdateSupplier?.({ leadTimeDays: value });
+    const result = onUpdateSupplier?.({ leadTimeDays: value });
+
+    if (result?.ok === false) return;
+
     notify.success("Yetkazish muddati yangilandi.");
   };
 
@@ -180,7 +183,10 @@ const SupplierOverviewTab = ({
       return;
     }
 
-    onUpdateSupplier?.({ creditLimit: value });
+    const result = onUpdateSupplier?.({ creditLimit: value });
+
+    if (result?.ok === false) return;
+
     notify.success("Kredit limiti yangilandi.");
   };
 
@@ -201,7 +207,10 @@ const SupplierOverviewTab = ({
   };
 
   const applyStatusChange = (nextStatus) => {
-    onChangeStatus?.(nextStatus);
+    const result = onChangeStatus?.(nextStatus);
+
+    if (result?.ok === false) return;
+
     notify.success(
       `Holat "${SUPPLIER_STATUS_LABELS[nextStatus] || nextStatus}"ga o'zgartirildi.`,
     );

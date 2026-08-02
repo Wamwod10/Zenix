@@ -8,6 +8,7 @@ const useRecentSettings = () => {
   );
 
   const touchRecent = useCallback((pageId) => {
+    if (!pageId || pageId === "home") return;
     setRecent((current) => {
       const next = [pageId, ...current.filter((item) => item !== pageId)].slice(0, 8);
       safeSettingsWrite(settingsStorageKeys.recent, next);

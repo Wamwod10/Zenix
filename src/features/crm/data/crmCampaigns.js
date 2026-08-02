@@ -1,3 +1,1 @@
-export const crmCampaigns = [
-  // Campaign data
-];
+export const crmCampaigns = [];

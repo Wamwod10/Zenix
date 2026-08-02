@@ -5,6 +5,9 @@
 
 import "./ReportDataTable.scss";
 
+const getAlignClass = (align = "left") =>
+  ["center", "right"].includes(align) ? `report-table__cell--${align}` : "";
+
 const ReportDataTable = ({ columns = [], rows = [], onRowClick, emptyText = "Ma'lumot yo'q." }) => {
   if (!rows.length) {
     return <p className="report-table__empty">{emptyText}</p>;
@@ -16,7 +19,7 @@ const ReportDataTable = ({ columns = [], rows = [], onRowClick, emptyText = "Ma'
         <thead>
           <tr>
             {columns.map((column) => (
-              <th key={column.key} style={{ textAlign: column.align || "left" }}>
+              <th key={column.key} className={getAlignClass(column.align)}>
                 {column.label}
               </th>
             ))}
@@ -30,7 +33,7 @@ const ReportDataTable = ({ columns = [], rows = [], onRowClick, emptyText = "Ma'
               onClick={onRowClick ? () => onRowClick(row) : undefined}
             >
               {columns.map((column) => (
-                <td key={column.key} style={{ textAlign: column.align || "left" }}>
+                <td key={column.key} className={getAlignClass(column.align)}>
                   {column.render ? column.render(row) : row[column.key]}
                 </td>
               ))}

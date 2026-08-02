@@ -135,11 +135,11 @@ const sortOptions = [
   },
   {
     value: "ltv",
-    label: "LTV qiymati",
+    label: "Mijoz qiymati",
   },
   {
     value: "churnRisk",
-    label: "Churn xavfi",
+    label: "Yo'qotish xavfi",
   },
 ];
 
@@ -150,7 +150,7 @@ const filterTitles = {
   loyalty: "Sodiqlik",
   source: "Manba",
   debt: "Qarz",
-  churn: "Churn",
+  churn: "Yo'qotish xavfi",
   tag: "Teg",
 };
 
@@ -173,6 +173,7 @@ const CustomerFilters = ({
   const [searchValue, setSearchValue] = useState(
     filters.query || "",
   );
+  const isSearching = searchValue.trim() !== (filters.query || "");
 
   useEffect(() => {
     setSearchValue(filters.query || "");
@@ -270,6 +271,8 @@ const CustomerFilters = ({
       filters.sortDirection,
     );
   };
+  const visibleActiveFilters = activeFilters.slice(0, 4);
+  const hiddenActiveFilterCount = Math.max(activeFilters.length - 4, 0);
 
   return (
     <section
@@ -307,6 +310,12 @@ const CustomerFilters = ({
               <X size={14} aria-hidden="true" />
             </button>
           )}
+
+          {isSearching ? (
+            <span className="crm-customer-filters__searching">
+              Qidirilmoqda
+            </span>
+          ) : null}
         </label>
 
         <div className="crm-customer-filters__sort">
@@ -552,7 +561,7 @@ const CustomerFilters = ({
           </label>
 
           <label>
-            <span>Churn xavfi</span>
+            <span>Mijozni yo'qotish xavfi</span>
 
             <select
               value={filters.churn}
@@ -604,7 +613,7 @@ const CustomerFilters = ({
           className="crm-customer-filters__chips"
           aria-label="Faol filtrlar"
         >
-          {activeFilters.map((filter) => (
+          {visibleActiveFilters.map((filter) => (
             <span key={filter.id}>
               <small>
                 {filterTitles[filter.id] || filter.id}
@@ -627,6 +636,12 @@ const CustomerFilters = ({
               </button>
             </span>
           ))}
+
+          {hiddenActiveFilterCount > 0 ? (
+            <span className="crm-customer-filters__chips-more">
+              +{hiddenActiveFilterCount} filtr
+            </span>
+          ) : null}
         </div>
       )}
     </section>

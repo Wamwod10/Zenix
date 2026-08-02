@@ -18,19 +18,22 @@ const ReportsDashboard = ({ controller }) => (
       <div>
         <span className="reports-eyebrow">
           <Bolt size={14} />
-          Real-time BI workspace
+          Jonli biznes paneli
         </span>
-        <h2>Rahbar uchun bir ekranli Business Operating pulse</h2>
-        <p>Revenue, profit, expense, inventory, customers, HR, AI summary va forecast bitta joyda.</p>
+        <h2>Rahbar uchun yagona hisobot ekrani</h2>
+        <p>Daromad, foyda, xarajat, ombor, mijozlar, xodimlar, tavsiyalar va prognozlar bitta joyda.</p>
       </div>
       <div>
-        <button type="button" onClick={() => controller.actions.saveReport("Director weekly report", "dashboard")}>
+        <button type="button" onClick={() => controller.actions.saveReport("Rahbar haftalik hisoboti", "dashboard")}>
           <Save size={15} />
-          Save dashboard
+          Dashboardni saqlash
         </button>
-        <button type="button" onClick={() => controller.actions.setActiveModal("share")}>
+        <button type="button" onClick={() => {
+          controller.actions.setSelectedReport("dashboard");
+          controller.actions.setActiveModal("share");
+        }}>
           <Share2 size={15} />
-          Share
+          Ulashish
         </button>
       </div>
     </section>
@@ -48,6 +51,7 @@ const ReportsDashboard = ({ controller }) => (
         notifications={controller.state.notifications}
         onOpen={controller.actions.openReport}
         onRead={controller.actions.markNotificationRead}
+        onReadAll={controller.actions.markAllNotificationsRead}
       />
     </div>
 
@@ -60,6 +64,7 @@ const ReportsDashboard = ({ controller }) => (
           onAction={controller.actions.mutateWidget}
           onCompare={() => controller.actions.setComparisonMode("branch-branch")}
           onExport={() => controller.actions.exportReport("PDF", widget.title)}
+          onRefresh={() => controller.actions.mutateWidget(widget.id, "refresh")}
           onDrill={() => controller.actions.setDrillLevel(Math.min(6, controller.state.drillLevel + 1))}
         />
       ))}
@@ -79,13 +84,14 @@ const ReportsDashboard = ({ controller }) => (
       title="Goal progress"
       type="Funnel"
       data={controller.state.charts}
+      onRefresh={() => controller.actions.audit("widget changed", "Goal progress refreshed")}
       onDrill={() => controller.actions.setDrillLevel(Math.min(6, controller.state.drillLevel + 1))}
       onCompare={() => controller.actions.setComparisonMode("year-year")}
       onExport={() => controller.actions.exportReport("PDF", "Goal progress")}
       onFullscreen={() => controller.actions.audit("widget changed", "Goal progress fullscreen")}
     />
 
-    <DataTable title="Recent activities and branch performance" rows={controller.state.rows} onOpen={controller.actions.openReport} />
+    <DataTable title="Oxirgi faollik va filiallar samaradorligi" rows={controller.state.rows} onOpen={controller.actions.openReport} onReset={controller.actions.resetFilters} />
   </section>
 );
 

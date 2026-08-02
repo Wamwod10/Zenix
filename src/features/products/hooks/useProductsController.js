@@ -1,10 +1,11 @@
-import { useCallback, useDeferredValue, useMemo, useRef, useState } from "react";
+import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 
 import {
   calculateAvailableStock,
   calculateMargin,
   calculateMarkup,
   calculateProfit,
+  createProductEntityId,
   detectDuplicateProduct,
   generateBarcode,
   generateSKU,
@@ -37,8 +38,55 @@ const defaultFilters = {
 
 const now = () => new Date().toISOString();
 
-const generateProductId = (prefix = "prd") =>
-  `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
+const generateProductId = createProductEntityId;
+
+const normalizeViewMode = (value) => (["table", "grid", "compact"].includes(value) ? value : "table");
+
+const normalizePageSize = (value) => {
+  const size = toNumber(value, 10);
+  return [6, 10, 20, 50].includes(size) ? size : 10;
+};
+
+const clampFilterValue = (key, value, currentFilters) => {
+  if (key === "marginMin") {
+    if (value === "") return "";
+    return String(Math.min(100, Math.max(0, toNumber(value))));
+  }
+
+  if (key === "priceMin" || key === "priceMax") {
+    if (value === "") return "";
+    const number = Math.max(0, toNumber(value));
+    const other = key === "priceMin" ? currentFilters.priceMax : currentFilters.priceMin;
+
+    if (other !== "") {
+      const otherNumber = toNumber(other);
+      return String(key === "priceMin" ? Math.min(number, otherNumber) : Math.max(number, otherNumber));
+    }
+
+    return String(number);
+  }
+
+  return value;
+};
+
+const createUniqueSku = ({ name, category, brand, prefix, sequence, products }) => {
+  const usedSkus = new Set(products.map((item) => String(item.sku || "").toLowerCase()));
+  let attempt = 0;
+  let sku = "";
+
+  do {
+    sku = generateSKU({
+      name,
+      category,
+      brand,
+      prefix,
+      sequence: sequence + attempt,
+    });
+    attempt += 1;
+  } while (usedSkus.has(sku.toLowerCase()));
+
+  return sku;
+};
 
 const normalizeProduct = (product, state) => {
   const category = state.categories.find((item) => item.id === product.categoryId);
@@ -148,9 +196,14 @@ const useProductsController = () => {
     ]),
   );
   const [role, setRole] = useState(() => safeStorageRead(productStorageKeys.role, "manager"));
-  const [viewMode, setViewMode] = useState("table");
+  const [viewMode, setViewModeState] = useState(() =>
+    normalizeViewMode(safeStorageRead(productStorageKeys.viewMode, "table")),
+  );
   const [sort, setSort] = useState({ key: "updatedAt", direction: "desc" });
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSizeState] = useState(() =>
+    normalizePageSize(safeStorageRead(productStorageKeys.pageSize, 10)),
+  );
   const [selectedIds, setSelectedIds] = useState([]);
   const [activeModal, setActiveModal] = useState(null);
   const [quickViewId, setQuickViewId] = useState(null);
@@ -213,8 +266,13 @@ const useProductsController = () => {
         );
       })
       .sort((a, b) => {
-        const left = a[sort.key];
-        const right = b[sort.key];
+        const readSortValue = (product) => {
+          if (sort.key === "stock") return product.stock.available;
+          if (sort.key === "taxonomy") return `${product.category?.name || ""} ${product.brand?.name || ""}`;
+          return product[sort.key];
+        };
+        const left = readSortValue(a);
+        const right = readSortValue(b);
         const direction = sort.direction === "asc" ? 1 : -1;
 
         if (typeof left === "number" && typeof right === "number") {
@@ -225,7 +283,6 @@ const useProductsController = () => {
       });
   }, [deferredSearch, filters, products, sort]);
 
-  const pageSize = viewMode === "compact" ? 8 : 6;
   const pageCount = Math.max(1, Math.ceil(filteredProducts.length / pageSize));
   const visibleProducts = filteredProducts.slice((page - 1) * pageSize, page * pageSize);
   const selectedProducts = products.filter((product) => selectedIds.includes(product.id));
@@ -253,6 +310,15 @@ const useProductsController = () => {
   }, [products]);
 
   const aiInsights = useMemo(() => buildAiInsights(products), [products]);
+
+  useEffect(() => {
+    setPage((currentPage) => Math.min(Math.max(1, currentPage), pageCount));
+  }, [pageCount]);
+
+  useEffect(() => {
+    setPage(1);
+    setSelectedIds([]);
+  }, [deferredSearch, filters, pageSize, sort, viewMode]);
 
   const addAudit = useCallback(
     (audit) => {
@@ -300,8 +366,14 @@ const useProductsController = () => {
     safeStorageWrite(productStorageKeys.filters, nextFilters);
   }, []);
 
+  const resetFilters = useCallback(() => {
+    setSearch("");
+    writeFilters(defaultFilters);
+    setSelectedIds([]);
+  }, [writeFilters]);
+
   const updateFilter = useCallback(
-    (key, value) => writeFilters({ ...filters, [key]: value }),
+    (key, value) => writeFilters({ ...filters, [key]: clampFilterValue(key, value, filters) }),
     [filters, writeFilters],
   );
 
@@ -310,12 +382,34 @@ const useProductsController = () => {
     safeStorageWrite(productStorageKeys.role, nextRole);
   }, []);
 
+  const setViewMode = useCallback((nextMode) => {
+    const normalizedMode = normalizeViewMode(nextMode);
+    setViewModeState(normalizedMode);
+    safeStorageWrite(productStorageKeys.viewMode, normalizedMode);
+  }, []);
+
+  const setPageSize = useCallback((nextPageSize) => {
+    const normalizedPageSize = normalizePageSize(nextPageSize);
+    setPageSizeState(normalizedPageSize);
+    safeStorageWrite(productStorageKeys.pageSize, normalizedPageSize);
+  }, []);
+
   const saveCurrentFilter = useCallback(
     (name) => {
-      const next = [{ id: generateProductId("filter"), name, filters }, ...savedFilters];
+      const cleanName = String(name || "").trim();
+      if (!cleanName) {
+        notify({ level: "important", title: "Filtr saqlanmadi", message: "Filtr nomini kiriting." });
+        return false;
+      }
+      if (savedFilters.some((filter) => filter.name.toLowerCase() === cleanName.toLowerCase())) {
+        notify({ level: "important", title: "Filtr saqlanmadi", message: "Bu nomdagi filtr allaqachon bor." });
+        return false;
+      }
+      const next = [{ id: generateProductId("filter"), name: cleanName, filters }, ...savedFilters];
       setSavedFilters(next);
       safeStorageWrite(productStorageKeys.savedFilters, next);
-      notify({ title: "Saqlangan filtr yaratildi", message: name });
+      notify({ title: "Saqlangan filtr yaratildi", message: cleanName });
+      return true;
     },
     [filters, notify, savedFilters],
   );
@@ -398,12 +492,13 @@ const useProductsController = () => {
         ...product,
         id: generateProductId("prd"),
         name: `${product.name} nusxa`,
-        sku: generateSKU({
+        sku: createUniqueSku({
           name: product.name,
           category,
           brand,
           prefix: state.settings.skuPrefix,
           sequence: state.products.length + 1,
+          products: state.products,
         }),
         barcodes: [generateBarcode(Date.now())],
         qrCode: `QR-${Date.now().toString(36).toUpperCase()}`,
@@ -423,6 +518,11 @@ const useProductsController = () => {
 
   const patchProducts = useCallback(
     (ids, patch, auditAction) => {
+      if (!ids.length) {
+        setAsyncStatus({ type: "error", message: "Amal uchun mahsulot tanlanmagan." });
+        return false;
+      }
+      setAsyncStatus({ type: "pending", message: `${auditAction} bajarilmoqda...` });
       setState((current) => ({
         ...current,
         products: current.products.map((item) =>
@@ -432,8 +532,23 @@ const useProductsController = () => {
       addAudit({ action: auditAction, target: `${ids.length} products`, newValue: Object.keys(patch).join(", ") });
       notify({ title: auditAction, message: `${ids.length} ta mahsulot yangilandi.` });
       setSelectedIds([]);
+      setAsyncStatus({ type: "success", message: `${auditAction}: ${ids.length} ta mahsulot yangilandi.` });
+      return true;
     },
     [addAudit, notify, setState],
+  );
+
+  const archiveProduct = useCallback(
+    (productId) => {
+      const product = productsById[productId];
+      const canArchive =
+        typeof window === "undefined" ||
+        window.confirm(`${product?.name || "Mahsulot"} arxivlansinmi?`);
+
+      if (!canArchive) return false;
+      return patchProducts([productId], { status: "archived" }, "Mahsulot arxivlandi");
+    },
+    [patchProducts, productsById],
   );
 
   const submitPriceApproval = useCallback(
@@ -447,8 +562,6 @@ const useProductsController = () => {
           item.id === productId
             ? {
                 ...item,
-                price: toNumber(price),
-                cost: toNumber(cost),
                 approvalStatus: "pending",
                 priceHistory: [
                   {
@@ -468,6 +581,7 @@ const useProductsController = () => {
         ),
       }));
       notify({ level: "important", title: "Narx tasdiqqa yuborildi", message: product.name });
+      setAsyncStatus({ type: "success", message: "Narx tasdiq navbatiga yuborildi." });
     },
     [notify, productsById, setState],
   );
@@ -486,7 +600,15 @@ const useProductsController = () => {
           item.id === productId
             ? {
                 ...item,
-                approvalStatus: status === "approved" ? "active" : "rejected",
+                price:
+                  status === "approved"
+                    ? toNumber(item.priceHistory?.[0]?.price ?? item.price)
+                    : item.price,
+                cost:
+                  status === "approved"
+                    ? toNumber(item.priceHistory?.[0]?.cost ?? item.cost)
+                    : item.cost,
+                approvalStatus: status === "approved" ? "approved" : "rejected",
                 priceHistory: (item.priceHistory || []).map((history, index) =>
                   index === 0
                     ? { ...history, status, approvedBy: "Egasi", date: now().slice(0, 10) }
@@ -504,30 +626,106 @@ const useProductsController = () => {
 
   const createCategory = useCallback(
     (payload) => {
+      const category = { id: generateProductId("cat"), productCount: 0, status: "active", ...payload };
       setState((current) => ({
         ...current,
         categories: [
-          { id: generateProductId("cat"), productCount: 0, status: "active", ...payload },
+          category,
           ...current.categories,
         ],
       }));
       notify({ title: "Kategoriya yaratildi", message: payload.name });
+      return category;
     },
     [notify, setState],
   );
 
+  const updateCategory = useCallback(
+    (categoryId, patch) => {
+      setState((current) => ({
+        ...current,
+        categories: current.categories.map((item) =>
+          item.id === categoryId ? { ...item, ...patch } : item,
+        ),
+      }));
+      notify({ title: "Kategoriya yangilandi", message: patch.name || categoryId });
+    },
+    [notify, setState],
+  );
+
+  const deleteCategory = useCallback(
+    (categoryId) => {
+      const linkedProducts = state.products.filter((product) => product.categoryId === categoryId);
+
+      if (linkedProducts.length) {
+        notify({
+          level: "important",
+          title: "Kategoriya o'chirilmadi",
+          message: `${linkedProducts.length} ta mahsulot shu kategoriyaga bog'langan.`,
+        });
+        return false;
+      }
+
+      setState((current) => ({
+        ...current,
+        categories: current.categories.filter((item) => item.id !== categoryId),
+      }));
+      notify({ title: "Kategoriya o'chirildi", message: categoryId });
+      return true;
+    },
+    [notify, setState, state.products],
+  );
+
   const createBrand = useCallback(
     (payload) => {
+      const brand = { id: generateProductId("brand"), status: "active", ...payload };
       setState((current) => ({
         ...current,
         brands: [
-          { id: generateProductId("brand"), status: "active", ...payload },
+          brand,
           ...current.brands,
         ],
       }));
       notify({ title: "Brend yaratildi", message: payload.name });
+      return brand;
     },
     [notify, setState],
+  );
+
+  const updateBrand = useCallback(
+    (brandId, patch) => {
+      setState((current) => ({
+        ...current,
+        brands: current.brands.map((item) =>
+          item.id === brandId ? { ...item, ...patch } : item,
+        ),
+      }));
+      notify({ title: "Brend yangilandi", message: patch.name || brandId });
+    },
+    [notify, setState],
+  );
+
+  const deleteBrand = useCallback(
+    (brandId) => {
+      const linkedProducts = state.products.filter((product) => product.brandId === brandId);
+
+      if (linkedProducts.length) {
+        notify({
+          level: "important",
+          title: "Brend o'chirilmadi",
+          message: `${linkedProducts.length} ta mahsulot shu brendga bog'langan.`,
+        });
+        return false;
+      }
+
+      setState((current) => ({
+        ...current,
+        brands: current.brands.filter((item) => item.id !== brandId),
+      }));
+      notify({ title: "Brend o'chirildi", message: brandId });
+      return true;
+    },
+    [notify, setState, state.products],
   );
 
   const runAiAction = useCallback(
@@ -564,16 +762,19 @@ const useProductsController = () => {
     [addAudit, notify, patchProducts, productsById, setState],
   );
 
-  const validateImport = useCallback(() => {
+  const validateImport = useCallback((file) => {
+    const fileName = file?.name || "mahsulotlar-kiritish-namuna.csv";
+    const extension = fileName.split(".").pop()?.toLowerCase();
+    const isSupported = ["csv", "xlsx", "xls"].includes(extension);
     const preview = {
-      fileName: "mahsulotlar-kiritish-namuna.csv",
+      fileName,
       totalRows: 5,
-      validRows: 4,
-      errors: [{ row: 5, message: "Shtrix-kod takrorlangan" }],
+      validRows: isSupported ? 4 : 0,
+      errors: isSupported ? [{ row: 5, message: "Shtrix-kod takrorlangan" }] : [{ row: 1, message: "Faqat CSV yoki Excel fayl qabul qilinadi" }],
       columns: ["nom", "artikul", "shtrix-kod", "kategoriya", "brend", "narx", "tannarx"],
     };
     setImportPreview(preview);
-    setAsyncStatus({ type: "success", message: "Kiritish namunasi tayyor." });
+    setAsyncStatus({ type: isSupported ? "success" : "error", message: isSupported ? "Kiritish fayli tekshirildi." : "Fayl formati noto'g'ri." });
   }, []);
 
   const confirmImport = useCallback(() => {
@@ -584,7 +785,7 @@ const useProductsController = () => {
       id: generateProductId("prd"),
       name: "Kiritilgan USB-C kabel",
       description: "Kiritish ustasi orqali qo'shilgan namuna mahsulot.",
-      sku: generateSKU({ name: "Kiritilgan kabel", category, brand, prefix: state.settings.skuPrefix, sequence: state.products.length + 1 }),
+      sku: createUniqueSku({ name: "Kiritilgan kabel", category, brand, prefix: state.settings.skuPrefix, sequence: state.products.length + 1, products: state.products }),
       internalCode: "IMP-CABLE-USBC",
       barcodes: [generateBarcode(Date.now())],
       qrCode: `QR-${Date.now().toString(36).toUpperCase()}`,
@@ -615,10 +816,12 @@ const useProductsController = () => {
       updatedAt: now(),
     };
 
-    setState((current) => ({ ...current, products: [imported, ...current.products] }));
-    addAudit({ action: "Kiritish tasdiqlandi", target: importPreview.fileName, newValue: `${importPreview.validRows} yaroqli qator` });
-    notify({ title: "Kiritish yakunlandi", message: `${importPreview.validRows} qator qabul qilindi.` });
-    setImportPreview(null);
+      setAsyncStatus({ type: "pending", message: "Kiritish qatorlari saqlanmoqda..." });
+      setState((current) => ({ ...current, products: [imported, ...current.products] }));
+      addAudit({ action: "Kiritish tasdiqlandi", target: importPreview.fileName, newValue: `${importPreview.validRows} yaroqli qator` });
+      notify({ title: "Kiritish yakunlandi", message: `${importPreview.validRows} qator qabul qilindi.` });
+      setImportPreview(null);
+      setAsyncStatus({ type: "success", message: `${importPreview.validRows} qator qabul qilindi.` });
   }, [addAudit, importPreview, notify, setState, state]);
 
   const exportProducts = useCallback(() => {
@@ -675,11 +878,14 @@ const useProductsController = () => {
       setSearch,
       updateFilter,
       writeFilters,
+      resetFilters,
       setRole: updateRole,
       setViewMode,
       setSort,
       setPage,
+      setPageSize,
       setSelectedIds,
+      selectAllFiltered: () => setSelectedIds(filteredProducts.map((product) => product.id)),
       toggleSelected: (productId) =>
         setSelectedIds((current) =>
           current.includes(productId)
@@ -700,7 +906,7 @@ const useProductsController = () => {
       removeSavedFilter,
       createOrUpdateProduct,
       duplicateProduct,
-      archiveProduct: (productId) => patchProducts([productId], { status: "archived" }, "Mahsulot arxivlandi"),
+      archiveProduct,
       restoreProduct: (productId) => patchProducts([productId], { status: "active" }, "Mahsulot tiklandi"),
       bulkArchive: () => patchProducts(selectedIds, { status: "archived" }, "Ommaviy arxivlash"),
       bulkRestore: () => patchProducts(selectedIds, { status: "active" }, "Ommaviy tiklash"),
@@ -708,7 +914,11 @@ const useProductsController = () => {
       submitPriceApproval,
       resolvePriceApproval,
       createCategory,
+      updateCategory,
+      deleteCategory,
       createBrand,
+      updateBrand,
+      deleteBrand,
       runAiAction,
       validateImport,
       confirmImport,
@@ -721,7 +931,7 @@ const useProductsController = () => {
         const category = state.categories.find((item) => item.id === categoryId);
         const brand = state.brands.find((item) => item.id === brandId);
         return {
-          sku: generateSKU({ name, category, brand, prefix: state.settings.skuPrefix, sequence: state.products.length + 1 }),
+          sku: createUniqueSku({ name, category, brand, prefix: state.settings.skuPrefix, sequence: state.products.length + 1, products: state.products }),
           barcode: generateBarcode(Date.now()),
           qrCode: `QR-${Date.now().toString(36).toUpperCase()}`,
         };

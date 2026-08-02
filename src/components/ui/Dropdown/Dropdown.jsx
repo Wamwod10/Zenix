@@ -6,9 +6,12 @@ export function Dropdown({
   label,
   name,
   value,
-  placeholder = "Select option",
+  placeholder = "Tanlang",
   options = [],
   onChange,
+  disabled = false,
+  error,
+  emptyText = "Variant topilmadi",
   className = "",
 }) {
   const dropdownRef = useRef(null);
@@ -57,7 +60,7 @@ export function Dropdown({
       className={`ui-dropdown ${isOpen ? "ui-dropdown--open" : ""} ${className}`}
       ref={dropdownRef}
     >
-      {label && <label className="ui-dropdown__label">{label}</label>}
+        {label && <label className="ui-dropdown__label">{label}</label>}
 
       <div className="ui-dropdown__control-wrap">
         <button
@@ -65,6 +68,9 @@ export function Dropdown({
           type="button"
           aria-haspopup="listbox"
           aria-expanded={isOpen}
+          aria-invalid={Boolean(error)}
+          disabled={disabled}
+          title={disabled ? `${label || placeholder} hozircha faol emas` : undefined}
           onClick={() => setIsOpen((current) => !current)}
         >
           <span
@@ -84,7 +90,7 @@ export function Dropdown({
 
         {isOpen && (
           <div className="ui-dropdown__menu" role="listbox">
-            {options.map((option) => {
+            {options.length ? options.map((option) => {
               const isSelected = option.value === selectedValue;
 
               return (
@@ -102,10 +108,15 @@ export function Dropdown({
                   {isSelected && <Check size={15} />}
                 </button>
               );
-            })}
+            }) : (
+              <div className="ui-dropdown__empty" role="status">
+                {emptyText}
+              </div>
+            )}
           </div>
         )}
       </div>
+      {error && <span className="ui-dropdown__error">{error}</span>}
     </div>
   );
 }

@@ -15,9 +15,8 @@ import {
   DATE_BUCKET_ORDER,
   getDateBucket,
 } from "../../notificationsFormat";
-import NotificationFilters, {
-  DEFAULT_NOTIFICATION_FILTERS,
-} from "../NotificationFilters/NotificationFilters";
+import { DEFAULT_NOTIFICATION_FILTERS } from "../../notificationDefaults";
+import NotificationFilters from "../NotificationFilters/NotificationFilters";
 import NotificationItem from "../NotificationItem/NotificationItem";
 
 import "./NotificationCenter.scss";

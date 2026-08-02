@@ -1,5 +1,5 @@
 import StatusBadge from "../../components/StatusBadge/StatusBadge";
-import { formatMoney } from "../../utils/financeFormatters";
+import { formatAccountKind, formatAccountType, formatMoney, formatSource } from "../../utils/financeFormatters";
 
 const accountName = (accounts, accountId) =>
   accounts.find((account) => account.id === accountId)?.name || accountId;
@@ -9,10 +9,10 @@ const GeneralLedger = ({ controller }) => (
     <section className="finance-panel">
       <div className="finance-panel__head">
         <div>
-          <span>General ledger</span>
+          <span>Bosh kitob</span>
           <h2>Bosh kitob</h2>
         </div>
-        <StatusBadge status="success" label="Debit = Credit validation" />
+        <StatusBadge status="success" label="Debit = Kredit tekshirildi" />
       </div>
       <div className="ledger-table">
         {controller.state.journals.flatMap((journal) =>
@@ -20,7 +20,7 @@ const GeneralLedger = ({ controller }) => (
             <article key={`${journal.id}-${index}`} className={journal.source === "Automatic" ? "is-automatic" : ""}>
               <div>
                 <strong>{accountName(controller.state.accounts, row.accountId)}</strong>
-                <span>{journal.date} · {journal.reference} · {journal.source}</span>
+                <span>{journal.date} | {journal.reference} | {formatSource(journal.source)}</span>
               </div>
               <b>{formatMoney(row.debit)}</b>
               <b>{formatMoney(row.credit)}</b>
@@ -35,7 +35,7 @@ const GeneralLedger = ({ controller }) => (
     <section className="finance-panel">
       <div className="finance-panel__head">
         <div>
-          <span>Chart mapping</span>
+          <span>Hisob mapping</span>
           <h2>Hisoblar rejasi</h2>
         </div>
       </div>
@@ -44,7 +44,7 @@ const GeneralLedger = ({ controller }) => (
           <article className="finance-mini-card" key={account.id}>
             <strong>{account.code}</strong>
             <span>{account.name}</span>
-            <span>{account.type} · {account.kind}</span>
+            <span>{formatAccountType(account.type)} | {formatAccountKind(account.kind)}</span>
             <b>{formatMoney(account.openingBalance, account.currency)}</b>
           </article>
         ))}

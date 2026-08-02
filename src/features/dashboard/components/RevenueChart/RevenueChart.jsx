@@ -1,140 +1,113 @@
-﻿import "./RevenueChart.scss";
-import {
-  ArrowUpRight,
-  BarChart3,
-  CalendarDays,
-  CircleDollarSign,
-  Sparkles,
-  TrendingUp,
-} from "lucide-react";
-const chartData = [
-  { label: "Yan", revenue: 42, target: 38, orders: 184 },
-  { label: "Fev", revenue: 58, target: 46, orders: 211 },
-  { label: "Mar", revenue: 51, target: 52, orders: 198 },
-  { label: "Apr", revenue: 74, target: 60, orders: 246 },
-  { label: "May", revenue: 68, target: 66, orders: 231 },
-  { label: "Iyn", revenue: 86, target: 72, orders: 284 },
-  { label: "Iyl", revenue: 79, target: 76, orders: 269 },
-  { label: "Avg", revenue: 94, target: 82, orders: 318 },
-  { label: "Sen", revenue: 83, target: 86, orders: 296 },
-  { label: "Okt", revenue: 99, target: 90, orders: 342 },
-  { label: "Noy", revenue: 108, target: 94, orders: 368 },
-  { label: "Dek", revenue: 102, target: 98, orders: 351 },
-];
+import "./RevenueChart.scss";
+import { BarChart3, CalendarDays, CircleDollarSign } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { formatMoney, formatNumber, formatPercentChange } from "../../dashboardApi";
 
-const summaryItems = [
-  {
-    label: "Umumiy tushum",
-    value: "1.28 mlrd",
-    detail: "+24.8%",
-    icon: CircleDollarSign,
-  },
-  {
-    label: "O'rtacha chek",
-    value: "428 ming",
-    detail: "+8.2%",
-    icon: TrendingUp,
-  },
-  {
-    label: "Buyurtmalar",
-    value: "3 298",
-    detail: "+312",
-    icon: BarChart3,
-  },
-];
+const toTrendData = (stats = {}) => {
+  const trend = stats.revenueTrend || stats.salesTrend || stats.dailySalesTrend;
 
-const RevenueChart = () => {
+  if (Array.isArray(trend) && trend.length) {
+    return trend
+      .map((item) => ({
+        label: item.label || item.date || item.day || "",
+        value: Number(item.revenue ?? item.sales ?? item.total ?? item.value ?? 0),
+      }))
+      .filter((item) => item.value >= 0);
+  }
+
+  const yesterday = Number(stats.yesterdaySales ?? 0);
+  const today = Number(stats.todaySales ?? 0);
+
+  if (yesterday || today) {
+    return [
+      { label: "Kecha", value: yesterday },
+      { label: "Bugun", value: today },
+    ];
+  }
+
+  return [];
+};
+
+const RevenueChart = ({ currency = "uzs", stats = {} }) => {
+  const navigate = useNavigate();
+  const trendData = toTrendData(stats);
+  const maxValue = Math.max(...trendData.map((item) => item.value), 1);
+  const salesChange = formatPercentChange(stats?.todaySales, stats?.yesterdaySales);
+  const totalRevenue = trendData.reduce((sum, item) => sum + item.value, 0);
+
   return (
-    <article className="revenue-atelier">
-      <div className="revenue-atelier__header">
-        <div>
-          <span className="revenue-atelier__eyebrow">
+    <article className="zenix-dashboard__panel revenue-panel">
+      <div className="zenix-dashboard__panel-head">
+        <div className="zenix-dashboard__panel-title">
+          <span>
             <CircleDollarSign size={14} />
             Daromad nazorati
           </span>
-          <h3>Daromad holati</h3>
-          <p>Bugungi biznes ritmi, tushum sifati va target bosimi.</p>
+          <h3>Savdo va foyda trendi</h3>
+          <p>Real summary asosida bugungi tushum va yaqin davr dinamikasi.</p>
         </div>
 
-        <div className="revenue-atelier__actions" aria-label="Daromad davri">
-          <button className="is-active" type="button">
-            12 oy
-          </button>
-          <button type="button">Kvartal</button>
-          <button type="button" aria-label="Sana tanlash">
-            <CalendarDays size={15} />
-          </button>
+        <button
+          className="revenue-panel__report"
+          type="button"
+          aria-label="Savdo hisobotini ochish"
+          title="Savdo hisobotini ochish"
+          onClick={() => navigate("/reports/sales")}
+        >
+          <CalendarDays size={15} />
+          Hisobot
+        </button>
+      </div>
+
+      <div className="revenue-panel__summary">
+        <div>
+          <small>Bugungi tushum</small>
+          <strong>{formatMoney(stats?.todaySales, currency)}</strong>
+          <span>{salesChange?.label || "Taqqoslash uchun kechagi savdo yo'q"}</span>
+        </div>
+        <div>
+          <small>Sof foyda</small>
+          <strong>{formatMoney(stats?.netProfit, currency)}</strong>
+          <span>{stats?.profitMargin != null ? `${stats.profitMargin}% marja` : "Marja yo'q"}</span>
+        </div>
+        <div>
+          <small>Buyurtmalar</small>
+          <strong>{formatNumber(stats?.ordersToday ?? stats?.ordersTotal)}</strong>
+          <span>Bugungi savdo oqimi</span>
         </div>
       </div>
 
-      <div className="revenue-atelier__body">
-        <div className="revenue-atelier__orb" aria-label="Daromad holati 86%">
-          <span className="revenue-atelier__orb-ring" />
-          <span className="revenue-atelier__orb-glow" />
-          <div>
-            <small>Daromad holati</small>
-            <strong>86%</strong>
-            <em>ijobiy dinamika</em>
-            <button type="button">
-              <Sparkles size={12} />
-              AI tahlili
-            </button>
-          </div>
-        </div>
-
-        <div className="revenue-atelier__metrics">
-          {summaryItems.map((item) => {
-            const Icon = item.icon;
+      {trendData.length ? (
+        <div className="revenue-panel__chart" aria-label="Daromad trendi">
+          {trendData.slice(-12).map((item, index) => {
+            const level = Math.max(4, Math.round((item.value / maxValue) * 100));
 
             return (
-              <div className="revenue-atelier__metric" key={item.label}>
-                <span className="revenue-atelier__metric-icon">
-                  <Icon size={17} />
-                </span>
-                <div>
-                  <small>{item.label}</small>
-                  <strong>{item.value}</strong>
-                  <em>
-                    <ArrowUpRight size={13} />
-                    {item.detail}
-                  </em>
-                </div>
-              </div>
+              <span
+                className="revenue-panel__bar"
+                key={`${item.label}-${index}`}
+                title={`${item.label}: ${formatMoney(item.value, currency)}`}
+                style={{ "--bar-level": `${level}%`, "--bar-index": index }}
+              >
+                <i />
+                <small>{item.label}</small>
+              </span>
             );
           })}
         </div>
-
-        <div className="revenue-atelier__signals">
-          {chartData.slice(-6).map((item, index) => (
-            <span
-              className={item.revenue >= item.target ? "is-hot" : "is-soft"}
-              key={item.label}
-              style={{ "--signal-level": `${Math.max(24, item.revenue)}%`, "--signal-index": index }}
-            >
-              <i />
-              <small>{item.label}</small>
-              <strong>{item.revenue}m</strong>
-            </span>
-          ))}
+      ) : (
+        <div className="revenue-panel__empty">
+          <BarChart3 size={18} />
+          <strong>Trend uchun real savdo ma'lumoti hali yo'q</strong>
+          <span>POS savdolari yig'ilgach chart avtomatik to'ladi.</span>
         </div>
-      </div>
+      )}
 
-      <div className="revenue-atelier__footer">
-        <div className="revenue-atelier__legend">
-          <span>
-            <i className="is-hot" />
-            Targetdan yuqori
-          </span>
-          <span>
-            <i className="is-soft" />
-            Kuzatuvda
-          </span>
-        </div>
-
-        <p>
-          Noyabr cho'qqisi saqlanmoqda. Keyingi o'sish: premium mijoz segmenti.
-        </p>
-      </div>
+      <p className="revenue-panel__note">
+        {totalRevenue
+          ? `Ko'rinayotgan davr tushumi: ${formatMoney(totalRevenue, currency)}.`
+          : "Demo signal ko'rsatilmaydi; panel faqat real summary qiymatlariga tayangan."}
+      </p>
     </article>
   );
 };

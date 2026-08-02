@@ -1,0 +1,107 @@
+.category-rail {
+  min-width: 0;
+  height: 40px;
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) 30px;
+  align-items: center;
+  gap: 5px;
+
+  &__arrow {
+    width: 30px;
+    height: 30px;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.54);
+    border-radius: 11px;
+    color: rgba(15, 23, 42, 0.44);
+    background: rgba(255, 255, 255, 0.16);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.74);
+    transition:
+      transform var(--sales-pos-transition),
+      background var(--sales-pos-transition),
+      color var(--sales-pos-transition);
+
+    &:hover {
+      transform: scale(1.01);
+      color: rgba(43, 79, 188, 0.7);
+      background: rgba(255, 255, 255, 0.26);
+    }
+  }
+
+  &__track {
+    min-width: 0;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 3px 10px;
+    border: 1px solid rgba(255, 255, 255, 0.62);
+    border-radius: 15px;
+    background: rgba(255, 255, 255, 0.14);
+    // box-shadow:
+    //   inset 0 1px 0 rgba(255, 255, 255, 0.76),
+    //   0 8px 18px rgba(70, 101, 174, 0.05);
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    mask-image: linear-gradient(90deg, transparent, #000 18px, #000 calc(100% - 18px), transparent);
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+
+    button {
+      min-height: 28px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      flex: 0 0 auto;
+      padding: 0 10px;
+      border: 1px solid transparent;
+      border-radius: 12px;
+      color: rgba(15, 23, 42, 0.52);
+      background: transparent;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+      transition:
+        transform var(--sales-pos-transition),
+        border-color var(--sales-pos-transition),
+        box-shadow var(--sales-pos-transition),
+        background var(--sales-pos-transition),
+        color var(--sales-pos-transition);
+
+      svg {
+        opacity: 0.72;
+      }
+
+      &.is-active {
+        color: rgba(43, 79, 188, 0.9);
+        border-color: rgba(255, 255, 255, 0.84);
+        background:
+          radial-gradient(circle at 24% 12%, rgba(255, 255, 255, 0.84), transparent 5.4rem),
+          rgba(255, 255, 255, 0.3);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.92),
+          0 8px 18px rgba(70, 101, 174, 0.07),
+          0 0 22px rgba(92, 134, 245, 0.1);
+      }
+
+      &:hover:not(.is-active) {
+        transform: scale(1.005);
+        background: rgba(255, 255, 255, 0.18);
+      }
+    }
+  }
+}
+
+@media (max-width: 760px) {
+  .category-rail {
+    grid-template-columns: minmax(0, 1fr);
+
+    &__arrow {
+      display: none;
+    }
+  }
+}

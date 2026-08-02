@@ -98,7 +98,7 @@ const SupplierProductCreateModal = ({ open, onClose, onCreate }) => {
           <Input
             className="supplier-product-create__wide"
             label="Mahsulot nomi"
-            placeholder="masalan Coca-Cola 1.5L"
+            placeholder="masalan Mahsulot nomi"
             value={form.name}
             onChange={(event) => setField("name", event.target.value)}
           />

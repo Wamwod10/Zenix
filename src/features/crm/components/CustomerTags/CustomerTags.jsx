@@ -107,6 +107,12 @@ const CustomerTags = ({
           className="crm-customer-tags__more"
           type="button"
           aria-expanded={isExpanded}
+          aria-label={
+            isExpanded
+              ? "Yashirilgan teglarni yopish"
+              : `${hiddenCount} ta yashirilgan tegni ko'rsatish: ${normalizedTags.slice(safeMaxVisible).map((tag) => tag.label).join(", ")}`
+          }
+          title={normalizedTags.slice(safeMaxVisible).map((tag) => tag.label).join(", ")}
           onClick={(event) => {
             event.stopPropagation();
             setIsExpanded((currentValue) => !currentValue);

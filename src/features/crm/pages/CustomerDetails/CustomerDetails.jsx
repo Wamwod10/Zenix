@@ -16,7 +16,7 @@ import {
   Sparkles,
   UserRound,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import CustomerCommunication from "../../components/CustomerCommunication/CustomerCommunication";
@@ -25,7 +25,7 @@ import CustomerOverview from "../../components/CustomerOverview/CustomerOverview
 import CustomerPurchases from "../../components/CustomerPurchases/CustomerPurchases";
 import CustomerRelationships from "../../components/CustomerRelationships/CustomerRelationships";
 
-import { crmCustomers } from "../../data/crmCustomers";
+import useCustomerProfile from "../../hooks/useCustomerProfile";
 import { formatCurrency, formatDate } from "../../utils/crmFormatters";
 
 import "./CustomerDetails.scss";
@@ -62,6 +62,8 @@ const customerTabs = [
     icon: Link2,
   },
 ];
+const getCustomerTabStorageKey = (customerId) =>
+  `zenix-crm-customer-${customerId}-active-tab`;
 
 const customerStatusLabels = {
   active: "Faol mijoz",
@@ -100,16 +102,23 @@ const CustomerDetails = () => {
   const navigate = useNavigate();
   const { customerId } = useParams();
 
-  const [activeTab, setActiveTab] = useState("overview");
-  const [isActionsOpen, setIsActionsOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState(() => {
+    if (typeof window === "undefined" || !customerId) {
+      return "overview";
+    }
 
-  const customer = useMemo(
-    () =>
-      crmCustomers.find(
-        (customerRecord) => String(customerRecord.id) === String(customerId),
-      ),
-    [customerId],
-  );
+    return window.localStorage.getItem(getCustomerTabStorageKey(customerId)) || "overview";
+  });
+  const [isActionsOpen, setIsActionsOpen] = useState(false);
+  const { customer, isLoading } = useCustomerProfile(customerId);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !customerId) {
+      return;
+    }
+
+    window.localStorage.setItem(getCustomerTabStorageKey(customerId), activeTab);
+  }, [activeTab, customerId]);
 
   const customerMetrics = useMemo(() => {
     if (!customer) {
@@ -143,6 +152,21 @@ const CustomerDetails = () => {
         customer.lastPurchaseAt ?? customer.lastPurchase ?? customer.updatedAt,
     };
   }, [customer]);
+
+  if (isLoading) {
+    return (
+      <main className="crm-customer-details">
+        <section className="crm-customer-details__not-found">
+          <div>
+            <UserRound size={28} aria-hidden="true" />
+          </div>
+          <span>CRM В· Mijoz profili</span>
+          <h1>Mijoz yuklanmoqda</h1>
+          <p>Mijoz ma'lumotlari CRM bazasidan olinmoqda.</p>
+        </section>
+      </main>
+    );
+  }
 
   if (!customer) {
     return (

@@ -1,77 +1,98 @@
-import { CalendarDays, Save, X } from "lucide-react";
+import { CalendarDays, Save, SlidersHorizontal, X } from "lucide-react";
 import { useState } from "react";
 
 import { filterOptions } from "../../data/reportsMockData";
+import { getFilterLabel, getValueLabel } from "../../utils/reportsFormatters";
+import ReportsField from "../ReportsField/ReportsField";
 import "./GlobalFilterBar.scss";
 
 const compactFilters = ["branch", "warehouse", "category", "paymentMethod", "risk", "priority"];
+const datePresetOptions = ["today", "last30", "month", "quarter", "year", "custom"];
 
-const GlobalFilterBar = ({ filters, customFilters, onFilter, onSaveCustom, onApplyCustom, onOpenDrawer }) => {
+const toOptions = (items) => items.map((item) => ({ value: item, label: getValueLabel(item) }));
+
+const GlobalFilterBar = ({
+  filters,
+  customFilters,
+  activeCustomFilter,
+  onFilter,
+  onSaveCustom,
+  onApplyCustom,
+  onDeleteCustom,
+  onReset,
+  onOpenDrawer,
+}) => {
   const [name, setName] = useState("");
+  const duplicateName = customFilters.some((item) => item.name.toLowerCase() === name.trim().toLowerCase());
 
   return (
-    <section className="global-filter-bar" aria-label="Global reports filters">
+    <section className="global-filter-bar" aria-label="Global hisobot filterlari">
       <div className="global-filter-bar__dates">
         <span>
           <CalendarDays size={14} />
           Global filter
         </span>
-        <select value={filters.datePreset} onChange={(event) => onFilter("datePreset", event.target.value)} aria-label="Date preset">
-          <option value="today">Bugun</option>
-          <option value="last30">Oxirgi 30 kun</option>
-          <option value="month">Bu oy</option>
-          <option value="quarter">Kvartal</option>
-          <option value="year">Yil</option>
-          <option value="custom">Custom</option>
-        </select>
-        <input type="date" value={filters.startDate} onChange={(event) => onFilter("startDate", event.target.value)} aria-label="Start date" />
-        <input type="date" value={filters.endDate} onChange={(event) => onFilter("endDate", event.target.value)} aria-label="End date" />
+        <ReportsField
+          label={getFilterLabel("datePreset")}
+          type="select"
+          value={filters.datePreset}
+          options={toOptions(datePresetOptions)}
+          onChange={(value) => onFilter("datePreset", value)}
+        />
+        <ReportsField label={getFilterLabel("startDate")} type="date" value={filters.startDate} onChange={(value) => onFilter("startDate", value)} />
+        <ReportsField label={getFilterLabel("endDate")} type="date" value={filters.endDate} onChange={(value) => onFilter("endDate", value)} />
       </div>
 
       <div className="global-filter-bar__chips">
         {compactFilters.map((key) => (
-          <label key={key}>
-            <span>{key}</span>
-            <select value={filters[key]} onChange={(event) => onFilter(key, event.target.value)} aria-label={`${key} filter`}>
-              {filterOptions[key].map((item) => (
-                <option key={item} value={item}>
-                  {item}
-                </option>
-              ))}
-            </select>
-          </label>
+          <ReportsField
+            key={key}
+            label={getFilterLabel(key)}
+            type="select"
+            value={filters[key]}
+            options={toOptions(filterOptions[key])}
+            onChange={(value) => onFilter(key, value)}
+          />
         ))}
       </div>
 
       <div className="global-filter-bar__saved">
-        <input
+        <ReportsField
+          label="Saqlanadigan filter nomi"
           value={name}
-          onChange={(event) => setName(event.target.value)}
-          placeholder="Custom filter nomi"
-          aria-label="Custom filter name"
+          onChange={setName}
+          placeholder="Masalan: Toshkent yuqori risk"
+          error={duplicateName ? "Bu nom band" : ""}
         />
         <button
           type="button"
           onClick={() => {
             onSaveCustom(name);
-            setName("");
+            if (!duplicateName) setName("");
           }}
-          disabled={!name.trim()}
+          disabled={!name.trim() || duplicateName}
         >
           <Save size={14} />
           Saqlash
         </button>
-        <select value="" onChange={(event) => onApplyCustom(event.target.value)} aria-label="Saved custom filters">
-          <option value="">Saved filters</option>
-          {customFilters.map((item) => (
-            <option key={item.id} value={item.id}>
-              {item.name}
-            </option>
-          ))}
-        </select>
-        <button type="button" onClick={onOpenDrawer}>
+        <ReportsField
+          label="Saqlangan filter"
+          type="select"
+          value={activeCustomFilter}
+          options={[{ value: "", label: "Tanlanmagan" }, ...customFilters.map((item) => ({ value: item.id, label: item.name }))]}
+          onChange={onApplyCustom}
+        />
+        <button type="button" onClick={() => activeCustomFilter && onDeleteCustom(activeCustomFilter)} disabled={!activeCustomFilter}>
           <X size={14} />
-          Barcha filter
+          O'chirish
+        </button>
+        <button type="button" onClick={onReset}>
+          <X size={14} />
+          Tozalash
+        </button>
+        <button type="button" onClick={onOpenDrawer}>
+          <SlidersHorizontal size={14} />
+          Barcha filterlar
         </button>
       </div>
     </section>

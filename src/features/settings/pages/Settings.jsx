@@ -1,10 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 
 import SettingsHeader from "../components/SettingsHeader/SettingsHeader";
 import SettingsModal from "../components/SettingsModal/SettingsModal";
 import SettingsNavigation from "../components/SettingsNavigation/SettingsNavigation";
-import { settingsGroups, settingsPageMeta } from "../data/settingsNavigation";
+import { settingsGroups, settingsPageMeta, settingsRouteIds } from "../data/settingsNavigation";
 import { settingsRoles } from "../data/settingsPermissions";
 import useSettingsController from "../hooks/useSettingsController";
 import SettingsDetailPage from "./SettingsDetailPage/SettingsDetailPage";
@@ -41,20 +41,26 @@ const Settings = () => {
   const location = useLocation();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const segment = location.pathname.replace(/^\/settings\/?/, "").split("/")[0] || "";
-  const pageId = segmentToPage[segment] || "home";
+  const matchedPageId = segmentToPage[segment];
+  const pageId = matchedPageId || (segment ? "not-found" : "home");
+  const validPageId = settingsRouteIds.includes(pageId) ? pageId : "home";
   const controller = useSettingsController(pageId);
-  const meta = settingsPageMeta[pageId] || settingsPageMeta.home;
+  const meta = settingsPageMeta[pageId] || {
+    eyebrow: "Topilmadi",
+    title: "Sozlama topilmadi",
+    description: "Bunday sozlama sahifasi mavjud emas.",
+  };
   const { touchRecent } = controller.actions;
 
   useEffect(() => {
-    touchRecent(pageId);
+    if (settingsRouteIds.includes(pageId)) touchRecent(pageId);
   }, [pageId, touchRecent]);
 
   const isFavorite = controller.favorites.includes(pageId);
   const modalType = controller.activeModal;
 
-  const header = useMemo(
-    () => (
+  return (
+    <main className="zenix-settings">
       <SettingsHeader
         meta={meta}
         role={controller.role}
@@ -69,17 +75,10 @@ const Settings = () => {
         onFavorite={() => controller.actions.toggleFavorite(pageId)}
         onUndo={controller.actions.undo}
         onRedo={controller.actions.redo}
-        onSave={() => controller.actions.showToast("Explicit save simulation bajarildi.")}
+        onSave={controller.actions.saveNow}
         onImport={() => controller.actions.setActiveModal("import")}
         onShare={() => controller.actions.setActiveModal("share")}
       />
-    ),
-    [controller, isFavorite, meta, pageId],
-  );
-
-  return (
-    <main className="zenix-settings">
-      {header}
 
       <div className="zenix-settings__workspace">
         <SettingsNavigation
@@ -92,7 +91,7 @@ const Settings = () => {
           {pageId === "home" ? (
             <SettingsHome controller={controller} />
           ) : (
-            <SettingsDetailPage pageId={pageId} controller={controller} meta={meta} />
+            <SettingsDetailPage pageId={validPageId} isNotFound={pageId === "not-found"} controller={controller} meta={meta} />
           )}
         </section>
       </div>
@@ -106,13 +105,20 @@ const Settings = () => {
       {modalType && (
         <SettingsModal
           type={modalType}
+          backup={controller.selectedBackup}
           onClose={() => controller.actions.setActiveModal(null)}
-          onConfirm={(reason) => {
+          onConfirm={({ reason, fileMeta, shareEmail } = {}) => {
             if (modalType === "restore") {
               controller.actions.restoreBackup(reason);
               return;
             }
-            controller.actions.showToast(`${modalType} simulation yakunlandi.`);
+            const auditValue = fileMeta?.name || shareEmail || modalType;
+            controller.actions.addAudit({
+              action: modalType === "import" ? "import tasdiqlandi" : "ulashish tasdiqlandi",
+              newValue: auditValue,
+              reason: "Foydalanuvchi modal orqali tasdiqladi",
+            });
+            controller.actions.showToast(modalType === "import" ? "Import preview tasdiqlandi." : "Ulashish havolasi tayyorlandi.");
             controller.actions.setActiveModal(null);
           }}
         />
