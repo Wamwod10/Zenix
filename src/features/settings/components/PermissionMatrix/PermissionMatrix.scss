@@ -5,9 +5,9 @@
   padding-bottom: 2px;
 
   &__row {
-    min-width: 920px;
+    min-width: 2480px;
     display: grid;
-    grid-template-columns: 130px repeat(9, minmax(74px, 1fr));
+    grid-template-columns: 150px repeat(28, minmax(76px, 1fr));
     gap: 7px;
     align-items: center;
 

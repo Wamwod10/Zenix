@@ -1,3 +1,6 @@
+import { useEffect, useMemo, useRef, useState } from "react";
+import { ChevronDown } from "lucide-react";
+
 import "./SettingsField.scss";
 
 const normalizeOption = (option) => {
@@ -23,6 +26,27 @@ const SettingsField = ({
 }) => {
   const fieldId = id || `settings-field-${String(label).toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
   const errorId = `${fieldId}-error`;
+  const listId = `${fieldId}-listbox`;
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef(null);
+  const normalizedOptions = useMemo(() => (options || []).map(normalizeOption), [options]);
+  const selectedOption = normalizedOptions.find((option) => String(option.value) === String(value));
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const onPointerDown = (event) => {
+      if (!rootRef.current?.contains(event.target)) setOpen(false);
+    };
+    const onKeyDown = (event) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("pointerdown", onPointerDown);
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [open]);
 
   const handleInputChange = (event) => {
     const nextValue = event.target.value;
@@ -34,26 +58,47 @@ const SettingsField = ({
   };
 
   return (
-  <label className={`settings-field ${error ? "settings-field--error" : ""}`} htmlFor={fieldId}>
+  <label className={`settings-field ${error ? "settings-field--error" : ""}`} htmlFor={fieldId} ref={rootRef}>
     <span>{label}</span>
     {options ? (
-      <select
-        id={fieldId}
-        value={value}
-        disabled={disabled}
-        aria-invalid={Boolean(error)}
-        aria-describedby={error ? errorId : undefined}
-        onChange={(event) => onChange?.(event.target.value)}
-      >
-        {options.map((option) => {
-          const normalized = normalizeOption(option);
-          return (
-          <option key={String(normalized.value)} value={normalized.value}>
-            {normalized.label}
-          </option>
-          );
-        })}
-      </select>
+      <div className={`settings-field__select ${open ? "is-open" : ""}`}>
+        <button
+          id={fieldId}
+          type="button"
+          disabled={disabled}
+          aria-haspopup="listbox"
+          aria-expanded={open}
+          aria-controls={listId}
+          aria-invalid={Boolean(error)}
+          aria-describedby={error ? errorId : undefined}
+          onClick={() => setOpen((current) => !current)}
+        >
+          <em>{selectedOption?.label || "Tanlang"}</em>
+          <ChevronDown size={15} aria-hidden="true" />
+        </button>
+        {open && (
+          <div id={listId} className="settings-field__options" role="listbox" aria-label={label}>
+            {normalizedOptions.map((option) => {
+              const selected = String(option.value) === String(value);
+              return (
+                <button
+                  key={String(option.value)}
+                  type="button"
+                  role="option"
+                  aria-selected={selected}
+                  className={selected ? "is-selected" : ""}
+                  onClick={() => {
+                    onChange?.(option.value);
+                    setOpen(false);
+                  }}
+                >
+                  {option.label}
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
     ) : type === "textarea" ? (
       <textarea
         id={fieldId}

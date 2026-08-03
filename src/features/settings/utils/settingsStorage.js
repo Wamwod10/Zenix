@@ -2,10 +2,24 @@ const canUseStorage = () => typeof window !== "undefined" && window.localStorage
 
 export const settingsStorageKeys = {
   state: "zenix.settings.state.v2",
+  dashboardLayout: "zenix.settings.dashboard.layout.v1",
   favorites: "zenix.settings.favorites",
   recent: "zenix.settings.recent",
   history: "zenix.settings.history",
   role: "zenix.settings.role",
+};
+
+const isPlainObject = (value) =>
+  Boolean(value) && typeof value === "object" && !Array.isArray(value);
+
+export const mergeSettingsDefaults = (fallback, saved) => {
+  if (Array.isArray(fallback)) return Array.isArray(saved) ? saved : fallback;
+  if (!isPlainObject(fallback)) return saved ?? fallback;
+
+  return Object.entries(fallback).reduce((next, [key, fallbackValue]) => {
+    next[key] = mergeSettingsDefaults(fallbackValue, saved?.[key]);
+    return next;
+  }, {});
 };
 
 export const safeSettingsRead = (key, fallback) => {

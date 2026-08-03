@@ -150,10 +150,10 @@ const useSettingsController = (pageId) => {
       });
 
       setDirtyCount((value) => value + 1);
-      if (targetPage === "finance" || targetPage === "localization" || targetPage === "business" || targetPage === "notifications") {
+      if (targetPage === "currencies" || targetPage === "finance" || targetPage === "localization" || targetPage === "business" || targetPage === "notifications") {
         dispatch(
           businessOSActions.settingsChanged({
-            ...(targetPage === "finance" && patch.baseCurrency ? { baseCurrency: patch.baseCurrency } : {}),
+            ...(["finance", "currencies"].includes(targetPage) && patch.baseCurrency ? { baseCurrency: patch.baseCurrency } : {}),
             ...(targetPage === "localization" && patch.dateFormat ? { dateFormat: patch.dateFormat } : {}),
             ...(targetPage === "business" && patch.defaultBranch ? { defaultBranchId: patch.defaultBranch } : {}),
             ...(targetPage === "notifications" ? { notificationSettings: patch } : {}),
@@ -258,14 +258,15 @@ const useSettingsController = (pageId) => {
       let auditOld = "disabled";
       let auditNext = "allowed";
       setState((current) => {
-        const currentState = current.permissions[moduleId][action];
+        const currentModule = current.permissions[moduleId] || {};
+        const currentState = currentModule[action] || "disabled";
         const nextState = order[(order.indexOf(currentState) + 1) % order.length];
         auditOld = currentState;
         auditNext = nextState;
         const nextPermissions = {
           ...current.permissions,
           [moduleId]: {
-            ...current.permissions[moduleId],
+            ...currentModule,
             [action]: nextState,
           },
         };
@@ -390,11 +391,18 @@ const useSettingsController = (pageId) => {
       warnings:
         state.integrations.filter((item) => ["error", "checking"].includes(item.status)).length +
         (state.security.twoFactor ? 0 : 1),
+      storageUsage: state.advanced.storageUsage || state.monitoring.storage || 0,
+      activeSessions: state.security.activeSessions || state.users.reduce((sum, user) => sum + (Number(user.activeSessions) || 0), 0),
+      apiUsage: state.api.usage?.requestsToday || 0,
+      aiUsage: state.ai.tokenUsage || 0,
+      pendingApprovals: state.versions.filter((item) => ["backup", "permissions", "security"].includes(item.pageId)).length,
       securityScore: Math.max(0, Math.min(100,
-        72 +
+        62 +
         (state.security.twoFactor ? 10 : 0) +
         (state.security.minPasswordLength >= 12 ? 8 : 0) +
         (state.backup.encryption ? 6 : 0) -
+        (state.security.ipRestriction ? 0 : 6) -
+        (state.security.passwordExpiration ? 0 : 4) -
         (state.security.emergencyLocked ? 12 : 0),
       )),
     }),

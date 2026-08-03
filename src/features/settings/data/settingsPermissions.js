@@ -13,17 +13,52 @@ export const settingsRoles = [
 export const permissionModules = [
   "dashboard",
   "pos",
+  "products",
+  "sales",
+  "purchases",
   "warehouse",
   "crm",
   "finance",
   "hr",
   "reports",
   "settings",
+  "documents",
   "integrations",
+  "api",
   "ai",
+  "billing",
 ];
 
-export const permissionActions = ["view", "create", "edit", "delete", "export", "approve", "field", "branch", "warehouse"];
+export const permissionActions = [
+  "view",
+  "create",
+  "edit",
+  "delete",
+  "restore",
+  "archive",
+  "print",
+  "share",
+  "duplicate",
+  "import",
+  "export",
+  "approve",
+  "reject",
+  "viewCost",
+  "viewProfit",
+  "priceEdit",
+  "discount",
+  "api",
+  "ai",
+  "audit",
+  "settings",
+  "bulkEdit",
+  "permanentDelete",
+  "field",
+  "branch",
+  "warehouse",
+  "device",
+  "ip",
+];
 
 export const defaultPermissionMatrix = permissionModules.reduce((matrix, moduleId) => {
   matrix[moduleId] = permissionActions.reduce((actions, action) => {
