@@ -10,10 +10,12 @@ export const createEntityId = (prefix = "ent") => {
     return `${prefix}-${cryptoPart}`;
   }
 
-  const timePart = Date.now().toString(36);
-  const randomPart = Math.random().toString(36).slice(2, 10);
+  const monotonicPart =
+    typeof performance !== "undefined"
+      ? performance.now().toString(36).replace(".", "")
+      : String(counter).padStart(6, "0");
 
-  return `${prefix}-${timePart}-${counter}-${randomPart}`;
+  return `${prefix}-${monotonicPart}-${String(counter).padStart(4, "0")}`;
 };
 
 export const createDocumentNumber = (prefix, sequence) => {

@@ -4,14 +4,23 @@ export const toNumber = (value, fallback = 0) => {
 };
 
 export const createProductEntityId = (prefix = "prd") =>
-  `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+  `${prefix}-${
+    typeof crypto !== "undefined" && crypto.randomUUID
+      ? crypto.randomUUID()
+      : `${(typeof performance !== "undefined" ? performance.now() : createProductEntityId.counter)
+          .toString(36)
+          .replace(".", "")}-${String(createProductEntityId.counter += 1).padStart(4, "0")}`
+  }`;
+
+createProductEntityId.counter = 0;
 
 export const calculateProfit = (sellingPrice, costPrice) =>
   toNumber(sellingPrice) - toNumber(costPrice);
 
 export const calculateMargin = (sellingPrice, costPrice) => {
   const price = toNumber(sellingPrice);
-  if (price <= 0) return 0;
+  const cost = toNumber(costPrice);
+  if (price <= 0 || cost <= 0) return null;
   return (calculateProfit(price, costPrice) / price) * 100;
 };
 
@@ -65,8 +74,8 @@ export const generateSKU = ({ name = "", category, brand, sequence = 1, prefix =
   return `${clean(prefix, 4)}-${categoryCode}-${brandCode}-${String(sequence).padStart(4, "0")}`;
 };
 
-export const generateBarcode = (seed = Date.now()) => {
-  const base = String(Math.abs(Number(seed) || Date.now())).padStart(12, "0").slice(-12);
+export const generateBarcode = (seed = 1) => {
+  const base = String(Math.abs(Number(seed) || 1)).padStart(12, "0").slice(-12);
   const sum = base.split("").reduce((total, digit, index) => {
     const weight = index % 2 === 0 ? 1 : 3;
     return total + Number(digit) * weight;
@@ -79,13 +88,15 @@ export const detectDuplicateProduct = (product, products = []) => {
   const sku = String(product.sku || "").trim().toLowerCase();
   const barcodes = new Set((product.barcodes || []).map((item) => String(item).trim()));
   const name = String(product.name || "").trim().toLowerCase();
+  const qrCode = String(product.qrCode || "").trim().toLowerCase();
 
   return products.filter((item) => {
     if (item.id === product.id) return false;
     const skuMatch = sku && String(item.sku || "").toLowerCase() === sku;
     const barcodeMatch = (item.barcodes || []).some((barcode) => barcodes.has(String(barcode)));
     const nameMatch = name && String(item.name || "").toLowerCase() === name;
-    return skuMatch || barcodeMatch || nameMatch;
+    const qrMatch = qrCode && String(item.qrCode || "").toLowerCase() === qrCode;
+    return skuMatch || barcodeMatch || nameMatch || qrMatch;
   });
 };
 
@@ -97,15 +108,28 @@ export const validateProduct = (product, products = []) => {
   const duplicates = detectDuplicateProduct(product, products);
 
   if (!String(product.name || "").trim()) errors.name = "Mahsulot nomi majburiy.";
-  if (!String(product.sku || "").trim()) errors.sku = "Artikul majburiy.";
   if (!product.categoryId) errors.categoryId = "Kategoriya tanlang.";
   if (!product.unitId) errors.unitId = "O'lchov birligi tanlang.";
   if (price <= 0) errors.price = "Sotuv narxi 0 dan katta bo'lishi kerak.";
   if (cost < 0 || minPrice < 0) errors.price = "Narxlar manfiy bo'lmasin.";
   if (price < minPrice) errors.minPrice = "Sotuv narxi eng past narxdan past bo'lmasin.";
-  if (duplicates.some((item) => item.sku === product.sku)) errors.sku = "Artikul noyob bo'lishi kerak.";
-  if (duplicates.some((item) => (item.barcodes || []).some((barcode) => (product.barcodes || []).includes(barcode)))) {
+  if (
+    String(product.sku || "").trim() &&
+    duplicates.some((item) => String(item.sku || "").toLowerCase() === String(product.sku || "").toLowerCase())
+  ) {
+    errors.sku = "Artikul noyob bo'lishi kerak.";
+  }
+  if (
+    (product.barcodes || []).some(Boolean) &&
+    duplicates.some((item) => (item.barcodes || []).some((barcode) => (product.barcodes || []).includes(barcode)))
+  ) {
     errors.barcodes = "Shtrix-kod noyob bo'lishi kerak.";
+  }
+  if (
+    String(product.qrCode || "").trim() &&
+    duplicates.some((item) => String(item.qrCode || "").toLowerCase() === String(product.qrCode || "").toLowerCase())
+  ) {
+    errors.qrCode = "QR kod noyob bo'lishi kerak.";
   }
 
   const variantKeys = new Set();
@@ -132,6 +156,11 @@ export const formatMoney = (value, currency = "UZS") =>
     maximumFractionDigits: 0,
   }).format(toNumber(value));
 
+export const formatMargin = (value) =>
+  value == null || !Number.isFinite(Number(value))
+    ? "Tannarx yo'q"
+    : `${Math.round(Number(value))}%`;
+
 export const formatQuantity = (value, unit = "dona") =>
   `${new Intl.NumberFormat("uz-UZ").format(toNumber(value))} ${unit}`;
 
@@ -148,7 +177,8 @@ export const productStatusLabels = {
   active: "Faol",
   draft: "Qoralama",
   archived: "Arxivlangan",
-  pending: "Kutilmoqda",
+  pending: "Tasdiq kutilmoqda",
+  inactive: "Nofaol",
   approved: "Tasdiqlangan",
   rejected: "Rad etilgan",
   healthy: "Sog'lom",

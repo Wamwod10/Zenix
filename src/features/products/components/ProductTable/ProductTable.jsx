@@ -2,20 +2,24 @@ import {
   Archive,
   ArrowDown,
   ArrowUp,
+  Ban,
   ChevronLeft,
   ChevronRight,
+  CheckCircle2,
   Copy,
   Eye,
   MoreHorizontal,
   PackagePlus,
   Pencil,
   RotateCcw,
+  Send,
 } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
   formatDate,
+  formatMargin,
   formatMoney,
   formatQuantity,
   labelProductStatus,
@@ -57,6 +61,9 @@ const ProductTable = ({
   onResetFilters,
   onOpenQuickView,
   onDuplicate,
+  onActivate,
+  onDeactivate,
+  onSubmitApproval,
   onArchive,
   onRestore,
 }) => {
@@ -103,6 +110,28 @@ const ProductTable = ({
           <MoreHorizontal size={15} />
         </summary>
         <div>
+          <button type="button" onClick={() => navigate(`/products/${product.id}/edit`)}>
+            <Pencil size={14} />
+            Tahrirlash
+          </button>
+          {product.status !== "active" && product.status !== "archived" && (
+            <button type="button" onClick={() => onActivate(product.id)}>
+              <CheckCircle2 size={14} />
+              Faollashtirish
+            </button>
+          )}
+          {product.status === "draft" && (
+            <button type="button" onClick={() => onSubmitApproval(product.id)}>
+              <Send size={14} />
+              Tasdiqqa yuborish
+            </button>
+          )}
+          {product.status === "active" && (
+            <button type="button" onClick={() => onDeactivate(product.id)}>
+              <Ban size={14} />
+              Nofaol qilish
+            </button>
+          )}
           <button type="button" onClick={() => onDuplicate(product.id)}>
             <Copy size={14} />
             Nusxalash
@@ -223,7 +252,7 @@ const ProductTable = ({
                   <small>{product.brand?.name || "-"}</small>
                 </td>
                 <td>{formatMoney(product.price)}</td>
-                <td>{canViewCost ? `${Math.round(product.margin)}%` : "-"}</td>
+                <td>{canViewCost ? formatMargin(product.margin) : "-"}</td>
                 <td>
                   <StatusPill value={product.stockStatus} />
                   <small>

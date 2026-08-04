@@ -11,7 +11,7 @@ import {
   formatPurchaseDate,
 } from "../../../../purchases/utils/purchaseMoney";
 
-const SupplierHistoryTab = ({ orders }) => (
+const SupplierHistoryTab = ({ orders, purchaseRows = [] }) => (
   <Card
     className="supplier-profile__card"
     role="tabpanel"
@@ -20,7 +20,29 @@ const SupplierHistoryTab = ({ orders }) => (
   >
     <h3>Xarid tarixi</h3>
 
-    {orders.length ? (
+    {purchaseRows.length ? (
+      <div className="supplier-profile__history">
+        {purchaseRows.map((row) => (
+          <div className="supplier-profile__history-row" key={`${row.purchaseOrderId}-${row.purchaseReceiptId}-${row.id}`}>
+            <span className="supplier-profile__history-primary">
+              <strong>{row.productName}</strong>
+              <small>
+                {row.purchaseOrderNumber}
+                {row.purchaseReceiptNumber ? ` · ${row.purchaseReceiptNumber}` : ""}
+              </small>
+            </span>
+            <span className="supplier-profile__history-primary">
+              <strong>{formatCurrencyMoney(row.purchasePrice, row.currency)}</strong>
+              <small>{row.quantity} dona · chegirma {row.discount}% · VAT {row.vat}%</small>
+            </span>
+            <span className="supplier-profile__history-primary">
+              <strong>{formatPurchaseDate(row.createdAt)}</strong>
+              <small>{row.warehouseId || "-"} · {row.responsibleEmployee || "-"}</small>
+            </span>
+          </div>
+        ))}
+      </div>
+    ) : orders.length ? (
       <div className="supplier-profile__history">
         {orders.map((order) => {
           const totals = calculateOrderTotals(order);

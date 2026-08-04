@@ -4,8 +4,8 @@
 
   &__row {
     display: grid;
-    grid-template-columns: 1.6fr 0.9fr 1.1fr 1fr 1.1fr 0.8fr 0.9fr 0.6fr;
-    gap: 12px;
+    grid-template-columns: 1.35fr 0.95fr 0.95fr 0.9fr 0.7fr 0.7fr 0.9fr 0.6fr 0.65fr 0.65fr 1fr;
+    gap: 10px;
     align-items: center;
     padding: 12px 14px;
     border-radius: 15px;
@@ -51,9 +51,30 @@
     }
   }
 
-  &__sku {
+  &__sku,
+  &__codes {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
     color: var(--color-text-muted);
     font-variant-numeric: tabular-nums;
+
+    strong,
+    small {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    strong {
+      color: var(--color-text);
+      font-size: 12px;
+    }
+
+    small {
+      color: var(--color-text-muted);
+      font-size: 11px;
+    }
   }
 
   &__money {
@@ -105,13 +126,20 @@
       color: rgba(185, 28, 28, 0.82);
       background: rgba(220, 38, 38, 0.07);
     }
+
+    &--neutral {
+      color: var(--color-text-muted);
+      background: rgba(100, 116, 139, 0.08);
+    }
   }
 
   &__actions {
     display: flex;
     justify-content: flex-end;
+    gap: 4px;
   }
 
+  &__actions button,
   &__unlink {
     display: grid;
     place-items: center;
@@ -140,11 +168,14 @@
 // belgisiz bir ustunga siqilish o'rniga.
 @media (max-width: 960px) {
   .supplier-products__row {
-    grid-template-columns: 1.5fr 1.1fr 1.1fr 0.9fr 50px;
+    grid-template-columns: 1.5fr 1.1fr 1fr 0.9fr 104px;
 
     span:nth-child(2),
-    span:nth-child(4),
-    span:nth-child(6) {
+    span:nth-child(3),
+    span:nth-child(5),
+    span:nth-child(6),
+    span:nth-child(7),
+    span:nth-child(8) {
       display: none;
     }
   }

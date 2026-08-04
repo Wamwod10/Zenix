@@ -1,3 +1,5 @@
+import { normalizeProductCatalogRecord } from "../../../core/businessOS/erpProductModel";
+
 const canUseStorage = () => typeof window !== "undefined" && window.localStorage;
 
 export const productStorageKeys = {
@@ -19,7 +21,7 @@ export const withProductSchema = (state) => ({
   settings: {
     ...(state.settings || {}),
   },
-  products: state.products || [],
+  products: (state.products || []).map(normalizeProductCatalogRecord),
   categories: state.categories || [],
   brands: state.brands || [],
   units: state.units || [],

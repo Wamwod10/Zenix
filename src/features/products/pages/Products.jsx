@@ -50,6 +50,8 @@ const ProductDetailsRoute = ({ controller, edit = false }) => {
       product={product}
       productsById={controller.productsById}
       canViewCost={controller.permissions.canViewCost}
+      purchaseHistoryRows={controller.purchaseHistoryRows.filter((row) => row.productId === product.id)}
+      supplierSummary={controller.supplierSummariesByProductId[product.id]}
       onDuplicate={controller.actions.duplicateProduct}
       onArchive={controller.actions.archiveProduct}
       onRestore={controller.actions.restoreProduct}
@@ -57,8 +59,10 @@ const ProductDetailsRoute = ({ controller, edit = false }) => {
   );
 };
 
-const ProductsRoutes = ({ controller, categoriesWithCounts, onNavigate }) =>
-  useRoutes([
+const ProductsRoutes = ({ controller, categoriesWithCounts, onNavigate }) => {
+  const navigate = useNavigate();
+
+  return useRoutes([
     {
       index: true,
       element: (
@@ -138,6 +142,7 @@ const ProductsRoutes = ({ controller, categoriesWithCounts, onNavigate }) =>
     { path: ":productId", element: <ProductDetailsRoute controller={controller} /> },
     { path: "*", element: <ProductRouteNotFound /> },
   ]);
+};
 
 const Products = () => {
   const controller = useProductsController();

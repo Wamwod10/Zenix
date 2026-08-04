@@ -7,7 +7,6 @@ import {
   calculateProfit,
   createProductEntityId,
   detectDuplicateProduct,
-  generateBarcode,
   generateSKU,
   getStockStatus,
   summarizeStock,
@@ -20,6 +19,13 @@ import {
   safeStorageWrite,
 } from "../utils/productStorage";
 import { canProduct } from "../utils/productPermissions";
+import {
+  ensureProductIdentity,
+  productIdentityAdapter,
+} from "../services/productIdentityService";
+import { buildProductSupplierSummary } from "../../../core/businessOS/erpSelectors";
+import usePurchasesStore from "../../purchases/hooks/usePurchasesStore";
+import { buildPurchaseHistoryRows } from "../../purchases/utils/purchaseHistory";
 import useProductsStorage from "./useProductsStorage";
 
 const defaultFilters = {
@@ -93,24 +99,37 @@ const normalizeProduct = (product, state) => {
   const brand = state.brands.find((item) => item.id === product.brandId);
   const unit = state.units.find((item) => item.id === product.unitId);
   const stock = summarizeStock(product.stockSummary);
-  const margin = calculateMargin(product.price, product.cost);
-  const markup = calculateMarkup(product.price, product.cost);
+  const currentCost = toNumber(
+    product.currentCost ??
+      product.cost ??
+      product.costPrice ??
+      product.averageCost ??
+      product.standardCost ??
+      product.lastPurchaseCost,
+  );
+  const sellingPrice = toNumber(product.sellingPrice ?? product.price);
+  const margin = calculateMargin(sellingPrice, currentCost);
+  const markup = calculateMarkup(sellingPrice, currentCost);
 
   return {
     ...product,
     category,
     brand,
     unit,
+    price: sellingPrice,
+    sellingPrice,
+    currentCost,
+    cost: currentCost,
     stock,
     stockStatus: getStockStatus(product),
-    profit: calculateProfit(product.price, product.cost),
+    profit: calculateProfit(sellingPrice, currentCost),
     margin,
     markup,
   };
 };
 
 const buildAiInsights = (products) => {
-  const lowMargin = products.find((item) => item.margin < 18 && item.status === "active");
+  const lowMargin = products.find((item) => item.margin != null && item.margin < 18 && item.status === "active");
   const missingMedia = products.find((item) => !item.media?.length);
   const duplicate = products.find((item, index) =>
     detectDuplicateProduct(item, products.slice(index + 1)).length,
@@ -183,6 +202,7 @@ const aiInsightTypeLabels = {
 
 const useProductsController = () => {
   const { state, setState, resetState } = useProductsStorage();
+  const purchases = usePurchasesStore();
   const searchRef = useRef(null);
   const [search, setSearch] = useState("");
   const deferredSearch = useDeferredValue(search);
@@ -260,7 +280,7 @@ const useProductsController = () => {
           warehouseMatch &&
           (!filters.priceMin || price >= toNumber(filters.priceMin)) &&
           (!filters.priceMax || price <= toNumber(filters.priceMax)) &&
-          (!filters.marginMin || product.margin >= toNumber(filters.marginMin)) &&
+          (!filters.marginMin || (product.margin != null && product.margin >= toNumber(filters.marginMin))) &&
           (filters.tag === "all" || product.tags?.includes(filters.tag)) &&
           (filters.missingData === "all" || (filters.missingData === "yes" ? missing : !missing))
         );
@@ -296,20 +316,44 @@ const useProductsController = () => {
         pending: acc.pending + (product.approvalStatus === "pending" ? 1 : 0),
         value: acc.value + product.stock.onHand * toNumber(product.cost),
         low: acc.low + (product.stockStatus === "low" || product.stockStatus === "out" ? 1 : 0),
-        margin: acc.margin + product.margin,
+        margin: acc.margin + (product.margin ?? 0),
+        marginCount: acc.marginCount + (product.margin == null ? 0 : 1),
         sales: acc.sales + toNumber(product.sales30d),
       }),
-      { active: 0, archived: 0, pending: 0, value: 0, low: 0, margin: 0, sales: 0 },
+      { active: 0, archived: 0, pending: 0, value: 0, low: 0, margin: 0, marginCount: 0, sales: 0 },
     );
 
     return {
       ...totals,
       total: products.length,
-      averageMargin: products.length ? totals.margin / products.length : 0,
+      averageMargin: totals.marginCount ? totals.margin / totals.marginCount : null,
     };
   }, [products]);
 
   const aiInsights = useMemo(() => buildAiInsights(products), [products]);
+  const purchaseHistoryRows = useMemo(
+    () =>
+      buildPurchaseHistoryRows({
+        orders: purchases.orders,
+        receipts: purchases.receipts,
+        suppliers: purchases.suppliers,
+        products,
+      }),
+    [products, purchases.orders, purchases.receipts, purchases.suppliers],
+  );
+  const supplierSummariesByProductId = useMemo(
+    () =>
+      products.reduce((map, product) => {
+        const productHistory = purchaseHistoryRows.filter((row) => row.productId === product.id);
+        map[product.id] = buildProductSupplierSummary({
+          product,
+          suppliers: purchases.suppliers,
+          purchaseHistoryRows: productHistory,
+        });
+        return map;
+      }, {}),
+    [products, purchaseHistoryRows, purchases.suppliers],
+  );
 
   useEffect(() => {
     setPage((currentPage) => Math.min(Math.max(1, currentPage), pageCount));
@@ -431,8 +475,21 @@ const useProductsController = () => {
       }
 
       const isEdit = Boolean(payload.id);
+      const identity = ensureProductIdentity(payload, state.products);
+      const qrCode = isEdit
+        ? identity.qrCode
+        : productIdentityAdapter.generateProductQrCode({ ...payload, id: identity.id });
+      const currentCost = toNumber(
+        payload.currentCost ??
+          payload.cost ??
+          payload.costPrice ??
+          payload.averageCost ??
+          payload.standardCost ??
+          payload.lastPurchaseCost,
+      );
+      const sellingPrice = toNumber(payload.sellingPrice ?? payload.price);
       const product = {
-        id: payload.id || generateProductId("prd"),
+        id: identity.id,
         createdAt: payload.createdAt || now(),
         updatedAt: now(),
         lifecycle: payload.lifecycle || "draft",
@@ -450,8 +507,19 @@ const useProductsController = () => {
         sales30d: toNumber(payload.sales30d),
         views30d: toNumber(payload.views30d),
         ...payload,
-        price: toNumber(payload.price),
-        cost: toNumber(payload.cost),
+        sku: identity.sku,
+        barcode: identity.barcode,
+        barcodes: identity.barcodes,
+        qrCode,
+        sellingPrice,
+        retailPrice: toNumber(payload.retailPrice ?? payload.sellingPrice ?? payload.price),
+        wholesalePrice: toNumber(payload.wholesalePrice ?? payload.minPrice),
+        vipPrice: toNumber(payload.vipPrice),
+        currentCost,
+        standardCost: toNumber(payload.standardCost) > 0 ? toNumber(payload.standardCost) : currentCost,
+        lastPurchaseCost: toNumber(payload.lastPurchaseCost),
+        price: sellingPrice,
+        cost: currentCost,
         minPrice: toNumber(payload.minPrice),
         taxRate: toNumber(payload.taxRate),
       };
@@ -488,9 +556,10 @@ const useProductsController = () => {
       if (!product) return null;
       const category = state.categories.find((item) => item.id === product.categoryId);
       const brand = state.brands.find((item) => item.id === product.brandId);
+      const duplicateId = generateProductId("prd");
       const duplicate = {
         ...product,
-        id: generateProductId("prd"),
+        id: duplicateId,
         name: `${product.name} nusxa`,
         sku: createUniqueSku({
           name: product.name,
@@ -500,8 +569,8 @@ const useProductsController = () => {
           sequence: state.products.length + 1,
           products: state.products,
         }),
-        barcodes: [generateBarcode(Date.now())],
-        qrCode: `QR-${Date.now().toString(36).toUpperCase()}`,
+        barcodes: [productIdentityAdapter.generateProductBarcode({ products: state.products })],
+        qrCode: productIdentityAdapter.generateProductQrCode({ id: duplicateId }),
         status: "draft",
         approvalStatus: "draft",
         createdAt: now(),
@@ -551,10 +620,30 @@ const useProductsController = () => {
     [patchProducts, productsById],
   );
 
+  const activateProduct = useCallback(
+    (productId) =>
+      patchProducts([productId], { status: "active", approvalStatus: "approved", lifecycle: "active" }, "Mahsulot faollashtirildi"),
+    [patchProducts],
+  );
+
+  const deactivateProduct = useCallback(
+    (productId) =>
+      patchProducts([productId], { status: "inactive", lifecycle: "inactive" }, "Mahsulot nofaol qilindi"),
+    [patchProducts],
+  );
+
+  const submitProductForApproval = useCallback(
+    (productId) =>
+      patchProducts([productId], { status: "pending", approvalStatus: "pending", lifecycle: "review" }, "Mahsulot tasdiqqa yuborildi"),
+    [patchProducts],
+  );
+
   const submitPriceApproval = useCallback(
     (productId, price, cost) => {
       const product = productsById[productId];
       if (!product) return;
+      const nextPrice = toNumber(price);
+      const nextCost = toNumber(cost);
 
       setState((current) => ({
         ...current,
@@ -567,8 +656,9 @@ const useProductsController = () => {
                   {
                     id: generateProductId("price"),
                     status: "pending",
-                    price: toNumber(price),
-                    cost: toNumber(cost),
+                    price: nextPrice,
+                    cost: nextCost,
+                    currentCost: nextCost,
                     requestedBy: "Ma'mur",
                     approvedBy: "",
                     date: now().slice(0, 10),
@@ -597,27 +687,30 @@ const useProductsController = () => {
       setState((current) => ({
         ...current,
         products: current.products.map((item) =>
-          item.id === productId
-            ? {
+          {
+            if (item.id !== productId) return item;
+            const approvedPrice = toNumber(item.priceHistory?.[0]?.price ?? item.price);
+            const approvedCost = toNumber(item.priceHistory?.[0]?.currentCost ?? item.priceHistory?.[0]?.cost ?? item.currentCost ?? item.cost);
+
+            return {
                 ...item,
-                price:
-                  status === "approved"
-                    ? toNumber(item.priceHistory?.[0]?.price ?? item.price)
-                    : item.price,
-                cost:
-                  status === "approved"
-                    ? toNumber(item.priceHistory?.[0]?.cost ?? item.cost)
-                    : item.cost,
+                price: status === "approved" ? approvedPrice : item.price,
+                sellingPrice: status === "approved" ? approvedPrice : item.sellingPrice,
+                retailPrice: status === "approved" ? approvedPrice : item.retailPrice,
+                cost: status === "approved" ? approvedCost : item.cost,
+                currentCost: status === "approved" ? approvedCost : item.currentCost,
+                standardCost: status === "approved" ? approvedCost : item.standardCost,
                 approvalStatus: status === "approved" ? "approved" : "rejected",
+                status: status === "approved" ? "active" : "draft",
+                lifecycle: status === "approved" ? "active" : "draft",
                 priceHistory: (item.priceHistory || []).map((history, index) =>
                   index === 0
                     ? { ...history, status, approvedBy: "Egasi", date: now().slice(0, 10) }
                     : history,
                 ),
                 updatedAt: now(),
-              }
-            : item,
-        ),
+              };
+          }),
       }));
       addAudit({ action: `Narx ${status === "approved" ? "tasdiqlandi" : "rad etildi"}`, target: product?.name || productId, newValue: status });
     },
@@ -781,14 +874,15 @@ const useProductsController = () => {
     if (!importPreview) return;
     const category = state.categories[0];
     const brand = state.brands[0];
+    const importedId = generateProductId("prd");
     const imported = {
-      id: generateProductId("prd"),
+      id: importedId,
       name: "Kiritilgan USB-C kabel",
       description: "Kiritish ustasi orqali qo'shilgan namuna mahsulot.",
       sku: createUniqueSku({ name: "Kiritilgan kabel", category, brand, prefix: state.settings.skuPrefix, sequence: state.products.length + 1, products: state.products }),
       internalCode: "IMP-CABLE-USBC",
-      barcodes: [generateBarcode(Date.now())],
-      qrCode: `QR-${Date.now().toString(36).toUpperCase()}`,
+      barcodes: [productIdentityAdapter.generateProductBarcode({ products: state.products })],
+      qrCode: productIdentityAdapter.generateProductQrCode({ id: importedId }),
       categoryId: category.id,
       brandId: brand.id,
       unitId: state.units[0].id,
@@ -866,9 +960,25 @@ const useProductsController = () => {
     visibleProducts,
     metrics,
     aiInsights,
+    purchaseHistoryRows,
+    supplierSummariesByProductId,
     permissions: {
+      canCreate: canProduct(role, "create"),
       canViewCost: canProduct(role, "viewCost"),
       canEdit: canProduct(role, "edit"),
+      canEditSku: canProduct(role, "editSku"),
+      canEditBarcode: canProduct(role, "editBarcode"),
+      canCreateSupplierRelation: canProduct(role, "createSupplierRelation"),
+      canEditSupplierTerms: canProduct(role, "editSupplierTerms"),
+      canViewPurchasePrice: canProduct(role, "viewPurchasePrice"),
+      canEditPurchasePrice: canProduct(role, "editPurchasePrice"),
+      canSetPreferredSupplier: canProduct(role, "setPreferredSupplier"),
+      canViewSellingPrice: canProduct(role, "viewSellingPrice"),
+      canEditSellingPrice: canProduct(role, "editSellingPrice"),
+      canOverrideCost: canProduct(role, "overrideCost"),
+      canEditStandardCost: canProduct(role, "editStandardCost"),
+      canOverridePurchasePrice: canProduct(role, "overridePurchasePrice"),
+      canOverrideDuplicateWarning: canProduct(role, "overrideDuplicateWarning"),
       canApprovePrice: canProduct(role, "approvePrice"),
       canBulk: canProduct(role, "bulk"),
       canImport: canProduct(role, "import"),
@@ -907,10 +1017,13 @@ const useProductsController = () => {
       createOrUpdateProduct,
       duplicateProduct,
       archiveProduct,
-      restoreProduct: (productId) => patchProducts([productId], { status: "active" }, "Mahsulot tiklandi"),
+      activateProduct,
+      deactivateProduct,
+      submitProductForApproval,
+      restoreProduct: (productId) => patchProducts([productId], { status: "active", approvalStatus: "approved" }, "Mahsulot tiklandi"),
       bulkArchive: () => patchProducts(selectedIds, { status: "archived" }, "Ommaviy arxivlash"),
       bulkRestore: () => patchProducts(selectedIds, { status: "active" }, "Ommaviy tiklash"),
-      bulkPending: () => patchProducts(selectedIds, { approvalStatus: "pending" }, "Ommaviy tasdiq so'rovi"),
+      bulkPending: () => patchProducts(selectedIds, { status: "pending", approvalStatus: "pending" }, "Ommaviy tasdiq so'rovi"),
       submitPriceApproval,
       resolvePriceApproval,
       createCategory,
@@ -928,12 +1041,15 @@ const useProductsController = () => {
       addAudit,
       notify,
       generateCodes: ({ name, categoryId, brandId }) => {
-        const category = state.categories.find((item) => item.id === categoryId);
-        const brand = state.brands.find((item) => item.id === brandId);
         return {
-          sku: createUniqueSku({ name, category, brand, prefix: state.settings.skuPrefix, sequence: state.products.length + 1, products: state.products }),
-          barcode: generateBarcode(Date.now()),
-          qrCode: `QR-${Date.now().toString(36).toUpperCase()}`,
+          sku: productIdentityAdapter.generateProductSku({ products: state.products }),
+          barcode: productIdentityAdapter.generateProductBarcode({ products: state.products }),
+          qrCode: productIdentityAdapter.generateProductQrCode({
+            id: generateProductId("prd"),
+            name,
+            categoryId,
+            brandId,
+          }),
         };
       },
       calculateAvailableStock,

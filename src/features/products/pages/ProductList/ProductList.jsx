@@ -101,6 +101,9 @@ const ProductList = ({ controller }) => {
         onResetFilters={controller.actions.resetFilters}
         onOpenQuickView={controller.actions.openQuickView}
         onDuplicate={controller.actions.duplicateProduct}
+        onActivate={controller.actions.activateProduct}
+        onDeactivate={controller.actions.deactivateProduct}
+        onSubmitApproval={controller.actions.submitProductForApproval}
         onArchive={controller.actions.archiveProduct}
         onRestore={controller.actions.restoreProduct}
       />

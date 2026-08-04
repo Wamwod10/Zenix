@@ -70,6 +70,8 @@ const ProductSearch = ({
           <option value="all">Barchasi</option>
           <option value="active">Faol</option>
           <option value="draft">Qoralama</option>
+          <option value="pending">Tasdiq kutilmoqda</option>
+          <option value="inactive">Nofaol</option>
           <option value="archived">Arxivlangan</option>
         </select>
       </label>
@@ -96,7 +98,7 @@ const ProductSearch = ({
           <select value={filters.approvalStatus} onChange={(event) => onFilter("approvalStatus", event.target.value)}>
             <option value="all">Barchasi</option>
             <option value="draft">Qoralama</option>
-            <option value="pending">Kutilmoqda</option>
+            <option value="pending">Tasdiq kutilmoqda</option>
             <option value="approved">Tasdiqlangan</option>
             <option value="rejected">Rad etilgan</option>
           </select>

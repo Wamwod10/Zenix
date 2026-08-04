@@ -24,6 +24,7 @@ import { Archive, Star } from "lucide-react";
 import { Card } from "../../../../components/ui/Card/Card";
 import AIWorkspace from "../../../purchases/ai/components/AIWorkspace/AIWorkspace";
 import { calculateOrderTotals } from "../../../purchases/utils/purchaseCalculations";
+import { buildPurchaseHistoryRows } from "../../../purchases/utils/purchaseHistory";
 import {
   computeSupplierOperationalMetrics,
   computeSupplierScore,
@@ -63,7 +64,6 @@ const SupplierProfile = ({
   onSetDocumentExpiry,
   onUpdateSupplier,
   onChangeStatus,
-  onCreateProduct,
   permissions = {},
 }) => {
   // Deep Linking (Task 5): agar ota komponent (SupplierDetails) `activeTab`/
@@ -117,6 +117,16 @@ const SupplierProfile = ({
   const supplierScore = useMemo(
     () => (supplier ? computeSupplierScore(supplier, operationalMetrics) : 0),
     [supplier, operationalMetrics],
+  );
+  const purchaseHistoryRows = useMemo(
+    () =>
+      buildPurchaseHistoryRows({
+        orders,
+        receipts,
+        suppliers: [supplier],
+        products,
+      }).filter((row) => row.supplierId === supplier.id),
+    [orders, products, receipts, supplier],
   );
 
   if (!supplier) return null;
@@ -226,11 +236,10 @@ const SupplierProfile = ({
           products={products}
           orders={orders}
           onUpdateSupplier={onUpdateSupplier}
-          onCreateProduct={onCreateProduct}
         />
       )}
 
-      {activeTab === "history" && <SupplierHistoryTab orders={orders} />}
+      {activeTab === "history" && <SupplierHistoryTab orders={orders} purchaseRows={purchaseHistoryRows} />}
 
       {activeTab === "invoices" && <SupplierInvoicesTab invoices={invoices} />}
 

@@ -33,7 +33,11 @@ const ProfitAndLoss = ({ controller }) => {
   }), [controller.state.transactions, filters]);
 
   const amountFor = (config) => {
-    if (config.source === "cogs") return Number(controller.state.costAccounting.cogs || 0);
+    if (config.source === "cogs") {
+      const filteredCogs = sumBy(transactions, (item) => item.cogsAmount);
+      const hasSnapshotCogs = transactions.some((item) => item.cogsAmount !== undefined);
+      return hasSnapshotCogs ? filteredCogs : Number(controller.state.costAccounting.cogs || 0);
+    }
     return sumBy(transactions.filter((item) => item.type === config.type && (!config.category || item.category === config.category)), (item) => item.amount);
   };
 

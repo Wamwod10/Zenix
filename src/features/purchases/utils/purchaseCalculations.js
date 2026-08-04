@@ -8,13 +8,16 @@ import { normalizeNumber } from "./purchaseMoney";
 export const calculateLineSubtotal = (item = {}) => {
   const quantity = normalizeNumber(item.quantity);
   const price = normalizeNumber(item.price);
-  const discountPercent = Math.min(
-    Math.max(normalizeNumber(item.discountPercent), 0),
-    100,
-  );
+  const discountType = item.discountType || "percentage";
+  const discountValue = normalizeNumber(item.discountValue ?? item.discountPercent);
 
   const gross = quantity * price;
 
+  if (discountType === "fixed") {
+    return Math.max(0, gross - Math.max(discountValue, 0));
+  }
+
+  const discountPercent = Math.min(Math.max(discountValue, 0), 100);
   return gross - (gross * discountPercent) / 100;
 };
 

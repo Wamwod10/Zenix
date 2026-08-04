@@ -421,6 +421,7 @@
 .products-ai-list,
 .products-stock-list,
 .products-timeline,
+.products-detail-stack,
 .products-analytics-bars {
   display: grid;
   gap: 8px;
@@ -1246,6 +1247,10 @@
       cursor: default;
     }
   }
+}
+
+.products-table--supplier-comparison {
+  min-width: 1120px;
 }
 
 .products-table-meta {

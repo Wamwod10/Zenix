@@ -72,6 +72,7 @@ const makeCartItem = (product) => {
     weighted: Boolean(product.weighted),
     quantity: product.weighted ? 0.1 : 1,
     price,
+    unitCost: Number(product.currentCost ?? product.cost ?? product.lastPurchaseCost ?? 0),
     stock: product.stock,
     discount: null,
   };
@@ -307,6 +308,7 @@ const POS = () => {
     const sale = {
       id: createSaleId(),
       receiptNumber: createReceiptNumber(recentSales.length),
+      status: "completed",
       items: cartItems,
       customer,
       customerId: customer?.id || null,
@@ -315,6 +317,7 @@ const POS = () => {
       note,
       totals,
       payment,
+      paymentStatus: payment?.method === "debt" ? "receivable" : "paid",
       createdAt: new Date().toISOString(),
     };
     const nextSales = [sale, ...recentSales].slice(0, 30);

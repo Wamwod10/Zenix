@@ -3,7 +3,7 @@ import { useMemo } from "react";
 
 import AIProductAssistant from "../../components/AIProductAssistant/AIProductAssistant";
 import ProductKpiCard from "../../components/ProductKpiCard/ProductKpiCard";
-import { formatMoney, labelProductStatus } from "../../utils/productCalculations";
+import { formatMargin, formatMoney, labelProductStatus } from "../../utils/productCalculations";
 
 const productCompleteness = (product) => {
   const checks = [
@@ -51,7 +51,7 @@ const ProductsDashboard = ({ metrics, products, aiInsights, onNavigate, onOpenPr
       <div className="products-kpi-grid">
         <ProductKpiCard icon={CircleDollarSign} label="Katalog qiymati" value={formatMoney(metrics.value)} meta="Qoldiq va tannarx asosida" tone="green" />
         <ProductKpiCard icon={PackageCheck} label="Faol mahsulotlar" value={metrics.active} meta={`${metrics.total} jami`} />
-        <ProductKpiCard icon={TrendingUp} label="O'rtacha marja" value={`${Math.round(metrics.averageMargin)}%`} meta={`${metrics.sales} savdo / 30 kun`} tone="violet" />
+        <ProductKpiCard icon={TrendingUp} label="O'rtacha marja" value={formatMargin(metrics.averageMargin)} meta={`${metrics.sales} savdo / 30 kun`} tone="violet" />
         <ProductKpiCard icon={AlertTriangle} label="E'tibor kerak" value={metrics.low + metrics.pending} meta={`${metrics.pending} tasdiq`} tone="amber" />
       </div>
 
@@ -101,7 +101,7 @@ const ProductsDashboard = ({ metrics, products, aiInsights, onNavigate, onOpenPr
             {topProducts.map((product) => (
               <button type="button" key={product.id} onClick={() => onOpenProduct(product.id)}>
                 <strong>{product.name}</strong>
-                <span>{product.sku} · {product.sales30d} savdo · {Math.round(product.margin)}% marja</span>
+                <span>{product.sku} · {product.sales30d} savdo · {formatMargin(product.margin)} marja</span>
               </button>
             ))}
           </div>

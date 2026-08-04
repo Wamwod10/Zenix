@@ -1,6 +1,7 @@
 import { Modal } from "../../../../components/ui/Modal";
 import {
   calculateProjectedStock,
+  formatMargin,
   formatMoney,
   formatQuantity,
 } from "../../utils/productCalculations";
@@ -24,7 +25,7 @@ const ProductQuickView = ({ product, canViewCost, onClose, onEdit, onSubmitAppro
           <div className="products-mini-grid">
             <article><strong>{formatMoney(product.price)}</strong><span>Sotuv narxi</span></article>
             {canViewCost && <article><strong>{formatMoney(product.cost)}</strong><span>Tannarx</span></article>}
-            <article><strong>{Math.round(product.margin)}%</strong><span>Marja</span></article>
+            <article><strong>{formatMargin(product.margin)}</strong><span>Marja</span></article>
             <article><strong>{Math.round(product.markup)}%</strong><span>Ustama</span></article>
           </div>
         </section>

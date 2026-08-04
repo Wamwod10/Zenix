@@ -41,7 +41,6 @@ const SupplierDetails = () => {
     receipts,
     returns,
     products,
-    actions: purchasesActions,
   } = usePurchasesStore();
 
   const supplier = getSupplier(supplierId);
@@ -219,7 +218,6 @@ const SupplierDetails = () => {
 
           return result;
         }}
-        onCreateProduct={(payload) => purchasesActions.createProduct(payload)}
         permissions={{
           canEdit: can(SUPPLIER_PERMISSIONS.edit) && !supplier.archived,
           canStatusChange:

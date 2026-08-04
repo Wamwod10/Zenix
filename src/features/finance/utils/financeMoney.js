@@ -5,6 +5,8 @@ const currencyMinorDigits = {
   RUB: 2,
 };
 
+export const BASE_BUSINESS_CURRENCY = "UZS";
+
 export const getMinorDigits = (currency = "UZS") =>
   currencyMinorDigits[currency] ?? 2;
 
@@ -45,3 +47,6 @@ export const addMoney = (left = 0, right = 0, currency = "UZS") =>
 
 export const subtractMoney = (left = 0, right = 0, currency = "UZS") =>
   fromMinorUnit(toMinorUnit(left, currency) - toMinorUnit(right, currency), currency);
+
+export const convertMoneyToBase = (amount = 0, exchangeRate = 1) =>
+  Math.round(normalizeMoneyInput(amount) * normalizeMoneyInput(exchangeRate || 1));

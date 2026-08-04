@@ -1,5 +1,7 @@
+import { BASE_BUSINESS_CURRENCY, convertMoneyToBase } from "../../finance/utils/financeMoney";
+
 // Mock currency catalog. Backend later can replace exchangeRate values.
-export const BASE_PURCHASE_CURRENCY = "UZS";
+export const BASE_PURCHASE_CURRENCY = BASE_BUSINESS_CURRENCY;
 
 export const PURCHASE_CURRENCIES = [
   { code: "UZS", label: "UZS", symbol: "so'm", exchangeRate: 1 },
@@ -16,4 +18,4 @@ export const getDefaultExchangeRate = (code = BASE_PURCHASE_CURRENCY) =>
   getPurchaseCurrency(code).exchangeRate;
 
 export const convertToBaseCurrency = (amount = 0, exchangeRate = 1) =>
-  Math.round(Number(amount || 0) * Number(exchangeRate || 1));
+  convertMoneyToBase(amount, exchangeRate);

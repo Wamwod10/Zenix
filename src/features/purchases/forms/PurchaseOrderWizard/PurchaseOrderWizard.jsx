@@ -40,6 +40,7 @@ import ConfirmReasonModal from "../../modals/ConfirmReasonModal/ConfirmReasonMod
 // Task 1 (supplier selector redesign): kategoriya chip'lari Suppliers
 // modulidan qayta ishlatiladi — mantiq/render ikki joyda yozilmaydi.
 import SupplierCategoryBadges from "../../../suppliers/components/SupplierCategoryBadges/SupplierCategoryBadges";
+import { useSuppliers } from "../../../suppliers/suppliersApi";
 import {
   APPROVAL_ROLE_LABELS,
   resolveApprovalSteps,
@@ -117,7 +118,8 @@ const buildItemFromProduct = (
   quantity,
   currencyCode = BASE_PURCHASE_CURRENCY,
   rateToUzs = 1,
-  supplierDefaultPrice = null,
+  supplierTerms = null,
+  legacyDefaultPrice = null,
 ) => {
   const unit =
     product.units.find((entry) => entry.code === unitCode) || product.units[0];
@@ -125,7 +127,21 @@ const buildItemFromProduct = (
   // ilgari "standartni yangilash"ni tanlagan), u katalog narxidan ustun
   // turadi — aks holda katalog (lastPrice) ishlatiladi. Ikkalasi ham
   // UZS bazasida saqlanadi — PO valyutasiga konvertatsiya qilinadi.
-  const basePriceUzs = (supplierDefaultPrice ?? product.lastPrice) * unit.factor;
+  const supplierPrice = supplierTerms?.purchasePrice ?? supplierTerms?.price;
+  const supplierPriceInBase =
+    normalizeNumber(supplierPrice) > 0
+      ? convertToBaseCurrency(
+          supplierPrice,
+          getDefaultExchangeRate(supplierTerms?.currency || BASE_PURCHASE_CURRENCY),
+        )
+      : null;
+  const basePriceUzs =
+    (supplierPriceInBase ??
+      legacyDefaultPrice ??
+      product.currentCost ??
+      product.standardCost ??
+      product.lastPrice ??
+      0) * unit.factor;
   const price = convertPrice(basePriceUzs, 1, rateToUzs, currencyCode);
 
   return {
@@ -134,13 +150,15 @@ const buildItemFromProduct = (
     name: product.name,
     sku: product.sku,
     barcode: product.barcode,
+    supplierProductId: supplierTerms?.id || "",
+    supplierSku: supplierTerms?.supplierSku || supplierTerms?.sku || "",
 
     unit: unit.code,
     unitLabel: unit.label,
     unitFactor: unit.factor,
     units: product.units,
 
-    quantity: quantity ?? Math.max(product.moq, 1),
+    quantity: quantity ?? Math.max(supplierTerms?.minimumOrderQty || supplierTerms?.moq || product.moq, 1),
     receivedQty: 0,
     returnedQty: 0,
     damagedQty: 0,
@@ -149,12 +167,22 @@ const buildItemFromProduct = (
     price,
     lastPrice: price,
     currency: currencyCode,
+    supplierCurrency: supplierTerms?.currency || BASE_PURCHASE_CURRENCY,
 
     lastPurchase: product.lastPurchase,
-    moq: product.moq,
-    discountPercent: 0,
+    moq: supplierTerms?.minimumOrderQty || supplierTerms?.moq || product.moq,
+    leadTime: supplierTerms?.leadTime ?? supplierTerms?.leadTimeDays,
+    discountType: supplierTerms?.discountType || "percentage",
+    discountValue: supplierTerms?.discountValue ?? supplierTerms?.discount ?? 0,
+    discountPercent:
+      (supplierTerms?.discountType || "percentage") === "percentage"
+        ? supplierTerms?.discountValue ?? supplierTerms?.discount ?? 0
+        : 0,
     // Standart soliq: QQS 0% / ozod (12% emas) — kerak bo'lsa qatorda tanlanadi
-    taxRate: 0,
+    taxId: supplierTerms?.taxId || "",
+    vatRate: supplierTerms?.vatRate ?? supplierTerms?.vat ?? 0,
+    taxRate: supplierTerms?.vatRate ?? supplierTerms?.vat ?? 0,
+    taxInclusive: Boolean(supplierTerms?.taxInclusive),
   };
 };
 
@@ -181,6 +209,7 @@ const PurchaseOrderWizard = ({
   onSubmit,
   onCancel,
 }) => {
+  const { actions: supplierActions } = useSuppliers();
   const draft = useMemo(
     () => (initialOrder ? null : loadWizardDraft()),
     [initialOrder],
@@ -283,6 +312,14 @@ const PurchaseOrderWizard = ({
   }, [supplierId, items, formValues, initialOrder]);
 
   const selectedSupplier = suppliers.find((entry) => entry.id === supplierId);
+  const supplierTermsByProductId = useMemo(
+    () =>
+      (selectedSupplier?.supplierProducts || []).reduce((map, relation) => {
+        map[relation.productId] = relation;
+        return map;
+      }, {}),
+    [selectedSupplier],
+  );
 
   // PDF 6: qidiruv + score bo'yicha tartib; bloklangan tanlanmaydi
   const visibleSuppliers = useMemo(() => {
@@ -310,8 +347,17 @@ const PurchaseOrderWizard = ({
     if (!supplierId) return [];
 
     const linkedIds = new Set(selectedSupplier?.productIds || []);
+    const activeRelationIds = new Set(
+      (selectedSupplier?.supplierProducts || [])
+        .filter((relation) => (relation.status || "active") === "active")
+        .map((relation) => relation.productId),
+    );
 
-    return products.filter((product) => linkedIds.has(product.id));
+    return products.filter(
+      (product) =>
+        linkedIds.has(product.id) &&
+        (!selectedSupplier?.supplierProducts?.length || activeRelationIds.has(product.id)),
+    );
   }, [products, supplierId, selectedSupplier]);
 
   // PDF 7: tovar qidiruv — nom, SKU, barcode (supplier tovarlari ichida)
@@ -334,11 +380,12 @@ const PurchaseOrderWizard = ({
   );
 
   const addProduct = (product, quantity) => {
-    const supplierDefaultPrice = getSupplierPriceOverride(
+    const legacyDefaultPrice = getSupplierPriceOverride(
       priceOverrides,
       supplierId,
       product.id,
     );
+    const supplierTerms = supplierTermsByProductId[product.id];
 
     setItems((current) => {
       if (replacingItemId) {
@@ -350,7 +397,8 @@ const PurchaseOrderWizard = ({
                 quantity,
                 selectedCurrency,
                 exchangeRate,
-                supplierDefaultPrice,
+                supplierTerms,
+                legacyDefaultPrice,
               )
             : item,
         );
@@ -366,7 +414,8 @@ const PurchaseOrderWizard = ({
           quantity,
           selectedCurrency,
           exchangeRate,
-          supplierDefaultPrice,
+          supplierTerms,
+          legacyDefaultPrice,
         ),
       ];
     });
@@ -397,6 +446,14 @@ const PurchaseOrderWizard = ({
         priceConfirm.productId,
         priceConfirm.newPrice,
       );
+      supplierActions.updateSupplier(supplierId, {
+        productId: priceConfirm.productId,
+        productTerms: {
+          purchasePrice: priceConfirm.newPrice,
+          currency: selectedCurrency,
+          source: "purchase_order_wizard",
+        },
+      });
 
       setPriceOverrides(next);
       updateItem(priceConfirm.itemId, { lastPrice: priceConfirm.newPrice });
@@ -555,6 +612,21 @@ const PurchaseOrderWizard = ({
       issues.push("Yetkazish sanasi bugundan keyin bo'lsin");
     }
 
+    if (formValues.expectedDate) {
+      const expectedTime = new Date(formValues.expectedDate).getTime();
+
+      items.forEach((item) => {
+        const leadTime = normalizeNumber(item.leadTime);
+        if (!leadTime) return;
+
+        const minDate = new Date();
+        minDate.setDate(minDate.getDate() + leadTime);
+        if (expectedTime < minDate.getTime()) {
+          issues.push(`${item.name}: lead time kamida ${leadTime} kun.`);
+        }
+      });
+    }
+
     if (!formValues.warehouseId) issues.push("Ombor tanlanmagan");
 
     const discount = normalizeNumber(formValues.orderDiscountPercent);
@@ -564,7 +636,7 @@ const PurchaseOrderWizard = ({
     }
 
     return issues;
-  }, [formValues]);
+  }, [formValues, items]);
 
   const validation = useMemo(
     () => [...supplierIssues, ...itemsIssues, ...lineIssues, ...deliveryIssues],
@@ -587,7 +659,34 @@ const PurchaseOrderWizard = ({
 
   const collectPayload = (budgetOverrideReason = "") => ({
     supplierId,
-    items: items.map(({ units: _units, ...item }) => item),
+    items: items.map(({ units: _units, ...item }) => {
+      const subtotal = calculateLineSubtotal(item);
+      const taxRate = normalizeNumber(item.vatRate ?? item.taxRate);
+      const taxAmount = item.taxInclusive
+        ? Math.round(subtotal - subtotal / (1 + taxRate / 100))
+        : Math.round((subtotal * taxRate) / 100);
+      const total = item.taxInclusive ? Math.round(subtotal) : Math.round(subtotal + taxAmount);
+      const exchangeRate = normalizeNumber(getValues("exchangeRate")) || 1;
+
+      return {
+        ...item,
+        supplierId,
+        purchasePrice: normalizeNumber(item.price),
+        discountType: item.discountType || "percentage",
+        discountValue: normalizeNumber(item.discountValue ?? item.discountPercent),
+        discount: normalizeNumber(item.discountPercent),
+        taxId: item.taxId || "",
+        vatRate: taxRate,
+        vat: taxRate,
+        taxInclusive: Boolean(item.taxInclusive),
+        exchangeRate,
+        baseCurrencyAmount: convertToBaseCurrency(total, exchangeRate),
+        subtotal: Math.round(subtotal),
+        taxAmount,
+        total,
+        createdAt: item.createdAt || new Date().toISOString(),
+      };
+    }),
     expectedDate: getValues("expectedDate"),
     warehouseId: getValues("warehouseId"),
     branch:

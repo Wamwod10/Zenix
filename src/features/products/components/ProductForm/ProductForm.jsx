@@ -19,6 +19,7 @@ import {
   calculateMarkup,
   calculateProfit,
   createProductEntityId,
+  formatMargin,
   formatMoney,
   labelProductStatus,
   toNumber,
@@ -55,6 +56,7 @@ const ProductForm = ({
   onGenerateCodes,
   onCreateCategory,
   onCreateBrand,
+  approvalRequired = false,
 }) => {
   const navigate = useNavigate();
   const mediaInputRef = useRef(null);
@@ -72,7 +74,7 @@ const ProductForm = ({
   const requiredByStep = [
     ["name"],
     ["categoryId", "unitId"],
-    ["sku"],
+    [],
     ["price"],
     [],
     [],
@@ -212,12 +214,26 @@ const ProductForm = ({
     }));
   };
 
-  const save = () => {
-    const result = form.actions.submit();
+  const save = (overrides = {}) => {
+    const result = form.actions.submit(overrides);
     if (result?.ok) {
       navigate(`/products/${result.product.id}`);
     }
   };
+
+  const saveAndActivate = () =>
+    save({
+      status: "active",
+      approvalStatus: "approved",
+      lifecycle: "active",
+    });
+
+  const submitForApproval = () =>
+    save({
+      status: "pending",
+      approvalStatus: "pending",
+      lifecycle: "review",
+    });
 
   return (
     <section className="products-form-shell">
@@ -345,7 +361,7 @@ const ProductForm = ({
 
         {form.step === 2 && (
           <div className="products-form-grid">
-            <Field label="Artikul" required error={form.errors.sku}>
+            <Field label="Artikul" error={form.errors.sku}>
               <input value={form.form.sku} onChange={(event) => form.actions.update("sku", event.target.value)} />
             </Field>
             <Field label="Ichki kod">
@@ -357,7 +373,7 @@ const ProductForm = ({
             <div className="products-form-grid__wide products-code-box">
               <button type="button" className="products-button is-primary" onClick={generateCodes}>
                 <QrCode size={15} />
-                Artikul / shtrix-kod / QR yaratish
+                SKU / shtrix-kod / QR yaratish
               </button>
               <button type="button" className="products-mini-button" onClick={addBarcode}>Shtrix-kod qo'shish</button>
               {form.errors.barcodes && <small>{form.errors.barcodes}</small>}
@@ -389,7 +405,7 @@ const ProductForm = ({
             </Field>
             <div className="products-mini-grid products-form-grid__wide">
               <article><strong>{formatMoney(profit)}</strong><span>Foyda</span></article>
-              <article><strong>{Math.round(margin)}%</strong><span>Marja</span></article>
+              <article><strong>{formatMargin(margin)}</strong><span>Marja</span></article>
               <article><strong>{Math.round(markup)}%</strong><span>Ustama</span></article>
               <article><strong>{labelProductStatus(form.form.approvalStatus)}</strong><span>Tasdiq</span></article>
             </div>
@@ -516,10 +532,23 @@ const ProductForm = ({
               Keyingi
             </button>
           ) : (
-            <button type="button" className="products-mini-button is-primary" onClick={save}>
-              <Check size={15} />
-              Saqlash
-            </button>
+            <>
+              <button type="button" className="products-mini-button" onClick={() => save({ status: "draft", approvalStatus: "draft" })}>
+                <Save size={15} />
+                Qoralama saqlash
+              </button>
+              {approvalRequired ? (
+                <button type="button" className="products-mini-button is-primary" onClick={submitForApproval}>
+                  <Check size={15} />
+                  Tasdiqqa yuborish
+                </button>
+              ) : (
+                <button type="button" className="products-mini-button is-primary" onClick={saveAndActivate}>
+                  <Check size={15} />
+                  Saqlash va faollashtirish
+                </button>
+              )}
+            </>
           )}
         </footer>
       </section>

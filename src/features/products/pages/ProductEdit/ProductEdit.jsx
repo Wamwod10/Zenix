@@ -13,6 +13,7 @@ const ProductEdit = ({ product, controller }) => (
     onGenerateCodes={controller.actions.generateCodes}
     onCreateCategory={controller.actions.createCategory}
     onCreateBrand={controller.actions.createBrand}
+    approvalRequired={Boolean(controller.state.settings.productApprovalRequired)}
   />
 );
 

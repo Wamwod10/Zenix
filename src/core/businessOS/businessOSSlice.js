@@ -1,11 +1,30 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 import { createEmptyEntity, loadBusinessState, upsertMany } from "./businessPersistence.js";
+import {
+  enforceSinglePreferredSupplier,
+  normalizeProductCatalogRecord,
+  normalizeSupplierProductRelations,
+  upsertSupplierProductRelation,
+} from "./erpProductModel.js";
+import {
+  calculateReceiptCost,
+  createInventoryLayer,
+  resolveReceiptUnitCost,
+} from "../../features/warehouse/utils/inventoryCostEngine.js";
 
 const now = () => new Date().toISOString();
 
 const createBusinessId = (prefix) =>
-  `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+  `${prefix}-${
+    typeof crypto !== "undefined" && crypto.randomUUID
+      ? crypto.randomUUID()
+      : `${(typeof performance !== "undefined" ? performance.now() : createBusinessId.counter)
+          .toString(36)
+          .replace(".", "")}-${String(createBusinessId.counter += 1).padStart(4, "0")}`
+  }`;
+
+createBusinessId.counter = 0;
 
 const toNumber = (value, fallback = 0) => {
   const number = Number(value);
@@ -26,14 +45,49 @@ const readAvailable = (state, productId, warehouseId = state.settings.defaultWar
   return Math.max(0, toNumber(balance?.onHand) - toNumber(balance?.reserved));
 };
 
+const isCompletedSaleStatus = (status) =>
+  ["completed", "paid"].includes(String(status || "").toLowerCase());
+
+const calculateSaleDiscountAmount = (subtotal = 0, discount = null) => {
+  const safeSubtotal = Math.max(toNumber(subtotal), 0);
+  const value = Math.max(toNumber(discount?.value ?? discount), 0);
+
+  if (!safeSubtotal || !value) return 0;
+
+  const amount = discount?.type === "percentage"
+    ? Math.round((safeSubtotal * Math.min(value, 100)) / 100)
+    : value;
+
+  return Math.min(amount, safeSubtotal);
+};
+
+const resolveSaleUnitCost = (product = {}, item = {}) => {
+  const candidates = [
+    product.currentCost,
+    product.cost,
+    product.lastPurchaseCost,
+    product.averageCost,
+    product.standardCost,
+    item.unitCost,
+  ].map((value) => toNumber(value));
+
+  return candidates.find((value) => value > 0) ?? 0;
+};
+
 const addAudit = (state, event) => {
   const audit = {
     id: createBusinessId("audit"),
     at: now(),
+    timestamp: event.timestamp || now(),
     userId: event.userId || "system",
+    user: event.user || event.userId || "system",
+    role: event.role || "",
     module: event.module || "core",
     entity: event.entity || "",
     entityId: event.entityId || "",
+    productId: event.productId || "",
+    supplierId: event.supplierId || "",
+    supplierProductId: event.supplierProductId || "",
     action: event.action,
     oldValue: event.oldValue ?? null,
     newValue: event.newValue ?? null,
@@ -61,19 +115,15 @@ const addNotification = (state, notification) => {
 const normalizeProduct = (product = {}, state) => {
   const categoryId = product.categoryId || product.category?.id || product.category || "";
   const brandId = product.brandId || product.brand?.id || product.brand || "";
+  const normalized = normalizeProductCatalogRecord(product);
 
   return {
-    ...product,
+    ...normalized,
     id: String(product.id || createBusinessId("prd")),
     categoryId,
     brandId,
     categoryName: product.categoryName || resolveName(state.entities.categories, categoryId, product.category?.name || product.category),
     brandName: product.brandName || resolveName(state.entities.brands, brandId, product.brand?.name || product.brand),
-    status: product.status || "active",
-    barcode: product.barcode || product.barcodes?.[0] || "",
-    barcodes: product.barcodes || [product.barcode].filter(Boolean),
-    price: toNumber(product.price ?? product.lastPrice),
-    cost: toNumber(product.cost),
     updatedAt: product.updatedAt || now(),
   };
 };
@@ -229,15 +279,139 @@ const businessOSSlice = createSlice({
     },
 
     upsertSupplier(state, action) {
+      const relationState = normalizeSupplierProductRelations(action.payload || {});
       const supplier = {
         id: String(action.payload?.id || createBusinessId("sup")),
         status: "active",
         blocked: false,
         ...action.payload,
+        ...relationState,
         updatedAt: action.payload?.updatedAt || now(),
       };
       upsertOne(state.entities.suppliers, supplier);
+      upsertMany(state.entities.supplierProducts, relationState.supplierProducts || []);
       addAudit(state, { module: "suppliers", action: "SUPPLIER_UPSERTED", entity: "supplier", entityId: supplier.id, newValue: supplier.name });
+    },
+
+    linkProductToSupplier(state, action) {
+      const { supplierId, productId, terms = {}, userId = "system" } = action.payload || {};
+      const supplier = state.entities.suppliers.byId[supplierId];
+      const product = state.entities.products.byId[productId];
+      if (!supplier || !product) {
+        addAudit(state, {
+          module: "suppliers",
+          action: "PRODUCT_SUPPLIER_LINK_FAILED",
+          entity: "supplierProduct",
+          productId,
+          supplierId,
+          userId,
+          result: "denied",
+          source: terms.source || "domain_action",
+        });
+        return;
+      }
+
+      const relationState = upsertSupplierProductRelation(supplier, productId, {
+        ...terms,
+        source: terms.source || "domain_action",
+        changedBy: userId,
+      });
+      const nextSupplier = { ...supplier, ...relationState, updatedAt: now() };
+      upsertOne(state.entities.suppliers, nextSupplier);
+      upsertMany(state.entities.supplierProducts, relationState.supplierProducts || []);
+
+      if (terms.isPreferredSupplier) {
+        const enforced = enforceSinglePreferredSupplier(list(state.entities.suppliers), productId, supplierId);
+        upsertMany(state.entities.suppliers, enforced);
+        enforced.forEach((entry) => {
+          const normalized = normalizeSupplierProductRelations(entry);
+          upsertMany(state.entities.supplierProducts, normalized.supplierProducts || []);
+        });
+      }
+
+      addAudit(state, {
+        module: "suppliers",
+        action: "PRODUCT_LINKED_TO_SUPPLIER",
+        entity: "supplierProduct",
+        entityId: `${supplierId}:${productId}`,
+        productId,
+        supplierId,
+        supplierProductId: `${supplierId}:${productId}`,
+        userId,
+        newValue: terms,
+        source: terms.source || "domain_action",
+      });
+    },
+
+    updateSupplierTerms(state, action) {
+      businessOSSlice.caseReducers.linkProductToSupplier(state, action);
+    },
+
+    changeSupplierPrice(state, action) {
+      const { supplierId, productId, newPrice, reason = "", userId = "system" } = action.payload || {};
+      businessOSSlice.caseReducers.linkProductToSupplier(state, {
+        payload: {
+          supplierId,
+          productId,
+          userId,
+          terms: {
+            purchasePrice: newPrice,
+            reason,
+            source: "manual_price_change",
+          },
+        },
+      });
+    },
+
+    setPreferredSupplier(state, action) {
+      const { supplierId, productId, userId = "system" } = action.payload || {};
+      const enforced = enforceSinglePreferredSupplier(list(state.entities.suppliers), productId, supplierId);
+      upsertMany(state.entities.suppliers, enforced);
+      enforced.forEach((supplier) => {
+        const relationState = normalizeSupplierProductRelations(supplier);
+        upsertMany(state.entities.supplierProducts, relationState.supplierProducts || []);
+      });
+      addAudit(state, {
+        module: "suppliers",
+        action: "PREFERRED_SUPPLIER_CHANGED",
+        entity: "supplierProduct",
+        entityId: `${supplierId}:${productId}`,
+        supplierProductId: `${supplierId}:${productId}`,
+        productId,
+        supplierId,
+        userId,
+      });
+    },
+
+    archiveSupplierProduct(state, action) {
+      const { supplierId, productId, userId = "system" } = action.payload || {};
+      const supplier = state.entities.suppliers.byId[supplierId];
+      if (!supplier) return;
+      const relationState = upsertSupplierProductRelation(supplier, productId, {
+        status: "archived",
+        isPreferredSupplier: false,
+        source: "archive_supplier_product",
+      });
+      const nextSupplier = { ...supplier, ...relationState, updatedAt: now() };
+      upsertOne(state.entities.suppliers, nextSupplier);
+      upsertMany(state.entities.supplierProducts, relationState.supplierProducts || []);
+      addAudit(state, {
+        module: "suppliers",
+        action: "SUPPLIER_PRODUCT_ARCHIVED",
+        entity: "supplierProduct",
+        entityId: `${supplierId}:${productId}`,
+        supplierProductId: `${supplierId}:${productId}`,
+        productId,
+        supplierId,
+        userId,
+      });
+    },
+
+    unlinkProductFromSupplier(state, action) {
+      const { supplierId, productId, userId = "system" } = action.payload || {};
+      businessOSSlice.caseReducers.archiveSupplierProduct(state, {
+        payload: { supplierId, productId, userId },
+      });
     },
 
     hrModuleCommitted(state, action) {
@@ -293,6 +467,19 @@ const businessOSSlice = createSlice({
       const order = action.payload;
       if (!order?.id) return;
       upsertOne(state.entities.purchaseOrders, order);
+      upsertMany(
+        state.entities.purchaseItems,
+        (order.items || []).map((item) => ({
+          ...item,
+          id: item.purchaseItemId || item.id,
+          purchaseOrderId: order.id,
+          supplierId: item.supplierId || order.supplierId,
+          purchasePrice: toNumber(item.purchasePrice ?? item.price),
+          currency: item.currency || order.currency || state.settings.baseCurrency,
+          exchangeRate: toNumber(item.exchangeRate || order.exchangeRate || 1, 1),
+          createdAt: item.createdAt || order.createdAt || now(),
+        })),
+      );
       addAudit(state, { module: "purchases", action: "PURCHASE_ORDER_UPSERTED", entity: "purchaseOrder", entityId: order.id, newValue: order.status });
     },
 
@@ -301,20 +488,155 @@ const businessOSSlice = createSlice({
       if (!receipt?.id) return;
       upsertOne(state.entities.purchaseReceipts, receipt);
       if (order?.id) upsertOne(state.entities.purchaseOrders, order);
+      if (order?.items?.length) {
+        upsertMany(
+          state.entities.purchaseItems,
+          order.items.map((item) => ({
+            ...item,
+            id: item.purchaseItemId || item.id,
+            purchaseOrderId: order.id,
+            supplierId: item.supplierId || order.supplierId,
+            purchasePrice: toNumber(item.purchasePrice ?? item.price),
+            currency: item.currency || order.currency || state.settings.baseCurrency,
+            exchangeRate: toNumber(item.exchangeRate || order.exchangeRate || 1, 1),
+            createdAt: item.createdAt || order.createdAt || now(),
+          })),
+        );
+      }
 
       (receipt.items || []).forEach((item) => {
         const orderItem = order?.items?.find((row) => row.id === item.itemId);
         const productId = orderItem?.productId || item.productId || item.itemId;
         if (!productId) return;
+        const warehouseId = receipt.warehouseId || order?.warehouseId || state.settings.defaultWarehouseId;
+        const balance = state.entities.stockBalances.byId[getBalanceId(productId, warehouseId)];
+        const product = state.entities.products.byId[productId];
+        const allocation = (receipt.landedCostAllocations || []).find(
+          (entry) => entry.itemId === item.itemId,
+        );
+        const receivedQuantity = toNumber(item.received);
+        const unitFactor = toNumber(orderItem?.unitFactor, 1) || 1;
+        const catalogCost = toNumber(product?.currentCost ?? product?.cost ?? product?.standardCost);
+        const orderedUnitCostRaw =
+          toNumber(orderItem?.purchasePrice ?? orderItem?.price ?? orderItem?.unitPrice ?? 0) /
+          unitFactor;
+        const orderedUnitCost = orderedUnitCostRaw > 0 ? orderedUnitCostRaw : catalogCost;
+        const landedUnitCost = toNumber(allocation?.unitCostAdded);
+        const receiptUnitCost = resolveReceiptUnitCost({
+          purchasePrice: orderedUnitCost,
+          discountType: orderItem?.discountType,
+          discountValue: orderItem?.discountValue,
+          discount: orderItem?.discount ?? orderItem?.discountPercent,
+          vat: orderItem?.vatRate ?? orderItem?.vat ?? orderItem?.taxRate,
+          taxInclusive: orderItem?.taxInclusive,
+          landedUnitCost,
+          exchangeRate: order?.exchangeRate || 1,
+          includeDiscountInCost: state.settings.inventoryCostOptions?.includeDiscountInCost,
+          includeVatInCost: state.settings.inventoryCostOptions?.includeVatInCost,
+        });
+        const previousCost = toNumber(product?.currentCost ?? product?.cost);
+        const previousQuantity = toNumber(balance?.onHand);
+        const nextCost = calculateReceiptCost({
+          method: state.settings.inventoryCostMethod,
+          currentStock: previousQuantity,
+          currentCost: previousCost,
+          standardCost: product?.standardCost,
+          purchasePrice: receiptUnitCost,
+          newQty: receivedQuantity,
+        });
+
+        if (product && receivedQuantity > 0 && receiptUnitCost >= 0) {
+          upsertOne(state.entities.inventoryLayers, createInventoryLayer({
+            productId,
+            warehouseId,
+            receiptId: receipt.id,
+            receiptItemId: item.itemId,
+            quantity: receivedQuantity,
+            unitCost: receiptUnitCost,
+            currency: state.settings.baseCurrency,
+            receivedAt: receipt.receivedAt || now(),
+          }));
+          upsertOne(state.entities.products, {
+            ...product,
+            currentCost: nextCost,
+            cost: nextCost,
+            standardCost: toNumber(product.standardCost) > 0 ? toNumber(product.standardCost) : nextCost,
+            lastPurchaseCost: receiptUnitCost,
+            lastPurchasePrice: orderedUnitCost,
+            lastPurchaseDate: receipt.receivedAt || now(),
+            costHistory: [
+              {
+                id: createBusinessId("cost"),
+                source: "purchase_receipt",
+                orderId: order?.id || "",
+                receiptId: receipt.id,
+                supplierId: receipt.supplierId,
+                warehouseId,
+                quantity: receivedQuantity,
+                purchasePrice: orderedUnitCost,
+                landedUnitCost,
+                unitCost: receiptUnitCost,
+                previousCost,
+                currentCost: nextCost,
+                at: receipt.receivedAt || now(),
+              },
+              ...(product.costHistory || []),
+            ].slice(0, 200),
+            updatedAt: now(),
+          });
+        }
+
         mutateStock(state, {
           productId,
-          warehouseId: receipt.warehouseId || order?.warehouseId || state.settings.defaultWarehouseId,
-          quantity: item.received,
+          warehouseId,
+          quantity: receivedQuantity,
           type: "receipt",
           document: receipt.number || receipt.id,
           employeeId: actorId,
           reason: "PURCHASE_RECEIVED",
         });
+
+        const supplierId = receipt.supplierId || order?.supplierId;
+        const supplier = state.entities.suppliers.byId[supplierId];
+        if (supplier && receivedQuantity > 0) {
+          const relationState = upsertSupplierProductRelation(supplier, productId, {
+            id: orderItem?.supplierProductId,
+            purchasePrice: orderedUnitCost,
+            currency: orderItem?.supplierCurrency || orderItem?.currency || order?.currency || state.settings.baseCurrency,
+            discountType: orderItem?.discountType,
+            discountValue: orderItem?.discountValue,
+            discount: orderItem?.discount ?? orderItem?.discountPercent,
+            taxId: orderItem?.taxId,
+            vatRate: orderItem?.vatRate ?? orderItem?.vat ?? orderItem?.taxRate,
+            vat: orderItem?.vatRate ?? orderItem?.vat ?? orderItem?.taxRate,
+            taxInclusive: orderItem?.taxInclusive,
+            minimumOrderQty: orderItem?.moq,
+            leadTime: orderItem?.leadTime,
+            lastPurchasePrice: orderedUnitCost,
+            lastPurchaseDate: receipt.receivedAt || now(),
+            changedBy: actorId,
+            reason: "Receipt accepted",
+            source: "purchase_receipt",
+          });
+          const nextSupplier = {
+            ...supplier,
+            ...relationState,
+            updatedAt: now(),
+          };
+          upsertOne(state.entities.suppliers, nextSupplier);
+          upsertMany(state.entities.supplierProducts, relationState.supplierProducts || []);
+          addAudit(state, {
+            module: "suppliers",
+            action: "SUPPLIER_PRODUCT_LAST_PURCHASE_UPDATED",
+            entity: "supplierProduct",
+            entityId: orderItem?.supplierProductId || `${supplierId}:${productId}`,
+            userId: actorId,
+            productId,
+            supplierId,
+            newValue: orderedUnitCost,
+            source: "purchase_receipt",
+          });
+        }
       });
 
       const total = (receipt.items || []).reduce((sum, item) => {
@@ -348,6 +670,12 @@ const businessOSSlice = createSlice({
     saleCompleted(state, action) {
       const { sale, userId = "system" } = action.payload || {};
       if (!sale?.items?.length) return;
+      const saleId = sale.id || createBusinessId("sale");
+      const existingSale = state.entities.sales.byId[saleId];
+      if (existingSale && isCompletedSaleStatus(existingSale.status)) {
+        addAudit(state, { module: "sales", action: "SALE_COMPLETED_DUPLICATE_IGNORED", entity: "sale", entityId: saleId });
+        return;
+      }
       if (!hasPermission(state, userId, "sales.create")) {
         addAudit(state, { module: "sales", action: "SALE_COMPLETED", entity: "sale", entityId: sale.id, result: "denied" });
         return;
@@ -361,11 +689,21 @@ const businessOSSlice = createSlice({
         return;
       }
 
-      const saleId = sale.id || createBusinessId("sale");
       const total = toNumber(sale.totals?.total ?? sale.total);
+      const itemSubtotals = sale.items.map((item) => toNumber(item.quantity) * toNumber(item.price));
+      const itemDiscounts = sale.items.map((item, index) =>
+        calculateSaleDiscountAmount(itemSubtotals[index], item.discount),
+      );
+      const postItemDiscountTotal = itemSubtotals.reduce(
+        (sum, subtotal, index) => sum + Math.max(subtotal - itemDiscounts[index], 0),
+        0,
+      );
+      const orderDiscount = calculateSaleDiscountAmount(postItemDiscountTotal, sale.discount);
       const normalizedSale = {
         ...sale,
         id: saleId,
+        status: sale.status || "completed",
+        paymentStatus: sale.payment?.method === "debt" ? "receivable" : "paid",
         customerId: sale.customerId || sale.customer?.id || null,
         cashierId: sale.cashierId || userId,
         warehouseId,
@@ -374,18 +712,37 @@ const businessOSSlice = createSlice({
         createdAt: sale.createdAt || now(),
       };
 
-      upsertOne(state.entities.sales, normalizedSale);
+      let cogsAmount = 0;
+      let revenueAmount = 0;
 
-      sale.items.forEach((item) => {
+      sale.items.forEach((item, index) => {
+        const product = state.entities.products.byId[item.productId];
+        const unitCost = resolveSaleUnitCost(product, item);
+        const lineSubtotal = itemSubtotals[index];
+        const itemDiscount = itemDiscounts[index];
+        const subtotalAfterItemDiscount = Math.max(lineSubtotal - itemDiscount, 0);
+        const allocatedOrderDiscount = postItemDiscountTotal > 0
+          ? Math.round((orderDiscount * subtotalAfterItemDiscount) / postItemDiscountTotal)
+          : 0;
+        const lineDiscount = itemDiscount + allocatedOrderDiscount;
+        const lineRevenue = Math.max(subtotalAfterItemDiscount - allocatedOrderDiscount, 0);
         const saleItem = {
           id: item.saleItemId || createBusinessId("sale-item"),
           saleId,
           productId: item.productId,
           quantity: toNumber(item.quantity),
           price: toNumber(item.price),
+          sellingPrice: toNumber(item.price),
+          unitCost,
           discount: item.discount || null,
-          total: toNumber(item.quantity) * toNumber(item.price),
+          discountAmount: lineDiscount,
+          total: lineRevenue,
+          totalCost: toNumber(item.quantity) * unitCost,
+          costTotal: toNumber(item.quantity) * unitCost,
+          grossProfit: lineRevenue - toNumber(item.quantity) * unitCost,
         };
+        cogsAmount += saleItem.costTotal;
+        revenueAmount += saleItem.total;
         upsertOne(state.entities.saleItems, saleItem);
         mutateStock(state, {
           productId: item.productId,
@@ -397,6 +754,13 @@ const businessOSSlice = createSlice({
           reason: "SALE_COMPLETED",
         });
       });
+
+      normalizedSale.revenue = revenueAmount || total;
+      normalizedSale.discountAmount = toNumber(sale.totals?.discount) || itemDiscounts.reduce((sum, value) => sum + value, 0) + orderDiscount;
+      normalizedSale.cogsAmount = cogsAmount;
+      normalizedSale.grossProfit = (revenueAmount || total) - cogsAmount;
+      normalizedSale.itemCount = sale.items.reduce((sum, item) => sum + toNumber(item.quantity), 0);
+      upsertOne(state.entities.sales, normalizedSale);
 
       if (normalizedSale.customerId) {
         const customer = state.entities.customers.byId[normalizedSale.customerId];
@@ -429,12 +793,16 @@ const businessOSSlice = createSlice({
         date: normalizedSale.createdAt.slice(0, 10),
         type: "income",
         cashDirection: normalizedSale.payment?.method === "debt" ? "receivable" : "in",
-        amount: total,
+        amount: normalizedSale.revenue,
+        cogsAmount,
+        grossProfit: normalizedSale.grossProfit,
         currency: state.settings.baseCurrency,
         accountId: normalizedSale.payment?.method === "cash" ? "1000" : "1010",
         counterparty: normalizedSale.customerId ? resolveName(state.entities.customers, normalizedSale.customerId) : "Walk-in customer",
         reference: normalizedSale.receiptNumber || saleId,
         source: "POS",
+        sourceId: saleId,
+        category: "Mahsulot savdosi",
         description: "POS sale completed",
         status: "Posted",
         branch: normalizedSale.branchId,
@@ -493,6 +861,8 @@ export const selectProductsModuleState = (state) => {
       defaultTaxRate: os.settings.taxRate,
       showCostByDefault: false,
       integrations: { pos: true, warehouse: true, crm: true, finance: true },
+      inventoryCostMethod: os.settings.inventoryCostMethod || "weighted_average",
+      inventoryCostOptions: os.settings.inventoryCostOptions || {},
     },
   };
 };
@@ -552,6 +922,8 @@ export const selectWarehouseModuleState = (state) => {
     settings: {
       defaultWarehouseId: os.settings.defaultWarehouseId,
       expiryWarningDays: 30,
+      inventoryCostMethod: os.settings.inventoryCostMethod || "weighted_average",
+      inventoryCostOptions: os.settings.inventoryCostOptions || {},
     },
   };
 };
@@ -559,7 +931,7 @@ export const selectWarehouseModuleState = (state) => {
 export const selectPOSProducts = (state) => {
   const os = state.businessOS;
   return list(os.entities.products)
-    .filter((product) => product.status !== "archived" && product.status !== "inactive")
+    .filter((product) => product.status === "active")
     .map((product) => {
       const stock = list(os.entities.stockBalances)
         .filter((balance) => balance.productId === product.id)
@@ -590,12 +962,28 @@ export const selectDashboardSummary = (state) => {
   const os = state.businessOS;
   const today = new Date().toISOString().slice(0, 10);
   const sales = list(os.entities.sales);
+  const saleItems = list(os.entities.saleItems);
   const transactions = list(os.entities.transactions);
   const stockBalances = list(os.entities.stockBalances);
   const products = list(os.entities.products);
-  const todaySales = sales.filter((sale) => sale.createdAt?.slice(0, 10) === today);
+  const completedSales = sales.filter((sale) => isCompletedSaleStatus(sale.status));
+  const todaySales = completedSales.filter((sale) => sale.createdAt?.slice(0, 10) === today);
+  const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  const yesterdaySales = completedSales.filter((sale) => sale.createdAt?.slice(0, 10) === yesterday);
+  const sumSaleRevenue = (rows) => rows.reduce((sum, sale) => sum + toNumber(sale.revenue ?? sale.total), 0);
+  const sumSaleCogs = (rows) => rows.reduce((sum, sale) => {
+    if (sale.cogsAmount !== undefined) return sum + toNumber(sale.cogsAmount);
+    return sum + saleItems
+      .filter((item) => item.saleId === sale.id)
+      .reduce((lineSum, item) => lineSum + toNumber(item.totalCost ?? item.costTotal ?? toNumber(item.unitCost) * toNumber(item.quantity)), 0);
+  }, 0);
+  const todayRevenue = sumSaleRevenue(todaySales);
+  const yesterdayRevenue = sumSaleRevenue(yesterdaySales);
+  const todayCogs = sumSaleCogs(todaySales);
+  const todayNetProfit = todayRevenue - todayCogs;
   const revenue = transactions.filter((trx) => trx.type === "income").reduce((sum, trx) => sum + toNumber(trx.amount), 0);
   const expense = transactions.filter((trx) => trx.type === "expense").reduce((sum, trx) => sum + toNumber(trx.amount), 0);
+  const transactionCogs = transactions.reduce((sum, trx) => sum + toNumber(trx.cogsAmount), 0);
   const lowStock = products.filter((product) => {
     const qty = stockBalances
       .filter((balance) => balance.productId === product.id)
@@ -607,12 +995,26 @@ export const selectDashboardSummary = (state) => {
     tenant: { currency: os.settings.baseCurrency.toLowerCase() },
     stats: {
       revenue,
-      profit: revenue - expense,
+      profit: revenue - transactionCogs - expense,
       expenses: expense,
-      todaySales: todaySales.reduce((sum, sale) => sum + toNumber(sale.total), 0),
-      salesCount: sales.length,
+      todaySales: todayRevenue,
+      yesterdaySales: yesterdayRevenue,
+      netProfit: todayNetProfit,
+      grossProfit: todayNetProfit,
+      cogs: todayCogs,
+      profitMargin: todayRevenue > 0 ? Math.round((todayNetProfit / todayRevenue) * 100) : null,
+      salesCount: completedSales.length,
+      todayOrders: todaySales.length,
+      ordersToday: todaySales.length,
+      ordersTotal: completedSales.length,
+      ordersCount: todaySales.length,
+      avgReceipt: todaySales.length ? Math.round(todayRevenue / todaySales.length) : 0,
+      yesterdayAvgReceipt: yesterdaySales.length ? Math.round(yesterdayRevenue / yesterdaySales.length) : 0,
       customers: os.entities.customers.allIds.length,
+      customersTotal: os.entities.customers.allIds.length,
       lowStock,
+      lowStockCount: lowStock,
+      inventoryTotal: products.length,
       debt: transactions.filter((trx) => trx.cashDirection === "receivable").reduce((sum, trx) => sum + toNumber(trx.amount), 0),
       purchaseDeliveries: os.entities.purchaseReceipts.allIds.length,
       employeeAttendance: os.entities.employees.allIds.length,
@@ -621,10 +1023,9 @@ export const selectDashboardSummary = (state) => {
     topProducts: products.slice(0, 5).map((product) => ({
       id: product.id,
       name: product.name,
-      revenue: sales.reduce((sum, sale) => {
-        const amount = (sale.items || []).filter((item) => item.productId === product.id).reduce((lineSum, item) => lineSum + toNumber(item.quantity) * toNumber(item.price), 0);
-        return sum + amount;
-      }, 0),
+      revenue: saleItems
+        .filter((item) => completedSales.some((sale) => sale.id === item.saleId) && item.productId === product.id)
+        .reduce((sum, item) => sum + toNumber(item.total), 0),
       stock: stockBalances.filter((balance) => balance.productId === product.id).reduce((sum, balance) => sum + toNumber(balance.onHand), 0),
     })),
     activity: list(os.entities.auditEvents).slice(0, 8),

@@ -12,6 +12,11 @@ import { useCallback, useEffect, useState } from "react";
 
 import { store } from "../../app/store/store";
 import { businessOSActions } from "../../core/businessOS/businessOSSlice";
+import {
+  enforceSinglePreferredSupplier,
+  normalizeSupplierProductRelations,
+  upsertSupplierProductRelation,
+} from "../../core/businessOS/erpProductModel";
 import { RETURN_STATUSES } from "../purchases/constants/paymentTerms";
 import {
   PURCHASE_ROLES,
@@ -533,7 +538,15 @@ const saveState = (state) => {
   }
 };
 
-let storeState = loadState() || { suppliers: SEED_SUPPLIERS };
+const normalizeSupplierState = (state = {}) => ({
+  ...state,
+  suppliers: (state.suppliers || SEED_SUPPLIERS).map((supplier) => ({
+    ...supplier,
+    ...normalizeSupplierProductRelations(supplier),
+  })),
+});
+
+let storeState = normalizeSupplierState(loadState() || { suppliers: SEED_SUPPLIERS });
 const listeners = new Set();
 
 const emit = () => {
@@ -714,8 +727,14 @@ export const useSuppliers = () => {
         : SUPPLIER_STATUSES.new;
       const { categories, category } = normalizeCategoryFields(payload);
 
+      const supplierId = createEntityId("sup");
+      const relationState = normalizeSupplierProductRelations({
+        ...payload,
+        id: supplierId,
+      });
+
       created = {
-        id: createEntityId("sup"),
+        id: supplierId,
         name: (payload.name || "").trim(),
         phone: payload.phone?.trim() || "",
         email: payload.email?.trim() || "",
@@ -734,13 +753,11 @@ export const useSuppliers = () => {
         // Task 5: mahsulot bog'lanishi — YAGONA manba. SupplierProductLinkModal
         // (Supplier profili) va PurchaseOrderWizard ikkalasi ham xuddi shu
         // massivni o'qiydi/yozadi — avtomatik/mock bog'lanish yo'q.
-        productIds: Array.isArray(payload.productIds) ? payload.productIds : [],
+        productIds: relationState.productIds,
         // Har bir bog'langan mahsulotga xos xarid shartlari (SKU, birlik,
         // narx, valyuta, muddat, MOQ, izoh) — productId -> shart xaritasi.
-        productOverrides:
-          payload.productOverrides && typeof payload.productOverrides === "object"
-            ? payload.productOverrides
-            : {},
+        productOverrides: relationState.productOverrides,
+        supplierProducts: relationState.supplierProducts,
         score: clampScore(payload.score),
         leadTimeDays: clampLeadTimeDays(payload.leadTimeDays),
         creditLimit: clampCreditLimit(payload.creditLimit),
@@ -779,10 +796,22 @@ export const useSuppliers = () => {
 
   const updateSupplier = useCallback((id, payload, actor = purchaseCurrentUser) => {
     let result = { ok: false, error: "Yetkazib beruvchi topilmadi." };
+    let affectedSuppliers = [];
+    const preferredOverride = Object.entries(payload.productOverrides || {})
+      .find(([, terms]) => terms?.isPreferredSupplier);
+    const preferredSupplierProduct = (payload.supplierProducts || [])
+      .find((terms) => terms?.isPreferredSupplier);
+    const preferredRequest =
+      payload.productId && payload.productTerms?.isPreferredSupplier
+        ? { productId: payload.productId }
+        : preferredOverride
+          ? { productId: preferredOverride[0] }
+          : preferredSupplierProduct?.productId
+            ? { productId: preferredSupplierProduct.productId }
+            : null;
 
-    setStoreState((current) => ({
-      ...current,
-      suppliers: current.suppliers.map((entry) => {
+    setStoreState((current) => {
+      let nextSuppliers = current.suppliers.map((entry) => {
         if (entry.id !== id) return entry;
 
         if (entry.archived) {
@@ -899,14 +928,30 @@ export const useSuppliers = () => {
             : {}),
         };
         const { categories, category } = normalizeCategoryFields(merged);
-        const productIds = Array.isArray(payload.productIds)
-          ? payload.productIds
-          : entry.productIds || [];
+        const supplierFields = { ...merged };
+        delete supplierFields.productId;
+        delete supplierFields.productTerms;
+        const relationState =
+          payload.productId && payload.productTerms
+            ? upsertSupplierProductRelation(entry, payload.productId, payload.productTerms)
+            : normalizeSupplierProductRelations({
+                ...entry,
+                productIds: Array.isArray(payload.productIds)
+                  ? payload.productIds
+                  : entry.productIds || [],
+                productOverrides:
+                  payload.productOverrides && typeof payload.productOverrides === "object"
+                    ? payload.productOverrides
+                    : entry.productOverrides || {},
+                supplierProducts: Array.isArray(payload.supplierProducts)
+                  ? payload.supplierProducts
+                  : entry.supplierProducts || [],
+              });
         const nextEntry = {
-          ...merged,
+          ...supplierFields,
           categories,
           category,
-          productIds,
+          ...relationState,
           status,
           blocked: status === SUPPLIER_STATUSES.blocked,
         };
@@ -929,11 +974,33 @@ export const useSuppliers = () => {
             },
           ],
         };
-      }),
-    }));
+      });
+
+      if (result.ok && preferredRequest?.productId) {
+        nextSuppliers = enforceSinglePreferredSupplier(nextSuppliers, preferredRequest.productId, id);
+        result = {
+          ...result,
+          supplier: nextSuppliers.find((supplier) => supplier.id === id) || result.supplier,
+          changed: true,
+        };
+      }
+
+      affectedSuppliers = nextSuppliers;
+
+      return {
+        ...current,
+        suppliers: nextSuppliers,
+      };
+    });
 
     if (result.ok && result.supplier) {
-      store.dispatch(businessOSActions.upsertSupplier(result.supplier));
+      if (preferredRequest?.productId) {
+        affectedSuppliers.forEach((supplier) =>
+          store.dispatch(businessOSActions.upsertSupplier(supplier)),
+        );
+      } else {
+        store.dispatch(businessOSActions.upsertSupplier(result.supplier));
+      }
     }
 
     return result;

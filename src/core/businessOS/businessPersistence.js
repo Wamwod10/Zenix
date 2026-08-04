@@ -1,4 +1,9 @@
-export const BUSINESS_SCHEMA_VERSION = 1;
+import {
+  normalizeProductCatalogRecord,
+  normalizeSupplierProductRelations,
+} from "./erpProductModel.js";
+
+export const BUSINESS_SCHEMA_VERSION = 3;
 
 export const businessStorageKeys = {
   entities: "zenix:v1:entities",
@@ -46,6 +51,9 @@ const collectionFrom = (rows = []) => {
   upsertMany(entity, rows);
   return entity;
 };
+
+const listEntity = (entity = createEmptyEntity()) =>
+  (entity.allIds || []).map((id) => entity.byId?.[id]).filter(Boolean);
 
 const legacyProducts = readJson("zenix.products.state.v2", {});
 const legacyWarehouse = readJson("zenix.warehouse.state.v2", {});
@@ -100,6 +108,12 @@ const defaultSettings = {
   ],
   permissions: legacySettings.permissions || {},
   notificationSettings: legacySettings.notifications || {},
+  inventoryCostMethod: legacySettings.inventory?.costMethod || "weighted_average",
+  inventoryCostOptions: {
+    includeDiscountInCost: true,
+    includeVatInCost: false,
+    includeLandedCostInCost: true,
+  },
 };
 
 const buildStockBalances = (products = []) => {
@@ -138,16 +152,20 @@ const buildStockBalances = (products = []) => {
 };
 
 const normalizeProducts = (products = []) =>
-  products.map((product) => ({
-    ...product,
-    id: String(product.id),
-    categoryId: product.categoryId || product.category?.id || product.category || "",
-    brandId: product.brandId || product.brand?.id || product.brand || "",
-    status: product.status || "active",
-    price: Number(product.price ?? product.lastPrice ?? 0),
-    cost: Number(product.cost || 0),
-    barcode: product.barcode || product.barcodes?.[0] || "",
-    barcodes: product.barcodes || [product.barcode].filter(Boolean),
+  products.map((product) =>
+    normalizeProductCatalogRecord({
+      ...product,
+      id: String(product.id),
+      categoryId: product.categoryId || product.category?.id || product.category || "",
+      brandId: product.brandId || product.brand?.id || product.brand || "",
+    }),
+  );
+
+const normalizeSuppliers = (suppliers = []) =>
+  suppliers.map((supplier) => ({
+    ...supplier,
+    id: String(supplier.id),
+    ...normalizeSupplierProductRelations(supplier),
   }));
 
 const normalizeCustomers = (customers = []) =>
@@ -163,6 +181,30 @@ const normalizeCustomers = (customers = []) =>
     averageCheck: Number(customer.averageCheck || 0),
     bonus: Number(customer.bonus || customer.loyaltyBonus || 0),
   }));
+
+const normalizePurchaseItems = (orders = []) =>
+  orders.flatMap((order) =>
+    (order.items || []).map((item) => ({
+      ...item,
+      id: item.purchaseItemId || item.id,
+      purchaseOrderId: order.id,
+      productId: item.productId,
+      supplierId: item.supplierId || order.supplierId,
+      supplierProductId: item.supplierProductId || "",
+      purchasePrice: Number(item.purchasePrice ?? item.price ?? 0),
+      discountType: item.discountType || "percentage",
+      discountValue: Number(item.discountValue ?? item.discount ?? item.discountPercent ?? 0),
+      discount: Number(item.discount ?? item.discountPercent ?? 0),
+      taxId: item.taxId || "",
+      vatRate: Number(item.vatRate ?? item.vat ?? item.taxRate ?? 0),
+      vat: Number(item.vatRate ?? item.vat ?? item.taxRate ?? 0),
+      taxInclusive: Boolean(item.taxInclusive),
+      currency: item.currency || order.currency || "UZS",
+      exchangeRate: Number(item.exchangeRate || order.exchangeRate || 1),
+      baseCurrencyAmount: Number(item.baseCurrencyAmount || 0),
+      createdAt: item.createdAt || order.createdAt || new Date().toISOString(),
+    })),
+  );
 
 export const createInitialBusinessState = () => {
   const productRows = normalizeProducts([
@@ -184,15 +226,24 @@ export const createInitialBusinessState = () => {
   return {
     entities: {
       products: collectionFrom(productRows),
+      priceLists: createEmptyEntity(),
+      productPrices: createEmptyEntity(),
       categories: collectionFrom(legacyProducts.categories || []),
       brands: collectionFrom(legacyProducts.brands || []),
       warehouses: collectionFrom(warehouseRows),
       stockBalances: collectionFrom(buildStockBalances(productRows)),
       stockMovements: collectionFrom(legacyWarehouse.movements || []),
+      inventoryLayers: createEmptyEntity(),
       customers: collectionFrom(normalizeCustomers(legacyCrmCustomers)),
       customerActivities: createEmptyEntity(),
-      suppliers: collectionFrom(legacySuppliers.suppliers || []),
+      suppliers: collectionFrom(normalizeSuppliers(legacySuppliers.suppliers || [])),
+      supplierProducts: collectionFrom(
+        normalizeSuppliers(legacySuppliers.suppliers || []).flatMap(
+          (supplier) => supplier.supplierProducts || [],
+        ),
+      ),
       purchaseOrders: collectionFrom(legacyPurchases.orders || []),
+      purchaseItems: collectionFrom(normalizePurchaseItems(legacyPurchases.orders || [])),
       purchaseReceipts: collectionFrom(legacyPurchases.receipts || []),
       purchaseInvoices: collectionFrom(legacyPurchases.invoices || []),
       sales: createEmptyEntity(),
@@ -233,14 +284,25 @@ export const loadBusinessState = () => {
   const initial = createInitialBusinessState();
 
   if (!entities && !settings && !audit) return initial;
+  const loadedEntities = {
+    ...initial.entities,
+    ...(entities?.value || entities || {}),
+    auditEvents: audit?.value || audit || initial.entities.auditEvents,
+  };
+  loadedEntities.products = collectionFrom(
+    listEntity(loadedEntities.products).map((product) =>
+      normalizeProductCatalogRecord({
+        ...product,
+        id: String(product.id),
+        categoryId: product.categoryId || product.category?.id || product.category || "",
+        brandId: product.brandId || product.brand?.id || product.brand || "",
+      }),
+    ),
+  );
 
   return {
     ...initial,
-    entities: {
-      ...initial.entities,
-      ...(entities?.value || entities || {}),
-      auditEvents: audit?.value || audit || initial.entities.auditEvents,
-    },
+    entities: loadedEntities,
     settings: {
       ...initial.settings,
       ...(settings?.value || settings || {}),

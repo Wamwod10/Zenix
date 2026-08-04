@@ -8,6 +8,10 @@ import { useSelector } from "react-redux";
 import { store } from "../../../app/store/store";
 import { businessOSActions } from "../../../core/businessOS/businessOSSlice";
 import {
+  normalizeProductCatalogRecord,
+  normalizeSupplierProductRelations,
+} from "../../../core/businessOS/erpProductModel";
+import {
   APPROVAL_STEP_STATUSES,
   resolveApprovalSteps,
 } from "../constants/approvalMatrix";
@@ -104,6 +108,39 @@ const createInitialState = () => ({
   budgets: seedBudgets,
   counters: seedCounters,
 });
+
+const mapCatalogProductForPurchasing = (product = {}, stock = 0) => {
+  const normalized = normalizeProductCatalogRecord(product);
+
+  return {
+    ...product,
+    ...normalized,
+    category: product.categoryName || product.category || product.categoryId || "",
+    stock,
+    reorderPoint: Number(product.reorderPoint ?? product.minimum ?? product.minStock ?? 0),
+    moq: Math.max(Number(product.moq || 1), 1),
+    lastPrice: Number(normalized.currentCost || normalized.standardCost || 0),
+    units: product.units?.length
+      ? product.units
+      : [
+          {
+            code: "purchase",
+            label: product.purchaseUnit || product.unit?.code || product.unit || "Dona",
+            factor: 1,
+          },
+        ],
+  };
+};
+
+const mergeProductsById = (...groups) => {
+  const map = new Map();
+
+  groups.flat().filter(Boolean).forEach((product) => {
+    map.set(product.id, { ...(map.get(product.id) || {}), ...product });
+  });
+
+  return Array.from(map.values());
+};
 
 // Bug fix (schema evolution): eski sessiyalarda localStorage'ga byudjet
 // maydoni bo'lmagan holat saqlanib qolgan bo'lishi mumkin — shu sabab
@@ -304,16 +341,51 @@ export const usePurchasesStore = () => {
         branch: warehouse.branch || warehouse.branchName || warehouse.branchId || "Filial belgilanmagan",
       }));
   });
+  const businessProducts = useSelector((reduxState) => {
+    const entities = reduxState.businessOS?.entities;
+    const products = entities?.products;
+    const balances = entities?.stockBalances;
+
+    return (products?.allIds || [])
+      .map((id) => products.byId[id])
+      .filter((product) => product && product.status !== "archived")
+      .map((product) => {
+        const stock = (balances?.allIds || [])
+          .map((id) => balances.byId[id])
+          .filter((balance) => balance?.productId === product.id)
+          .reduce((sum, balance) => sum + Number(balance.onHand || 0), 0);
+
+        return mapCatalogProductForPurchasing(product, stock);
+      });
+  });
   const availableWarehouses = useMemo(
     () => (businessWarehouses.length ? businessWarehouses : purchaseWarehouses),
     [businessWarehouses],
+  );
+  const products = useMemo(
+    () =>
+      mergeProductsById(
+        state.products.map((product) =>
+          mapCatalogProductForPurchasing(product, Number(product.stock || 0)),
+        ),
+        businessProducts,
+      ),
+    [businessProducts, state.products],
   );
   // Task 5: suppliers Suppliers modulidan reaktiv o'qiladi (yagona manba) —
   // supplier o'zgarishi (Suppliers sahifasida) avtomatik shu yerda ham
   // ko'rinadi, Purchases o'z nusxasini saqlamaydi.
   // Step 4/5: Purchases faqat supplier ma'lumotini O'QIYDI (yagona manba —
   // Suppliers moduli); yaratish/tahrirlash amallarini chaqirmaydi.
-  const { suppliers, getSupplier } = useSuppliers();
+  const { suppliers, getSupplier, actions: supplierActions } = useSuppliers();
+  const normalizedSuppliers = useMemo(
+    () =>
+      suppliers.map((supplier) => ({
+        ...supplier,
+        ...normalizeSupplierProductRelations(supplier),
+      })),
+    [suppliers],
+  );
 
   useEffect(() => {
     const listener = (next) => setState(next);
@@ -1078,11 +1150,33 @@ export const usePurchasesStore = () => {
             actorId: actor.id || actor.name || "system",
           }),
         );
+        (receipt.items || []).forEach((receiptItem) => {
+          const orderItem = notifyPayload.order.items.find(
+            (item) => item.id === receiptItem.itemId,
+          );
+
+          if (!orderItem?.productId || !receiptItem.received) return;
+
+          supplierActions.updateSupplier(notifyPayload.order.supplierId, {
+            productId: orderItem.productId,
+            productTerms: {
+              purchasePrice:
+                normalizeNumber(orderItem.price) /
+                (normalizeNumber(orderItem.unitFactor) || 1),
+              currency: notifyPayload.order.currency || BASE_PURCHASE_CURRENCY,
+              lastPurchasePrice:
+                normalizeNumber(orderItem.price) /
+                (normalizeNumber(orderItem.unitFactor) || 1),
+              lastPurchaseDate: receipt.receivedAt || new Date().toISOString(),
+              source: "purchase_receipt",
+            },
+          });
+        });
       }
 
       return receipt;
     },
-    [],
+    [supplierActions],
   );
 
   // ---------- Returns (PDF 36-37) ----------
@@ -1786,9 +1880,14 @@ export const usePurchasesStore = () => {
     // konvertatsiya qilinadi (currencies.js — boshqa joylarda ham xuddi
     // shu mock kurslar ishlatiladi).
     const exchangeRate = getDefaultExchangeRate(payload.currency);
-    const priceInBaseCurrency = convertToBaseCurrency(
-      Number(payload.price) || 0,
+    const standardCost = convertToBaseCurrency(
+      Number(payload.standardCost ?? payload.cost ?? 0) || 0,
       exchangeRate,
+    );
+    const sellingPrice = Number(payload.sellingPrice ?? payload.retailPrice ?? 0) || 0;
+    const currentCost = Math.max(
+      Number(payload.currentCost ?? standardCost ?? payload.cost ?? payload.costPrice ?? 0) || 0,
+      0,
     );
 
     const product = {
@@ -1800,7 +1899,12 @@ export const usePurchasesStore = () => {
       stock: 0,
       reorderPoint: Number(payload.reorderPoint) || 0,
       moq: Math.max(Number(payload.moq) || 1, 1),
-      lastPrice: Math.max(priceInBaseCurrency, 0),
+      sellingPrice,
+      retailPrice: sellingPrice,
+      currentCost,
+      standardCost: Math.max(standardCost, 0),
+      lastPurchaseCost: currentCost,
+      lastPrice: currentCost,
       units: [
         { code: "purchase", label: payload.purchaseUnit || "Dona", factor: 1 },
         ...(payload.saleUnit
@@ -1817,7 +1921,11 @@ export const usePurchasesStore = () => {
     store.dispatch(
       businessOSActions.upsertProduct({
         ...product,
-        price: product.lastPrice,
+        price: product.sellingPrice,
+        cost: product.currentCost,
+        currentCost: product.currentCost,
+        standardCost: product.standardCost,
+        lastPurchaseCost: product.lastPurchaseCost,
         categoryId: product.category,
         status: "active",
       }),
@@ -1955,17 +2063,17 @@ export const usePurchasesStore = () => {
   const getBudgetImpactsForOrder = useCallback(
     (orderShape, { excludeOrderId = null } = {}) =>
       getApplicableBudgetImpacts(orderShape, state.budgets, state.orders, {
-        products: state.products,
+        products,
         excludeOrderId,
       }),
-    [state.budgets, state.orders, state.products],
+    [products, state.budgets, state.orders],
   );
 
   return {
     currentUser: purchaseCurrentUser,
-    suppliers,
+    suppliers: normalizedSuppliers,
     warehouses: availableWarehouses,
-    products: state.products,
+    products,
     orders: state.orders,
     receipts: state.receipts,
     invoices: state.invoices,

@@ -122,6 +122,7 @@ export const buildFinanceSummary = (state) => {
     posted.filter((item) => item.type === "expense"),
     (item) => item.amount,
   );
+  const cogs = sumBy(posted, (item) => item.cogsAmount);
   const receivable = sumBy(state.receivables, (item) => item.balance);
   const payable = sumBy(state.payables, (item) => item.balance);
   const overdue = sumBy(
@@ -141,7 +142,9 @@ export const buildFinanceSummary = (state) => {
     totalBalance: calculateBalance(state.accounts, posted),
     income,
     expenses,
-    netProfit: income - expenses,
+    cogs,
+    grossProfit: income - cogs,
+    netProfit: income - cogs - expenses,
     cashFlow: calculateCashFlow(posted),
     receivable,
     payable,
@@ -151,6 +154,6 @@ export const buildFinanceSummary = (state) => {
     taxPayable: sumBy(state.taxReports, (item) => item.payable),
     pendingApprovals: state.transactions.filter((item) => item.status === "Pending").length,
     unreconciled: state.reconciliation.system.filter((item) => !item.matched).length,
-    healthScore: income || expenses || overdue ? Math.min(100, Math.max(0, Math.round((income - expenses - overdue * 0.2) / 10000000))) : 0,
+    healthScore: income || expenses || overdue ? Math.min(100, Math.max(0, Math.round((income - cogs - expenses - overdue * 0.2) / 10000000))) : 0,
   };
 };

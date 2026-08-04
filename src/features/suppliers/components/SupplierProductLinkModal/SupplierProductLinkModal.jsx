@@ -1,7 +1,7 @@
 // ERP arxitektura tuzatishi: bu modal FAQAT "mavjud katalog mahsulotini
 // shu supplierga bog'lash" (Vendor/Supplier Price List yozuvi) uchun —
 // "Yangi mahsulot yaratish" bilan ARALASHTIRILMAYDI (bu ikkinchisi butunlay
-// alohida SupplierProductCreateModal orqali amalga oshiriladi). Shu sabab
+// Product Catalog sahifasiga yo'naltiriladi). Shu sabab
 // bu yerda faqat: mahsulot qidirish/tanlash + SHU SUPPLIERGA xos tijorat
 // shartlari (narx, muddat, MOQ, SKU, izoh) bor — mahsulotning o'zini
 // tavsiflovchi maydonlar (nomi, birligi, valyutasi va h.k.) YO'Q, chunki
@@ -19,15 +19,24 @@ import { Button } from "../../../../components/ui/Button/Button";
 import { Dropdown } from "../../../../components/ui/Dropdown/Dropdown";
 import { Input } from "../../../../components/ui/Input/Input";
 import { Modal } from "../../../../components/ui/Modal/Modal";
+import { PURCHASE_CURRENCIES } from "../../../purchases/constants/currencies";
 
 import "./SupplierProductLinkModal.scss";
 
 const buildEmptyForm = () => ({
   productId: "",
   sku: "",
+  supplierBarcode: "",
   price: "",
+  currency: "UZS",
+  discountType: "percentage",
+  discountValue: "",
+  vatRate: "",
+  taxInclusive: false,
   leadTimeDays: "",
   moq: "",
+  isPreferredSupplier: false,
+  status: "active",
   notes: "",
 });
 
@@ -35,6 +44,7 @@ const SupplierProductLinkModal = ({
   open,
   products = [],
   linkedProductIds = [],
+  initialTerms = null,
   onClose,
   onLink,
 }) => {
@@ -46,17 +56,33 @@ const SupplierProductLinkModal = ({
   // bog'langan mahsulot qoldig'i qolib ketmasligi uchun.
   useEffect(() => {
     if (open) {
-      setForm(buildEmptyForm());
+      setForm(initialTerms ? {
+        ...buildEmptyForm(),
+        productId: initialTerms.productId || "",
+        sku: initialTerms.supplierSku || initialTerms.sku || "",
+        supplierBarcode: initialTerms.supplierBarcode || "",
+        price: initialTerms.purchasePrice || initialTerms.price || "",
+        currency: initialTerms.currency || "UZS",
+        discountType: initialTerms.discountType || "percentage",
+        discountValue: initialTerms.discountValue ?? initialTerms.discount ?? "",
+        vatRate: initialTerms.vatRate ?? initialTerms.vat ?? "",
+        taxInclusive: Boolean(initialTerms.taxInclusive),
+        leadTimeDays: initialTerms.leadTime ?? initialTerms.leadTimeDays ?? "",
+        moq: initialTerms.minimumOrderQty || initialTerms.moq || "",
+        isPreferredSupplier: Boolean(initialTerms.isPreferredSupplier),
+        status: initialTerms.status || "active",
+        notes: initialTerms.notes || "",
+      } : buildEmptyForm());
       setSearch("");
       setError("");
     }
-  }, [open]);
+  }, [initialTerms, open]);
 
   // Faqat HALI bog'lanmagan mahsulotlar tanlash uchun ko'rsatiladi —
   // aks holda bir xil mahsulot ikki marta bog'lanishi mumkin edi.
   const linkableProducts = useMemo(
-    () => products.filter((product) => !linkedProductIds.includes(product.id)),
-    [products, linkedProductIds],
+    () => products.filter((product) => product.id === initialTerms?.productId || !linkedProductIds.includes(product.id)),
+    [initialTerms?.productId, products, linkedProductIds],
   );
 
   const filteredProducts = useMemo(() => {
@@ -89,8 +115,8 @@ const SupplierProductLinkModal = ({
     setForm((current) => ({
       ...current,
       productId,
-      sku: product?.sku || "",
-      price: product?.lastPrice ? String(product.lastPrice) : "",
+      sku: "",
+      price: product?.currentCost || product?.standardCost ? String(product.currentCost || product.standardCost) : "",
       moq: product?.moq ? String(product.moq) : "",
     }));
     setError("");
@@ -113,13 +139,44 @@ const SupplierProductLinkModal = ({
 
     const moq = Number(form.moq) || 1;
     const leadTimeDays = form.leadTimeDays ? Number(form.leadTimeDays) : undefined;
+    const leadTime = leadTimeDays;
+    const discountValue = Number(form.discountValue) || 0;
+    const vatRate = Number(form.vatRate) || 0;
+
+    if (!form.currency) {
+      setError("Supplier valyutasini tanlang");
+      return;
+    }
+
+    if (leadTimeDays !== undefined && leadTimeDays < 0) {
+      setError("Lead time manfiy bo'lishi mumkin emas");
+      return;
+    }
+
+    if (form.discountType === "percentage" && discountValue > 100) {
+      setError("Foiz chegirma 100% dan oshmasin");
+      return;
+    }
 
     onLink?.({
       productId: form.productId,
-      sku: form.sku.trim() || selectedProduct?.sku || "",
-      price,
+      supplierSku: form.sku.trim() || "",
+      supplierBarcode: form.supplierBarcode.trim(),
+      purchasePrice: price,
+      currency: form.currency,
+      discountType: form.discountType,
+      discountValue,
+      discount: form.discountType === "percentage" ? discountValue : 0,
+      fixedDiscount: form.discountType === "fixed" ? discountValue : 0,
+      vatRate,
+      vat: vatRate,
+      taxInclusive: form.taxInclusive,
       leadTimeDays,
+      leadTime,
+      minimumOrderQty: moq,
       moq,
+      isPreferredSupplier: form.isPreferredSupplier,
+      status: form.status,
       notes: form.notes.trim(),
     });
   };
@@ -172,6 +229,52 @@ const SupplierProductLinkModal = ({
             onChange={(event) => setField("price", event.target.value)}
           />
 
+          <Dropdown
+            label="Valyuta"
+            value={form.currency}
+            options={PURCHASE_CURRENCIES.map((currency) => ({
+              value: currency.code,
+              label: currency.label,
+            }))}
+            onChange={(value) => setField("currency", value)}
+          />
+
+          <Input
+            label="Supplier barcode"
+            placeholder="Ichki katalog kodi"
+            value={form.supplierBarcode}
+            onChange={(event) => setField("supplierBarcode", event.target.value)}
+          />
+
+          <Dropdown
+            label="Chegirma turi"
+            value={form.discountType}
+            options={[
+              { value: "percentage", label: "Foiz" },
+              { value: "fixed", label: "Fixed amount" },
+            ]}
+            onChange={(value) => setField("discountType", value)}
+          />
+
+          <Input
+            label={form.discountType === "percentage" ? "Chegirma %" : "Chegirma summasi"}
+            type="number"
+            min="0"
+            max={form.discountType === "percentage" ? "100" : undefined}
+            placeholder="0"
+            value={form.discountValue}
+            onChange={(event) => setField("discountValue", event.target.value)}
+          />
+
+          <Input
+            label="VAT / QQS rate"
+            type="number"
+            min="0"
+            placeholder="0"
+            value={form.vatRate}
+            onChange={(event) => setField("vatRate", event.target.value)}
+          />
+
           <Input
             label="Yetkazish muddati (kun, ixtiyoriy)"
             type="number"
@@ -189,7 +292,36 @@ const SupplierProductLinkModal = ({
             value={form.moq}
             onChange={(event) => setField("moq", event.target.value)}
           />
+
+          <Dropdown
+            label="Status"
+            value={form.status}
+            options={[
+              { value: "active", label: "Faol" },
+              { value: "paused", label: "Pauza" },
+              { value: "archived", label: "Arxivlangan" },
+            ]}
+            onChange={(value) => setField("status", value)}
+          />
         </div>
+
+        <label className="supplier-product-link__check">
+          <input
+            type="checkbox"
+            checked={form.isPreferredSupplier}
+            onChange={(event) => setField("isPreferredSupplier", event.target.checked)}
+          />
+          <span>Preferred supplier</span>
+        </label>
+
+        <label className="supplier-product-link__check">
+          <input
+            type="checkbox"
+            checked={form.taxInclusive}
+            onChange={(event) => setField("taxInclusive", event.target.checked)}
+          />
+          <span>VAT narx ichida</span>
+        </label>
 
         <Input
           className="supplier-product-link__wide"

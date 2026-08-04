@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
+import { useEffect, useMemo, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
 import { businessOSActions } from "../../../core/businessOS/businessOSSlice";
 import { initialFinanceState } from "../data/financeMockData";
@@ -71,9 +71,34 @@ const mergeFinanceState = (savedState) => {
 
 const useFinanceStorage = () => {
   const dispatch = useDispatch();
+  const businessTransactions = useSelector((reduxState) => {
+    const entity = reduxState.businessOS?.entities?.transactions;
+    return (entity?.allIds || []).map((id) => entity.byId[id]).filter(Boolean);
+  });
   const [state, setState] = useState(() =>
     mergeFinanceState(safeStorageRead(financeStorageKeys.state, cloneInitialState())),
   );
+  const integratedState = useMemo(() => {
+    const byId = new Map();
+    state.transactions.forEach((transaction) => byId.set(transaction.id, transaction));
+    businessTransactions.forEach((transaction) => byId.set(transaction.id, transaction));
+    const transactions = Array.from(byId.values()).sort((left, right) =>
+      String(right.date || "").localeCompare(String(left.date || "")),
+    );
+    const cogs = transactions.reduce(
+      (sum, transaction) => sum + Number(transaction.cogsAmount || 0),
+      0,
+    );
+
+    return {
+      ...state,
+      transactions,
+      costAccounting: {
+        ...state.costAccounting,
+        cogs: cogs || Number(state.costAccounting?.cogs || 0),
+      },
+    };
+  }, [businessTransactions, state]);
 
   useEffect(() => {
     safeStorageWrite(financeStorageKeys.state, state);
@@ -81,7 +106,7 @@ const useFinanceStorage = () => {
   }, [dispatch, state]);
 
   return {
-    state,
+    state: integratedState,
     setState,
     resetState: () => setState(cloneInitialState()),
   };

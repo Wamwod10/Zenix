@@ -1,5 +1,7 @@
 import { BarChart3 } from "lucide-react";
 
+import { formatMargin } from "../../utils/productCalculations";
+
 const ProductAnalytics = ({ products }) => {
   const maxSales = Math.max(1, ...products.map((item) => item.sales30d));
 
@@ -15,7 +17,7 @@ const ProductAnalytics = ({ products }) => {
         <div className="products-analytics-bars">
           {products.map((product) => (
             <article key={product.id}>
-              <div><strong>{product.name}</strong><span>{product.sales30d} savdo · {Math.round(product.margin)}% marja</span></div>
+              <div><strong>{product.name}</strong><span>{product.sales30d} savdo · {formatMargin(product.margin)} marja</span></div>
               <meter min="0" max={maxSales} value={product.sales30d} />
             </article>
           ))}

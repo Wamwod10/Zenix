@@ -73,12 +73,13 @@ const useProductForm = ({ product, products, onSubmit }) => {
     setDirty(false);
   };
 
-  const submit = () => {
-    const nextErrors = validateProduct(form, products);
+  const submit = (overrides = {}) => {
+    const payload = { ...form, ...overrides };
+    const nextErrors = validateProduct(payload, products);
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length) return { ok: false, errors: nextErrors };
 
-    const result = onSubmit(form);
+    const result = onSubmit(payload);
     if (result?.ok) setDirty(false);
     return result;
   };

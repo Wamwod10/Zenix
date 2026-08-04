@@ -1,7 +1,8 @@
 import { CheckCircle2, CircleDollarSign, XCircle } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
+  formatMargin,
   formatMoney,
   labelProductStatus,
 } from "../../utils/productCalculations";
@@ -10,9 +11,20 @@ const PriceLists = ({ products, priceLists, canApprove, onSubmitApproval, onReso
   const [draft, setDraft] = useState(() => ({
     productId: products[0]?.id || "",
     price: products[0]?.price || 0,
-    cost: products[0]?.cost || 0,
+    cost: products[0]?.currentCost ?? products[0]?.cost ?? 0,
   }));
   const selected = products.find((item) => item.id === draft.productId);
+
+  useEffect(() => {
+    if (draft.productId && selected) return;
+    const product = products[0];
+    if (!product) return;
+    setDraft({
+      productId: product.id,
+      price: product.price || 0,
+      cost: product.currentCost ?? product.cost ?? 0,
+    });
+  }, [draft.productId, products, selected]);
 
   return (
     <div className="products-view">
@@ -31,7 +43,7 @@ const PriceLists = ({ products, priceLists, canApprove, onSubmitApproval, onReso
                 value={draft.productId}
                 onChange={(event) => {
                   const product = products.find((item) => item.id === event.target.value);
-                  setDraft({ productId: event.target.value, price: product?.price || 0, cost: product?.cost || 0 });
+                  setDraft({ productId: event.target.value, price: product?.price || 0, cost: product?.currentCost ?? product?.cost ?? 0 });
                 }}
               >
                 {products.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
@@ -46,7 +58,8 @@ const PriceLists = ({ products, priceLists, canApprove, onSubmitApproval, onReso
           {selected && (
             <div className="products-mini-grid">
               <article><strong>{formatMoney(selected.price)}</strong><span>Joriy narx</span></article>
-              <article><strong>{Math.round(selected.margin)}%</strong><span>Joriy marja</span></article>
+              <article><strong>{formatMoney(selected.currentCost ?? selected.cost)}</strong><span>Joriy tannarx</span></article>
+              <article><strong>{formatMargin(selected.margin)}</strong><span>Joriy marja</span></article>
               <article><strong>{labelProductStatus(selected.approvalStatus)}</strong><span>Tasdiq holati</span></article>
             </div>
           )}
@@ -59,7 +72,7 @@ const PriceLists = ({ products, priceLists, canApprove, onSubmitApproval, onReso
           <div className="products-list">
             {products.filter((item) => item.approvalStatus === "pending").map((product) => (
               <article className="products-approval-row" key={product.id}>
-                <div><strong>{product.name}</strong><span>{formatMoney(product.price)}</span></div>
+                <div><strong>{product.name}</strong><span>{formatMoney(product.priceHistory?.[0]?.price ?? product.price)} · {formatMoney(product.priceHistory?.[0]?.cost ?? product.currentCost ?? product.cost)}</span></div>
                 <button type="button" disabled={!canApprove} onClick={() => onResolveApproval(product.id, "approved")}><CheckCircle2 size={15} /> Tasdiqlash</button>
                 <button type="button" disabled={!canApprove} onClick={() => onResolveApproval(product.id, "rejected")}><XCircle size={15} /> Rad etish</button>
               </article>
