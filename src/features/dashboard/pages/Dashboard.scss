@@ -764,3 +764,55 @@
     }
   }
 }
+
+.zenix-dashboard--hub {
+  gap: 18px;
+}
+
+.dashboard-module-hub {
+  display: grid;
+  gap: 12px;
+
+  &__head {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 0 2px;
+
+    span {
+      color: rgba(43, 79, 188, 0.72);
+      font-size: 11px;
+      font-weight: 820;
+      line-height: 1;
+      text-transform: uppercase;
+    }
+
+    h2 {
+      margin: 4px 0 0;
+      color: var(--color-text);
+      font-size: 16px;
+      font-weight: 800;
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+  }
+
+  &__sections {
+    display: grid;
+    gap: 24px;
+  }
+}
+
+.dashboard-hub-lower {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+  align-items: start;
+  gap: 14px;
+}
+
+@media (max-width: 1180px) {
+  .dashboard-hub-lower {
+    grid-template-columns: 1fr;
+  }
+}

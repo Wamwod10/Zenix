@@ -1,4 +1,4 @@
-import { useNavigate, useParams, useRoutes } from "react-router-dom";
+import { Navigate, useLocation, useNavigate, useParams, useRoutes } from "react-router-dom";
 import { useMemo } from "react";
 import { Boxes } from "lucide-react";
 
@@ -6,6 +6,7 @@ import ProductsHeader from "../components/ProductsHeader/ProductsHeader";
 import ProductsNavigation from "../components/ProductsNavigation/ProductsNavigation";
 import ProductQuickView from "../components/ProductQuickView/ProductQuickView";
 import ProductsDashboard from "./ProductsDashboard/ProductsDashboard";
+import ProductsHub from "./ProductsHub";
 import ProductList from "./ProductList/ProductList";
 import ProductDetails from "./ProductDetails/ProductDetails";
 import ProductCreate from "./ProductCreate/ProductCreate";
@@ -65,6 +66,10 @@ const ProductsRoutes = ({ controller, categoriesWithCounts, onNavigate }) => {
   return useRoutes([
     {
       index: true,
+      element: <ProductsHub controller={controller} categoriesWithCounts={categoriesWithCounts} />,
+    },
+    {
+      path: "overview",
       element: (
         <ProductsDashboard
           metrics={controller.metrics}
@@ -76,6 +81,7 @@ const ProductsRoutes = ({ controller, categoriesWithCounts, onNavigate }) => {
         />
       ),
     },
+    { path: "dashboard", element: <Navigate to="/products/overview" replace /> },
     { path: "list", element: <ProductList controller={controller} /> },
     { path: "new", element: <ProductCreate controller={controller} /> },
     {
@@ -146,7 +152,9 @@ const ProductsRoutes = ({ controller, categoriesWithCounts, onNavigate }) => {
 
 const Products = () => {
   const controller = useProductsController();
+  const location = useLocation();
   const navigate = useNavigate();
+  const isHubRoute = location.pathname.replace(/\/$/, "") === "/products";
   const categoriesWithCounts = useMemo(
     () =>
       controller.state.categories.map((category) => ({
@@ -163,24 +171,28 @@ const Products = () => {
 
   return (
     <main className="zenix-products">
-      <ProductsHeader
-        searchRef={controller.refs.searchRef}
-        search={controller.search}
-        onSearch={controller.actions.setSearch}
-        products={controller.products}
-        role={controller.role}
-        onRoleChange={controller.actions.setRole}
-        unreadCount={controller.state.notifications.filter((item) => !item.read).length}
-        onImport={() => navigate("/products/import-export")}
-        onExport={controller.actions.exportProducts}
-        onReset={controller.actions.resetState}
-      />
+      {!isHubRoute ? (
+        <>
+          <ProductsHeader
+            searchRef={controller.refs.searchRef}
+            search={controller.search}
+            onSearch={controller.actions.setSearch}
+            products={controller.products}
+            role={controller.role}
+            onRoleChange={controller.actions.setRole}
+            unreadCount={controller.state.notifications.filter((item) => !item.read).length}
+            onImport={() => navigate("/products/import-export")}
+            onExport={controller.actions.exportProducts}
+            onReset={controller.actions.resetState}
+          />
 
-      <ProductsNavigation
-        groups={productNavigationGroups}
-      />
+          <ProductsNavigation
+            groups={productNavigationGroups}
+          />
+        </>
+      ) : null}
 
-      {!controller.permissions.canViewCost && (
+      {!isHubRoute && !controller.permissions.canViewCost && (
         <section className="products-permission-note">
           <Boxes size={15} />
           Bu rolda tannarx, foyda va ayrim narx amallari yashirilgan yoki o'chirilgan.

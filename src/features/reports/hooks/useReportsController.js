@@ -306,7 +306,7 @@ export const useReportsController = ({ navigate }) => {
   const openReport = useCallback((reportId) => {
     const path = reportPathMap.get(reportId);
     const route = reportId === "dashboard"
-      ? "/reports"
+      ? "/reports/overview"
       : path !== undefined
         ? `/reports/${path}`.replace(/\/$/, "")
         : `/reports/details/${reportId}`;

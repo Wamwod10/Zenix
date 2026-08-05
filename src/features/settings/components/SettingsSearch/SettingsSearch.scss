@@ -2,13 +2,19 @@
   position: relative;
   display: grid;
   gap: 8px;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
 
   &__box {
     min-height: 50px;
     display: flex;
     align-items: center;
     gap: 10px;
+    min-width: 0;
+    max-width: 100%;
     padding: 0 14px;
+    overflow: hidden;
     border: 1px solid rgba(255, 255, 255, 0.78);
     border-radius: 19px;
     color: rgba(43, 79, 188, 0.76);
@@ -20,6 +26,8 @@
     input {
       width: 100%;
       min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
       border: 0;
       outline: 0;
       color: rgba(5, 14, 35, 0.82);

@@ -9,9 +9,9 @@
   &__backdrop {
     position: absolute;
     inset: 0;
-    background: rgba(2, 6, 23, 0.48);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    background: rgba(15, 23, 42, 0.34);
+    backdrop-filter: blur(14px) saturate(145%);
+    -webkit-backdrop-filter: blur(14px) saturate(145%);
     border: 0;
   }
 
@@ -21,12 +21,12 @@
     width: min(100%, 560px);
     max-height: calc(100vh - 48px);
     overflow: hidden;
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: 28px;
-    box-shadow: var(--shadow-floating);
-    backdrop-filter: var(--blur-surface);
-    -webkit-backdrop-filter: var(--blur-surface);
+    background: var(--glass-surface-elevated);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--glass-radius-xl);
+    box-shadow: var(--glass-shadow-elevated);
+    backdrop-filter: var(--glass-blur-medium);
+    -webkit-backdrop-filter: var(--glass-blur-medium);
     animation: ui-modal-in 220ms ease both;
   }
 
@@ -58,9 +58,9 @@
     place-items: center;
     flex-shrink: 0;
     color: var(--color-text-muted);
-    background: var(--color-bg-muted);
-    border: 1px solid var(--color-border);
-    border-radius: 13px;
+    background: var(--glass-control);
+    border: 1px solid var(--glass-border-subtle);
+    border-radius: var(--glass-radius-sm);
     cursor: pointer;
     transition:
       color 180ms ease,
@@ -68,7 +68,7 @@
 
     &:hover {
       color: var(--color-text);
-      border-color: var(--color-border-strong);
+      border-color: var(--glass-border-active);
     }
   }
 
@@ -101,10 +101,13 @@
 
 @media (max-width: 640px) {
   .ui-modal {
-    padding: 12px;
+    padding: 0;
+    align-items: end;
 
     &__panel {
-      max-height: calc(100vh - 24px);
+      width: 100%;
+      max-height: calc(100vh - 12px);
+      border-radius: 24px 24px 0 0;
     }
 
     &__header,

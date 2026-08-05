@@ -44,6 +44,7 @@ import AccountManagement from "./AccountManagement/AccountManagement";
 import FinanceErrorBoundary from "../components/FinanceErrorBoundary/FinanceErrorBoundary";
 import FinanceAnalytics from "./FinanceAnalytics/FinanceAnalytics";
 import FinanceDashboard from "./FinanceDashboard/FinanceDashboard";
+import FinanceHub from "./FinanceHub";
 import FinanceReports from "./FinanceReports/FinanceReports";
 import FinanceSettings from "./FinanceSettings/FinanceSettings";
 import FinancialClosing from "./FinancialClosing/FinancialClosing";
@@ -177,7 +178,14 @@ const DebtView = ({ controller, kind = "customer" }) => {
 };
 
 const navigationGroups = [
-  { id: "management", title: "Boshqaruv", items: [{ id: "dashboard", label: "Moliya dashboard", icon: WalletCards }] },
+  {
+    id: "management",
+    title: "Boshqaruv",
+    items: [
+      { id: "hub", label: "Moliya Hub", icon: WalletCards },
+      { id: "dashboard", label: "Moliya dashboard", icon: WalletCards },
+    ],
+  },
   {
     id: "cash",
     title: "Pul harakati",
@@ -250,7 +258,8 @@ const navigationGroups = [
 ];
 
 const segmentToView = {
-  "": "dashboard",
+  "": "hub",
+  overview: "dashboard",
   transactions: "transactions",
   invoices: "invoices",
   "transaction-details": "transaction-details",
@@ -288,7 +297,8 @@ const segmentToView = {
 };
 
 const viewToPath = {
-  dashboard: "",
+  hub: "",
+  dashboard: "overview",
   transactions: "transactions",
   invoices: "invoices",
   "transaction-details": "transaction-details",
@@ -331,7 +341,10 @@ const Finance = () => {
   const navigate = useNavigate();
   const [professionalOpen, setProfessionalOpen] = useState(false);
   const segment = location.pathname.replace(/^\/finance\/?/, "").split("/")[0] || "";
-  const activeView = segmentToView[segment] || "dashboard";
+  const activeView = Object.prototype.hasOwnProperty.call(segmentToView, segment)
+    ? segmentToView[segment]
+    : "not-found";
+  const isHubRoute = activeView === "hub";
 
   const navigateView = (view) => {
     if (controller.activeModal) {
@@ -365,6 +378,15 @@ const Finance = () => {
 
   const props = { controller, onNavigate: navigateView };
   const views = {
+    hub: (
+      <FinanceHub
+        controller={controller}
+        onCreateTransaction={() => {
+          controller.actions.setActiveModal("create-transaction");
+          navigateView("transactions");
+        }}
+      />
+    ),
     dashboard: <FinanceDashboard {...props} />,
     transactions: <Transactions {...props} />,
     invoices: <Invoices {...props} />,
@@ -400,36 +422,49 @@ const Finance = () => {
     budget: <Budget {...props} />,
     settings: <FinanceSettings {...props} />,
     ai: <AIFinance {...props} />,
+    "not-found": (
+      <section className="finance-empty">
+        <strong>Sahifa topilmadi</strong>
+        <span>Bu moliya yo'nalishi mavjud emas yoki noto'g'ri manzil kiritilgan.</span>
+        <button type="button" className="finance-button is-primary" onClick={() => navigate("/finance")}>
+          Moliya Hub
+        </button>
+      </section>
+    ),
   };
 
   return (
     <main className="zenix-finance">
-      <FinanceHeader
-        search={controller.filters.search}
-        onSearch={(value) => controller.actions.updateFilter("search", value)}
-        role={controller.role}
-        roles={controller.roles}
-        onRoleChange={controller.actions.setRole}
-        onCreate={() => {
-          controller.actions.setActiveModal("create-transaction");
-          navigateView("transactions");
-        }}
-        onExport={() => controller.actions.exportFinanceCsv("moliya-tranzaksiyalari", [
-          ["Sana", "Hujjat", "Hamkor", "Summa", "Valyuta", "Holat"],
-          ...controller.filteredTransactions.map((item) => [item.date, item.reference, item.counterparty, item.amount, item.currency, item.status]),
-        ])}
-        onQuickAction={openQuickAction}
-        summary={controller.summary}
-        aiInsights={controller.state.aiInsights.filter((item) => item.status === "open")}
-        unreadCount={controller.state.notifications.filter((item) => !item.read).length}
-      />
+      {!isHubRoute ? (
+        <>
+          <FinanceHeader
+            search={controller.filters.search}
+            onSearch={(value) => controller.actions.updateFilter("search", value)}
+            role={controller.role}
+            roles={controller.roles}
+            onRoleChange={controller.actions.setRole}
+            onCreate={() => {
+              controller.actions.setActiveModal("create-transaction");
+              navigateView("transactions");
+            }}
+            onExport={() => controller.actions.exportFinanceCsv("moliya-tranzaksiyalari", [
+              ["Sana", "Hujjat", "Hamkor", "Summa", "Valyuta", "Holat"],
+              ...controller.filteredTransactions.map((item) => [item.date, item.reference, item.counterparty, item.amount, item.currency, item.status]),
+            ])}
+            onQuickAction={openQuickAction}
+            summary={controller.summary}
+            aiInsights={controller.state.aiInsights.filter((item) => item.status === "open")}
+            unreadCount={controller.state.notifications.filter((item) => !item.read).length}
+          />
 
-      <FinanceNavigation groups={navigationGroups} activeView={activeView} onNavigate={navigateView} />
+          <FinanceNavigation groups={navigationGroups} activeView={activeView} onNavigate={navigateView} />
 
-      <button type="button" className="finance-permission-note finance-permission-note--button" onClick={() => setProfessionalOpen(true)}>
-        <StatusBadge status="warning" label="Professional nazorat" />
-        Soliq, QQS, double-entry va period yopish uchun professional tekshiruv kerak.
-      </button>
+          <button type="button" className="finance-permission-note finance-permission-note--button" onClick={() => setProfessionalOpen(true)}>
+            <StatusBadge status="warning" label="Professional nazorat" />
+            Soliq, QQS, double-entry va period yopish uchun professional tekshiruv kerak.
+          </button>
+        </>
+      ) : null}
 
       {professionalOpen && (
         <div className="finance-drawer" role="dialog" aria-modal="true" aria-label="Professional nazorat">

@@ -24,8 +24,8 @@
 
   &--neutral {
     color: var(--color-text-soft);
-    background: var(--color-bg-muted);
-    border-color: var(--color-border);
+    background: var(--glass-control);
+    border-color: var(--glass-border-subtle);
   }
 
   &--primary {

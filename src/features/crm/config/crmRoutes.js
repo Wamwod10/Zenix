@@ -1,8 +1,7 @@
-import { redirect } from "react-router-dom";
-
 import Activities from "../pages/Activities/Activities";
 import CRMAnalytics from "../pages/CRMAnalytics/CRMAnalytics";
 import CRMDashboard from "../pages/CRMDashboard/CRMDashboard";
+import CRMHub from "../pages/CRMHub/CRMHub";
 import CRMSettings from "../pages/CRMSettings/CRMSettings";
 import Campaigns from "../pages/Campaigns/Campaigns";
 import CustomerDetails from "../pages/CustomerDetails/CustomerDetails";
@@ -15,6 +14,7 @@ import Segments from "../pages/Segments/Segments";
 import { CRM_PATHS } from "./crmNavigation";
 
 export const CRM_ROUTE_IDS = Object.freeze({
+  hub: "crm-hub",
   dashboard: "crm-dashboard",
   customers: "crm-customers",
   customerCreate: "crm-customer-create",
@@ -31,11 +31,20 @@ export const CRM_ROUTE_IDS = Object.freeze({
 
 export const crmRoutes = [
   {
-    id: CRM_ROUTE_IDS.dashboard,
+    id: CRM_ROUTE_IDS.hub,
     path: CRM_PATHS.root,
+    Component: CRMHub,
+    handle: {
+      title: "CRM Hub",
+      permission: "crm.view",
+    },
+  },
+  {
+    id: CRM_ROUTE_IDS.dashboard,
+    path: CRM_PATHS.dashboard,
     Component: CRMDashboard,
     handle: {
-      title: "CRM",
+      title: "CRM Dashboard",
       permission: "crm.view",
     },
   },
@@ -139,11 +148,6 @@ export const crmRoutes = [
       title: "CRM sozlamalari",
       permission: "crm.settings.view",
     },
-  },
-  {
-    id: "crm-legacy-dashboard-redirect",
-    path: "/crm/dashboard",
-    loader: () => redirect(CRM_PATHS.root),
   },
 ];
 

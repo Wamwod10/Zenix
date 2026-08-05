@@ -3,7 +3,8 @@ export const settingsGroups = [
     id: "general",
     title: "Umumiy",
     items: [
-      { id: "home", label: "Sozlamalar bosh sahifasi", path: "/settings", icon: "LayoutDashboard" },
+      { id: "hub", label: "Settings Hub", path: "/settings", icon: "LayoutDashboard" },
+      { id: "home", label: "System Overview", path: "/settings/overview", icon: "Activity" },
       { id: "company", label: "Kompaniya", path: "/settings/company", icon: "Building2" },
       { id: "business", label: "Biznes", path: "/settings/business", icon: "BriefcaseBusiness" },
       { id: "localization", label: "Mahalliylashtirish", path: "/settings/localization", icon: "Languages" },
@@ -69,6 +70,11 @@ export const settingsPathById = settingsGroups
   .reduce((map, item) => ({ ...map, [item.id]: item.path }), {});
 
 export const settingsPageMeta = {
+  hub: {
+    eyebrow: "Module hub",
+    title: "Sozlamalar",
+    description: "Kompaniya, foydalanuvchilar va tizim parametrlarini boshqarish.",
+  },
   home: {
     eyebrow: "Boshqaruv markazi",
     title: "ZENIX sozlamalari",

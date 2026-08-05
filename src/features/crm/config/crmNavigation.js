@@ -12,6 +12,7 @@ import {
 
 export const CRM_PATHS = Object.freeze({
   root: "/crm",
+  dashboard: "/crm/dashboard",
 
   customers: "/crm/customers",
   customerCreate: "/crm/customers/new",
@@ -42,12 +43,20 @@ export const crmNavigationGroups = [
     items: [
       {
         id: "overview",
-        label: "Umumiy",
+        label: "Hub",
         description: "CRM ko‘rsatkichlari va AI signallari",
         path: CRM_PATHS.root,
         icon: LayoutDashboard,
         permission: "crm.view",
         exact: true,
+      },
+      {
+        id: "dashboard",
+        label: "Dashboard",
+        description: "CRM ko'rsatkichlari va AI signallari",
+        path: CRM_PATHS.dashboard,
+        icon: LayoutDashboard,
+        permission: "crm.view",
       },
       {
         id: "customers",

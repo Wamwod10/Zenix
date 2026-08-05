@@ -1,12 +1,12 @@
 .ui-card {
   position: relative;
   overflow: hidden;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 24px;
-  box-shadow: var(--shadow-surface);
-  backdrop-filter: var(--blur-surface);
-  -webkit-backdrop-filter: var(--blur-surface);
+  background: var(--glass-surface);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--glass-radius-lg);
+  box-shadow: var(--glass-shadow-soft);
+  backdrop-filter: var(--glass-blur-medium);
+  -webkit-backdrop-filter: var(--glass-blur-medium);
 
   &--padded {
     padding: 22px;
@@ -19,9 +19,9 @@
       box-shadow 200ms ease;
 
     &:hover {
-      transform: translateY(-2px);
-      border-color: var(--color-border-strong);
-      box-shadow: var(--shadow-floating);
+      transform: translateY(-1px);
+      border-color: var(--glass-border-active);
+      box-shadow: var(--glass-shadow-elevated);
     }
   }
 }

@@ -1,12 +1,12 @@
 .ui-table {
   width: 100%;
   overflow: auto;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 22px;
-  box-shadow: var(--shadow-surface);
-  backdrop-filter: var(--blur-surface);
-  -webkit-backdrop-filter: var(--blur-surface);
+  background: var(--glass-surface-secondary);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--glass-radius-lg);
+  box-shadow: var(--glass-shadow-soft);
+  backdrop-filter: var(--glass-blur-medium);
+  -webkit-backdrop-filter: var(--glass-blur-medium);
 
   &__element {
     width: 100%;
@@ -18,19 +18,19 @@
     padding: 14px 18px;
     color: var(--color-text-muted);
     font-size: 12px;
-    font-weight: 750;
+    font-weight: 700;
     text-align: left;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    background: var(--color-bg-muted);
-    border-bottom: 1px solid var(--color-border);
+    letter-spacing: 0;
+    text-transform: none;
+    background: rgba(255, 255, 255, 0.16);
+    border-bottom: 1px solid var(--glass-border-subtle);
   }
 
   td {
     padding: 16px 18px;
     color: var(--color-text-soft);
     font-size: 14px;
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.46);
   }
 
   tr:last-child td {
@@ -41,7 +41,7 @@
     transition: background 160ms ease;
 
     &:hover {
-      background: rgba(74, 103, 255, 0.035);
+      background: rgba(74, 103, 255, 0.045);
     }
   }
 

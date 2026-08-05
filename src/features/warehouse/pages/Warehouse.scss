@@ -118,6 +118,28 @@
     transform: translateY(-2px);
   }
 
+  .warehouse-empty-state {
+    min-height: 220px;
+    display: grid;
+    place-items: center;
+    align-content: center;
+    gap: 10px;
+    padding: 28px;
+    border: 1px solid var(--warehouse-border);
+    border-radius: var(--warehouse-radius-lg);
+    color: var(--warehouse-text-secondary);
+    background: var(--warehouse-panel-bg);
+    box-shadow: var(--warehouse-panel-shadow);
+    text-align: center;
+    backdrop-filter: var(--warehouse-panel-filter);
+    -webkit-backdrop-filter: var(--warehouse-panel-filter);
+
+    strong {
+      color: var(--warehouse-text-strong);
+      font-size: 20px;
+    }
+  }
+
   button:disabled:hover,
   .ui-modal__backdrop:hover {
     transform: none;

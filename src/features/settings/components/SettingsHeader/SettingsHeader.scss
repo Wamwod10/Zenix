@@ -159,3 +159,65 @@
     }
   }
 }
+
+@media (max-width: 620px) {
+  .settings-header {
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+    padding: 18px;
+    border-radius: 24px;
+
+    &__copy {
+      h1 {
+        font-size: clamp(2rem, 10vw, 2.65rem);
+      }
+
+      p {
+        max-width: 100%;
+      }
+    }
+
+    &__tools,
+    &__actions {
+      min-width: 0;
+      width: 100%;
+      max-width: 100%;
+      overflow: hidden;
+    }
+
+    &__actions {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      justify-content: flex-start;
+
+      select {
+        grid-column: 1 / -1;
+        min-width: 0;
+      }
+
+      button {
+        min-width: 0;
+        width: 100%;
+        padding: 0;
+      }
+
+      button:not(.is-primary):nth-of-type(n + 4) {
+        display: none;
+      }
+
+      .is-primary {
+        grid-column: 1 / -1;
+        font-size: 12px;
+      }
+    }
+
+    &__status {
+      justify-self: start;
+      max-width: 100%;
+    }
+  }
+}

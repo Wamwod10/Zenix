@@ -56,7 +56,7 @@ const SettingsNavigation = ({ groups, mobileOpen, onClose }) => {
                   <NavLink
                     key={item.id}
                     to={item.path}
-                    end={item.id === "home"}
+                    end={item.id === "hub" || item.id === "home"}
                     onClick={onClose}
                     className={({ isActive }) =>
                       `settings-navigation__item ${isActive ? "is-active" : ""}`

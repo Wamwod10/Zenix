@@ -513,7 +513,7 @@
 
 @media (max-width: 760px) {
   .zenix-header {
-    grid-template-columns: 1fr max-content;
+    grid-template-columns: minmax(0, 1fr) max-content;
     gap: 12px;
     padding: 0 12px;
 
@@ -529,6 +529,29 @@
 
     &__workspace h1 {
       font-size: 17px;
+    }
+  }
+}
+
+@media (max-width: 520px) {
+  .zenix-header {
+    gap: 8px;
+
+    &__actions {
+      gap: 6px;
+    }
+
+    &__circle--notify,
+    &__profile,
+    &__actions {
+      display: none;
+    }
+
+    &__ai,
+    &__circle {
+      width: 40px;
+      min-width: 40px;
+      padding: 0;
     }
   }
 }

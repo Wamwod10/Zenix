@@ -25,13 +25,14 @@
 }
 
 @mixin focus-ring {
-  outline: 3px solid rgba(74, 103, 255, 0.18);
+  outline: 0;
   outline-offset: 2px;
+  box-shadow: var(--focus-ring);
 }
 
 @mixin smooth-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: rgba(15, 23, 42, 0.18) transparent;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
 
   &::-webkit-scrollbar {
     width: 10px;
@@ -43,16 +44,22 @@
   }
 
   &::-webkit-scrollbar-thumb {
-    background: rgba(15, 23, 42, 0.16);
+    background: var(--scrollbar-thumb);
     border: 3px solid transparent;
     border-radius: 999px;
+    background-clip: content-box;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover);
     background-clip: content-box;
   }
 }
 
 @mixin glass-surface {
-  background: rgba(255, 255, 255, 0.72);
-  border: 1px solid rgba(255, 255, 255, 0.52);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  background: var(--glass-surface);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow-soft);
+  backdrop-filter: var(--glass-blur-medium);
+  -webkit-backdrop-filter: var(--glass-blur-medium);
 }

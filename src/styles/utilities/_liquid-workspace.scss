@@ -1,0 +1,391 @@
+$liquid-workspaces:
+  ".zenix-dashboard",
+  ".zenix-products",
+  ".zenix-warehouse",
+  ".zenix-purchases",
+  ".suppliers-page",
+  ".supplier-details-page",
+  ".zenix-pos",
+  ".sales-pos",
+  ".crm-customers",
+  ".crm-dashboard",
+  ".crm-analytics",
+  ".crm-segments",
+  ".crm-pipeline",
+  ".crm-activities",
+  ".crm-campaigns",
+  ".crm-loyalty",
+  ".crm-settings",
+  ".crm-customer-details",
+  ".crm-customer-form",
+  ".zenix-finance",
+  ".zenix-reports",
+  ".zenix-hr",
+  ".zenix-settings";
+
+:where(#{$liquid-workspaces}) {
+  --workspace-text: var(--color-text);
+  --workspace-text-soft: var(--color-text-soft);
+  --workspace-muted: var(--color-text-muted);
+  --workspace-panel: var(--glass-surface-secondary);
+  --workspace-panel-strong: var(--glass-surface-elevated);
+  --workspace-control: var(--glass-control);
+  --workspace-control-hover: var(--glass-control-hover);
+  --workspace-border: var(--glass-border);
+  --workspace-border-soft: var(--glass-border-subtle);
+  --workspace-shadow: var(--glass-shadow-soft);
+  --workspace-shadow-elevated: var(--glass-shadow-elevated);
+  --workspace-radius-sm: var(--glass-radius-sm);
+  --workspace-radius-md: var(--glass-radius-md);
+  --workspace-radius-lg: var(--glass-radius-lg);
+  --workspace-radius-xl: var(--glass-radius-xl);
+  --workspace-blur: var(--glass-blur-medium);
+
+  min-width: 0;
+  color: var(--workspace-text);
+  background: var(--glass-page-bg) !important;
+}
+
+:where(#{$liquid-workspaces}) :where(
+  .zenix-page-header,
+  [class$="__header"],
+  [class*="__header "],
+  [class$="-header"],
+  [class*="-header "],
+  [class$="__toolbar"],
+  [class*="__toolbar "],
+  [class$="-toolbar"],
+  [class*="-toolbar "],
+  [class$="__filter-bar"],
+  [class*="__filter-bar "],
+  [class$="-filters"],
+  [class*="-filters "]
+) {
+  border-color: var(--workspace-border) !important;
+  background: var(--workspace-panel) !important;
+  box-shadow: var(--workspace-shadow) !important;
+  backdrop-filter: var(--workspace-blur) !important;
+  -webkit-backdrop-filter: var(--workspace-blur) !important;
+  filter: none !important;
+  animation: none !important;
+}
+
+:where(#{$liquid-workspaces}) :where(
+  [class$="__panel"],
+  [class*="__panel "],
+  [class$="-panel"],
+  [class*="-panel "],
+  [class$="__card"],
+  [class*="__card "],
+  [class$="-card"],
+  [class*="-card "],
+  [class$="__section"],
+  [class*="__section "],
+  [class$="-section"],
+  [class*="-section "],
+  [class$="__empty"],
+  [class*="__empty "],
+  [class$="-empty-state"],
+  [class*="-empty-state "]
+):not(.module-hub-card):not(.module-hub-card *) {
+  border-color: var(--workspace-border) !important;
+  background: var(--workspace-panel) !important;
+  box-shadow: var(--workspace-shadow) !important;
+  backdrop-filter: var(--workspace-blur) !important;
+  -webkit-backdrop-filter: var(--workspace-blur) !important;
+  filter: none !important;
+  animation: none !important;
+}
+
+:where(#{$liquid-workspaces}) :where(
+  [class$="__panel"],
+  [class*="__panel "],
+  [class$="-panel"],
+  [class*="-panel "],
+  [class$="__card"],
+  [class*="__card "],
+  [class$="-card"],
+  [class*="-card "]
+):not(.module-hub-card)::before {
+  background: var(--glass-inner-highlight) !important;
+  opacity: 0.48;
+}
+
+:where(#{$liquid-workspaces}) :where(
+  button,
+  .ui-button,
+  [role="button"]
+):not(.module-hub-card):not([class*="product"]):not([class*="card"]):not([class*="stat"]):not([class*="kpi"]):not([class*="metric"]) {
+  min-height: var(--control-height);
+  border-color: var(--workspace-border-soft) !important;
+  border-radius: var(--workspace-radius-sm) !important;
+  background: var(--workspace-control) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.68) !important;
+  color: var(--workspace-text-soft) !important;
+  transition:
+    transform var(--transition-ui),
+    background var(--transition-ui),
+    border-color var(--transition-ui),
+    box-shadow var(--transition-ui),
+    color var(--transition-ui) !important;
+}
+
+:where(#{$liquid-workspaces}) :where(
+  button,
+  .ui-button,
+  [role="button"]
+):not(.module-hub-card):not([class*="product"]):not([class*="card"]):not([class*="stat"]):not([class*="kpi"]):not([class*="metric"]):hover:not(:disabled) {
+  border-color: var(--glass-border-active) !important;
+  background: var(--workspace-control-hover) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.74),
+    0 12px 30px rgba(64, 86, 136, 0.08) !important;
+  transform: translateY(-1px);
+}
+
+:where(#{$liquid-workspaces}) :where(
+  .is-primary,
+  .ui-button--primary,
+  [class*="--primary"]
+):where(button, .ui-button):not(.module-hub-card) {
+  border-color: rgba(255, 255, 255, 0.56) !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.2), transparent),
+    var(--color-primary) !important;
+  color: var(--color-text-inverse) !important;
+  box-shadow: 0 16px 42px rgba(74, 103, 255, 0.2) !important;
+}
+
+:where(#{$liquid-workspaces}) :where(
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea,
+  .ui-input__control,
+  .ui-dropdown__control
+) {
+  min-height: var(--control-height);
+  border-color: var(--workspace-border-soft) !important;
+  border-radius: var(--workspace-radius-sm) !important;
+  background: var(--workspace-control) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.68) !important;
+  color: var(--workspace-text) !important;
+  outline: 0 !important;
+}
+
+:where(#{$liquid-workspaces}) :where(
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea,
+  .ui-input__control,
+  .ui-dropdown__control
+):hover:not(:disabled) {
+  border-color: var(--glass-border-active) !important;
+  background: var(--workspace-control-hover) !important;
+}
+
+:where(#{$liquid-workspaces}) :where(
+  input,
+  select,
+  textarea,
+  button,
+  [tabindex],
+  .ui-dropdown__control
+):focus-visible {
+  outline: 0 !important;
+  border-color: var(--glass-border-active) !important;
+  box-shadow: var(--focus-ring) !important;
+}
+
+:where(#{$liquid-workspaces}) :where(input[type="checkbox"], input[type="radio"]) {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-primary);
+  border-color: var(--workspace-border-soft);
+}
+
+:where(#{$liquid-workspaces}) :where(button, input, select, textarea, [aria-disabled="true"]):disabled {
+  cursor: not-allowed !important;
+  opacity: 0.62 !important;
+  transform: none !important;
+}
+
+:where(#{$liquid-workspaces}) :where(
+  table,
+  .ui-table,
+  [class$="__table"],
+  [class*="__table "],
+  [class$="-table"],
+  [class*="-table "],
+  [class$="__table-wrapper"],
+  [class*="__table-wrapper "]
+) {
+  border-color: var(--workspace-border) !important;
+  border-radius: var(--workspace-radius-lg) !important;
+  background: var(--workspace-panel) !important;
+  box-shadow: var(--workspace-shadow) !important;
+}
+
+:where(#{$liquid-workspaces}) table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+:where(#{$liquid-workspaces}) :where(th) {
+  background: rgba(255, 255, 255, 0.14) !important;
+  color: var(--workspace-muted) !important;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+:where(#{$liquid-workspaces}) :where(td) {
+  border-color: rgba(255, 255, 255, 0.44) !important;
+  color: var(--workspace-text-soft);
+}
+
+:where(#{$liquid-workspaces}) :where(tbody tr, [class$="__row"], [class*="__row "]) {
+  transition:
+    background var(--transition-ui),
+    border-color var(--transition-ui) !important;
+}
+
+:where(#{$liquid-workspaces}) :where(tbody tr:hover, [class$="__row"]:hover, [class*="__row "]:hover) {
+  background: rgba(74, 103, 255, 0.045) !important;
+}
+
+:where(#{$liquid-workspaces}) :where(
+  .ui-dropdown__menu,
+  [class$="__menu"],
+  [class*="__menu "],
+  [class$="-menu"],
+  [class*="-menu "],
+  [class$="__popover"],
+  [class*="__popover "],
+  [class$="-popover"],
+  [class*="-popover "]
+) {
+  border-color: var(--workspace-border) !important;
+  border-radius: var(--workspace-radius-md) !important;
+  background: var(--workspace-panel-strong) !important;
+  box-shadow: var(--workspace-shadow-elevated) !important;
+  backdrop-filter: var(--workspace-blur) !important;
+  -webkit-backdrop-filter: var(--workspace-blur) !important;
+}
+
+:where(#{$liquid-workspaces}) :where(
+  [class$="__modal"],
+  [class*="__modal "],
+  [class$="-modal"],
+  [class*="-modal "],
+  [class$="__dialog"],
+  [class*="__dialog "],
+  [class$="-dialog"],
+  [class*="-dialog "],
+  [class$="__drawer"],
+  [class*="__drawer "],
+  [class$="-drawer"],
+  [class*="-drawer "]
+) {
+  border-color: var(--workspace-border) !important;
+  border-radius: var(--workspace-radius-xl) !important;
+  background: var(--workspace-panel-strong) !important;
+  box-shadow: var(--workspace-shadow-elevated) !important;
+  backdrop-filter: var(--workspace-blur) !important;
+  -webkit-backdrop-filter: var(--workspace-blur) !important;
+}
+
+:where(#{$liquid-workspaces}) :where(
+  [class$="__tabs"],
+  [class*="__tabs "],
+  [class$="-tabs"],
+  [class*="-tabs "],
+  [role="tablist"]
+) {
+  border-color: var(--workspace-border-soft) !important;
+  border-radius: var(--workspace-radius-md) !important;
+  background: var(--workspace-control) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.68) !important;
+}
+
+:where(#{$liquid-workspaces}) :where(
+  [aria-selected="true"],
+  [class*="--active"],
+  .active
+):where(button, a, [role="tab"]) {
+  border-color: var(--glass-border-active) !important;
+  background: var(--workspace-control-hover) !important;
+  color: var(--color-primary) !important;
+}
+
+:where(#{$liquid-workspaces}) :where(
+  [class$="__pagination"],
+  [class*="__pagination "],
+  [class$="-pagination"],
+  [class*="-pagination "]
+) {
+  border-color: var(--workspace-border-soft) !important;
+  border-radius: var(--workspace-radius-md) !important;
+  background: var(--workspace-control) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.68) !important;
+}
+
+@media (max-width: 768px) {
+  :where(#{$liquid-workspaces}) {
+    gap: 10px;
+    overflow-x: hidden;
+  }
+
+  :where(#{$liquid-workspaces}) :where(
+    .zenix-page-header,
+    [class$="__header"],
+    [class*="__header "],
+    [class$="-header"],
+    [class*="-header "],
+    [class$="__panel"],
+    [class*="__panel "],
+    [class$="-panel"],
+    [class*="-panel "],
+    [class$="__card"],
+    [class*="__card "],
+    [class$="-card"],
+    [class*="-card "]
+  ):not(.module-hub-card) {
+    border-radius: 22px !important;
+  }
+
+  :where(#{$liquid-workspaces}) :where(
+    [class$="__actions"],
+    [class*="__actions "],
+    [class$="-actions"],
+    [class*="-actions "],
+    [class$="__tools"],
+    [class*="__tools "],
+    [class$="-tools"],
+    [class*="-tools "]
+  ) {
+    min-width: 0;
+    flex-wrap: wrap !important;
+  }
+
+  :where(#{$liquid-workspaces}) :where(
+    [class$="__form-grid"],
+    [class*="__form-grid "],
+    [class$="-form-grid"],
+    [class*="-form-grid "],
+    [class$="__filter-grid"],
+    [class*="__filter-grid "],
+    [class$="__uploads"],
+    [class*="__uploads "],
+    [class$="__summary"],
+    [class*="__summary "],
+    [class$="-summary"],
+    [class*="-summary "]
+  ) {
+    grid-template-columns: 1fr !important;
+  }
+
+  :where(#{$liquid-workspaces}) :where(h1, h2) {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+}

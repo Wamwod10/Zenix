@@ -1,0 +1,11 @@
+.module-hub {
+  width: 100%;
+  display: grid;
+  gap: 18px;
+  color: var(--color-text);
+
+  &__sections {
+    display: grid;
+    gap: 18px;
+  }
+}

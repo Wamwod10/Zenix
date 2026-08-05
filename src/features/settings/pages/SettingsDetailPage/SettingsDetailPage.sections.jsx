@@ -16,6 +16,7 @@ import {
   Send,
   ShieldAlert,
   Trash2,
+  Upload,
 } from "lucide-react";
 
 import PermissionMatrix from "../../components/PermissionMatrix/PermissionMatrix";
@@ -309,6 +310,11 @@ export const ObjectForm = ({ pageId, controller, title, description }) => {
             <label key={key}>
               <span>{key}</span>
               {data[key]?.previewUrl ? <img src={data[key].previewUrl} alt={`${key} preview`} /> : <i>Preview</i>}
+              <em className="settings-detail__upload-control">
+                <Upload size={15} aria-hidden="true" />
+                <strong>{data[key]?.name || "Fayl tanlanmagan"}</strong>
+                <small>Fayl tanlash</small>
+              </em>
               <input type="file" accept="image/*" disabled={!canEdit} onChange={(event) => uploadPreview(key, event.target.files?.[0])} />
             </label>
           ))}

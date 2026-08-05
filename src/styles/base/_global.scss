@@ -3,13 +3,13 @@
 
 html {
   font-family: $font-family-primary;
-  background: var(--color-bg);
+  background: var(--glass-page-bg, var(--color-bg));
   color: var(--color-text);
 }
 
 body {
   min-width: 320px;
-  background: var(--color-bg);
+  background: var(--glass-page-bg, var(--color-bg));
   color: var(--color-text);
   font-size: $font-size-md;
   line-height: $line-height-body;
@@ -31,4 +31,15 @@ body {
 
 :focus-visible {
   @include focus-ring;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 1ms !important;
+  }
 }

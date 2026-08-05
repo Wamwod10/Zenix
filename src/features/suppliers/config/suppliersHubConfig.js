@@ -1,0 +1,120 @@
+import {
+  BarChart3,
+  ClipboardList,
+  CreditCard,
+  FileUp,
+  Handshake,
+  PackageSearch,
+  Scale,
+  Star,
+  Truck,
+} from "lucide-react";
+
+import { SUPPLIER_PERMISSIONS } from "../suppliersApi";
+
+export const suppliersHubConfig = {
+  id: "suppliers",
+  title: "Yetkazib beruvchilar",
+  description: "Supplierlar, mahsulot bog'lanishlari, narxlar va moliyaviy holatni boshqarish.",
+  sections: [
+    {
+      id: "suppliers",
+      title: "Supplierlar",
+      items: [
+        {
+          id: "supplier-list",
+          title: "Yetkazib beruvchilar ro'yxati",
+          description: "Barcha supplierlarni ko'rish, qidirish va boshqarish.",
+          icon: Truck,
+          route: "/suppliers/list",
+          permission: { key: SUPPLIER_PERMISSIONS.view, fallback: "disabled" },
+          order: 1,
+        },
+        {
+          id: "supplier-active",
+          title: "Ishlayotgan supplierlar",
+          description: "Joriy supplierlar ro'yxati.",
+          icon: Handshake,
+          route: "/suppliers/list?status=active",
+          permission: { key: SUPPLIER_PERMISSIONS.view, fallback: "disabled" },
+          order: 2,
+        },
+        {
+          id: "supplier-archive",
+          title: "Arxivlangan supplierlar",
+          description: "Arxivlangan supplier yozuvlari.",
+          icon: FileUp,
+          route: "/suppliers/list?status=archived",
+          permission: { key: SUPPLIER_PERMISSIONS.view, fallback: "disabled" },
+          order: 3,
+        },
+      ],
+    },
+    {
+      id: "products-prices",
+      title: "Mahsulot va narxlar",
+      items: [
+        {
+          id: "supplier-products",
+          title: "Supplier mahsulotlari",
+          description: "Katalog mahsulotlarini supplierlar bilan bog'lash.",
+          icon: PackageSearch,
+          route: "/suppliers/list?view=products",
+          permission: { key: SUPPLIER_PERMISSIONS.view, fallback: "disabled" },
+          order: 1,
+        },
+        {
+          id: "supplier-prices",
+          title: "Supplier narxlari",
+          description: "Supplier narxlari va tijorat shartlarini solishtirish.",
+          icon: Scale,
+          route: "/suppliers/list?view=prices",
+          permission: { key: SUPPLIER_PERMISSIONS.view, fallback: "disabled" },
+          order: 2,
+        },
+        {
+          id: "supplier-preferred",
+          title: "Asosiy supplierlar",
+          description: "Tanlangan yetkazib beruvchilar.",
+          icon: Star,
+          route: "/suppliers/list?view=preferred",
+          permission: { key: SUPPLIER_PERMISSIONS.view, fallback: "disabled" },
+          order: 3,
+        },
+      ],
+    },
+    {
+      id: "finance-insight",
+      title: "Moliya va tahlil",
+      items: [
+        {
+          id: "supplier-debt",
+          title: "Supplier qarzdorligi",
+          description: "Supplierlarga to'lanishi kerak bo'lgan majburiyatlar.",
+          icon: CreditCard,
+          route: "/finance/payables",
+          permission: { key: SUPPLIER_PERMISSIONS.view, fallback: "disabled" },
+          order: 1,
+        },
+        {
+          id: "supplier-history",
+          title: "Xaridlar tarixi",
+          description: "Supplierlar bo'yicha xaridlar, narxlar va miqdorlar tarixi.",
+          icon: ClipboardList,
+          route: "/purchases/orders",
+          permission: { key: SUPPLIER_PERMISSIONS.view, fallback: "disabled" },
+          order: 2,
+        },
+        {
+          id: "supplier-analytics",
+          title: "Supplier tahlili",
+          description: "Narx, yetkazish muddati va ishlash sifatini tahlil qilish.",
+          icon: BarChart3,
+          route: "/suppliers/list?view=analytics",
+          permission: { key: SUPPLIER_PERMISSIONS.view, fallback: "disabled" },
+          order: 3,
+        },
+      ],
+    },
+  ],
+};

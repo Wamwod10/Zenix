@@ -17,6 +17,7 @@ import WarehouseHeader from "../components/WarehouseHeader/WarehouseHeader";
 import WarehouseNavigation from "../components/WarehouseNavigation/WarehouseNavigation";
 import StatusBadge from "../components/StatusBadge/StatusBadge";
 import WarehouseDashboard from "./WarehouseDashboard/WarehouseDashboard";
+import WarehouseHub from "./WarehouseHub";
 import Warehouses from "./Warehouses/Warehouses";
 import WarehouseDetail from "./WarehouseDetail/WarehouseDetail";
 import StockOverview from "./StockOverview/StockOverview";
@@ -38,7 +39,7 @@ const navigationGroups = [
   {
     id: "management",
     title: "Boshqaruv",
-    items: [{ id: "dashboard", label: "Boshqaruv paneli", icon: WarehouseIcon }],
+    items: [{ id: "hub", label: "Bosh sahifa", icon: WarehouseIcon }],
   },
   {
     id: "warehouses",
@@ -69,7 +70,8 @@ const navigationGroups = [
 ];
 
 const segmentToView = {
-  "": "dashboard",
+  "": "hub",
+  overview: "dashboard",
   warehouses: "warehouses",
   detail: "detail",
   stock: "stock",
@@ -89,7 +91,8 @@ const segmentToView = {
 };
 
 const viewToPath = {
-  dashboard: "",
+  hub: "",
+  dashboard: "overview",
   warehouses: "warehouses",
   detail: "detail",
   stock: "stock",
@@ -409,7 +412,10 @@ const Warehouse = () => {
   const [editingWarehouse, setEditingWarehouse] = useState(null);
 
   const segment = location.pathname.replace(/^\/warehouse\/?/, "").split("/")[0] || "";
-  const activeView = segmentToView[segment] || "dashboard";
+  const activeView = Object.prototype.hasOwnProperty.call(segmentToView, segment)
+    ? segmentToView[segment]
+    : "not-found";
+  const isHubRoute = activeView === "hub";
   const selectedWarehouse =
     controller.state.warehouses.find((item) => item.id === controller.selectedWarehouseId) ||
     controller.state.warehouses[0];
@@ -427,6 +433,22 @@ const Warehouse = () => {
   const modalWarehouseId = controller.selectedWarehouseId || controller.state.warehouses[0]?.id;
 
   const renderView = () => {
+    if (activeView === "hub") {
+      return <WarehouseHub controller={controller} />;
+    }
+
+    if (activeView === "not-found") {
+      return (
+        <section className="warehouse-empty-state">
+          <strong>Sahifa topilmadi</strong>
+          <span>Bu ombor yo'nalishi mavjud emas yoki noto'g'ri manzil kiritilgan.</span>
+          <button type="button" className="warehouse-mini-button is-primary" onClick={() => navigate("/warehouse")}>
+            Ombor Hub
+          </button>
+        </section>
+      );
+    }
+
     if (activeView === "warehouses") {
       return (
         <Warehouses
@@ -584,25 +606,29 @@ const Warehouse = () => {
 
   return (
     <main className="zenix-warehouse">
-      <WarehouseHeader
-        searchRef={controller.refs.searchInputRef}
-        search={controller.globalSearch}
-        onSearch={controller.actions.setGlobalSearch}
-        role={controller.role}
-        onRoleChange={controller.actions.updateRole}
-        onOpenReceipt={() => controller.actions.setActiveModal("receipt")}
-        onOpenImport={() => navigate("/warehouse/import-export")}
-        onExport={() => controller.actions.exportReport("Warehouse dashboard")}
-        unreadCount={controller.state.notifications.filter((item) => !item.read).length}
-      />
+      {!isHubRoute ? (
+        <>
+          <WarehouseHeader
+            searchRef={controller.refs.searchInputRef}
+            search={controller.globalSearch}
+            onSearch={controller.actions.setGlobalSearch}
+            role={controller.role}
+            onRoleChange={controller.actions.updateRole}
+            onOpenReceipt={() => controller.actions.setActiveModal("receipt")}
+            onOpenImport={() => navigate("/warehouse/import-export")}
+            onExport={() => controller.actions.exportReport("Warehouse dashboard")}
+            unreadCount={controller.state.notifications.filter((item) => !item.read).length}
+          />
 
-      <WarehouseNavigation
-        groups={navigationGroups}
-        activeView={activeView}
-        onNavigate={navigateView}
-      />
+          <WarehouseNavigation
+            groups={navigationGroups}
+            activeView={activeView}
+            onNavigate={navigateView}
+          />
+        </>
+      ) : null}
 
-      {!canWarehouse(controller.role, "value") && (
+      {!isHubRoute && !canWarehouse(controller.role, "value") && (
         <section className="warehouse-permission-note">
           <StatusBadge status="important" label="Ruxsatga bog'liq" />
           Bu rolda tannarx va inventar qiymati hidden yoki disabled bo'lishi mumkin.

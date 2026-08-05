@@ -22,6 +22,7 @@ import Reports from "../../features/reports/pages/Reports";
 import Settings from "../../features/settings/pages/Settings";
 import { crmRoutes } from "../../features/crm/config/crmRoutes";
 import PurchasesLayout from "../../features/purchases/layouts/PurchasesLayout/PurchasesLayout";
+import PurchasesHub from "../../features/purchases/pages/PurchasesHub/PurchasesHub";
 import PurchasesDashboard from "../../features/purchases/pages/PurchasesDashboard/PurchasesDashboard";
 import PurchaseOrders from "../../features/purchases/pages/PurchaseOrders/PurchaseOrders";
 import PurchaseOrderCreate from "../../features/purchases/pages/PurchaseOrderCreate/PurchaseOrderCreate";
@@ -32,8 +33,9 @@ import PurchaseReturns from "../../features/purchases/pages/PurchaseReturns/Purc
 import PurchaseInvoices from "../../features/purchases/pages/PurchaseInvoices/PurchaseInvoices";
 import PurchaseReports from "../../features/purchases/pages/PurchaseReports/PurchaseReports";
 import { SupplierDetails, Suppliers } from "../../features/suppliers";
+import SuppliersHub from "../../features/suppliers/pages/SuppliersHub";
 
-import POS from "../../features/sales/pages/POS";
+import POSRoutes from "../../features/sales/pages/POSRoutes";
 import NotFound from "../../pages/NotFound";
 
 export const router = createBrowserRouter([
@@ -77,12 +79,12 @@ export const router = createBrowserRouter([
     element: <DashboardLayout />,
     children: [
       {
-        path: "/dashboard",
+        path: "/dashboard/*",
         element: <Dashboard />,
       },
       {
-        path: "/pos",
-        element: <POS />,
+        path: "/pos/*",
+        element: <POSRoutes />,
       },
       {
         path: "/products/*",
@@ -98,6 +100,10 @@ export const router = createBrowserRouter([
         children: [
           {
             index: true,
+            element: <PurchasesHub />,
+          },
+          {
+            path: "overview",
             element: <PurchasesDashboard />,
           },
           {
@@ -136,6 +142,10 @@ export const router = createBrowserRouter([
       },
       {
         path: "/suppliers",
+        element: <SuppliersHub />,
+      },
+      {
+        path: "/suppliers/list",
         element: <Suppliers />,
       },
       {

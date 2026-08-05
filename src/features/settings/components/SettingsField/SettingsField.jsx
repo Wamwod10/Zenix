@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Upload } from "lucide-react";
 
 import "./SettingsField.scss";
 
@@ -31,6 +31,7 @@ const SettingsField = ({
   const rootRef = useRef(null);
   const normalizedOptions = useMemo(() => (options || []).map(normalizeOption), [options]);
   const selectedOption = normalizedOptions.find((option) => String(option.value) === String(value));
+  const fileName = typeof value === "string" && value ? value.split(/[/\\]/).pop() : "";
 
   useEffect(() => {
     if (!open) return undefined;
@@ -109,6 +110,22 @@ const SettingsField = ({
         aria-describedby={error ? errorId : undefined}
         onChange={(event) => onChange?.(event.target.value)}
       />
+    ) : type === "file" ? (
+      <span className="settings-field__file">
+        <input
+          id={fieldId}
+          type="file"
+          disabled={disabled}
+          aria-invalid={Boolean(error)}
+          aria-describedby={error ? errorId : undefined}
+          onChange={handleInputChange}
+        />
+        <span className="settings-field__file-action">
+          <Upload size={15} aria-hidden="true" />
+          Fayl tanlash
+        </span>
+        <span className="settings-field__file-name">{fileName || placeholder || "Fayl tanlanmagan"}</span>
+      </span>
     ) : (
       <input
         id={fieldId}

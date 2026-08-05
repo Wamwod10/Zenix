@@ -13,6 +13,7 @@ import ReportsSkeleton from "../components/ReportsSkeleton/ReportsSkeleton";
 import ShareReportModal from "../components/ShareReportModal/ShareReportModal";
 import { reportsNavigationGroups, reportsRouteConfig } from "../data/reportsMockData";
 import { useReportsController } from "../hooks/useReportsController";
+import ReportsHub from "./ReportsHub";
 import "./Reports.scss";
 
 const ReportsDashboard = lazy(() => import("./ReportsDashboard/ReportsDashboard"));
@@ -62,6 +63,7 @@ const Reports = () => {
   const activeRoute = routeByPath.get(relativePath) || (relativePath.startsWith("details/") ? { view: "details", path: "details/:reportId" } : null);
   const detailId = relativePath.startsWith("details/") ? relativePath.split("/").slice(1).join("/") : "";
   const activeView = activeRoute?.view || "not-found";
+  const isHubRoute = activeView === "hub";
   const {
     setSelectedReport,
     setComparisonMode,
@@ -82,6 +84,7 @@ const Reports = () => {
 
   const commonProps = { controller };
   const views = {
+    hub: <ReportsHub controller={controller} />,
     dashboard: <ReportsDashboard {...commonProps} />,
     health: <ExecutiveReports {...commonProps} compactHealth />,
     sales: <SalesReports {...commonProps} />,
@@ -125,34 +128,40 @@ const Reports = () => {
 
   return (
     <main className="zenix-reports">
-      <ReportsHeader
-        search={controller.state.search}
-        role={controller.state.role}
-        roles={controller.state.roles}
-        unreadCount={controller.state.unreadCount}
-        canExport={controller.permissions.can("export")}
-        onSearch={(value, run = false) => (run ? controller.actions.runSmartSearch(value) : controller.actions.setSearch(value))}
-        onRoleChange={controller.actions.setRole}
-        onOpenFilters={() => controller.actions.setActiveModal("filters")}
-        onOpenExport={() => controller.actions.setActiveModal("export")}
-        onOpenSettings={() => navigateView("settings")}
-      />
+      {!isHubRoute ? (
+        <>
+          <ReportsHeader
+            search={controller.state.search}
+            role={controller.state.role}
+            roles={controller.state.roles}
+            unreadCount={controller.state.unreadCount}
+            canExport={controller.permissions.can("export")}
+            onSearch={(value, run = false) => (run ? controller.actions.runSmartSearch(value) : controller.actions.setSearch(value))}
+            onRoleChange={controller.actions.setRole}
+            onOpenFilters={() => controller.actions.setActiveModal("filters")}
+            onOpenExport={() => controller.actions.setActiveModal("export")}
+            onOpenSettings={() => navigateView("settings")}
+          />
 
-      <ReportsNavigation groups={reportsNavigationGroups} activeView={activeView} onNavigate={navigateView} />
+          <ReportsNavigation groups={reportsNavigationGroups} activeView={activeView} onNavigate={navigateView} />
+        </>
+      ) : null}
 
-      <GlobalFilterBar
-        filters={controller.state.filters}
-        customFilters={controller.state.customFilters}
-        activeCustomFilter={controller.state.activeCustomFilter}
-        onFilter={controller.actions.updateFilter}
-        onSaveCustom={controller.actions.saveCustomFilter}
-        onApplyCustom={controller.actions.applyCustomFilter}
-        onDeleteCustom={controller.actions.deleteCustomFilter}
-        onReset={controller.actions.resetFilters}
-        onOpenDrawer={() => controller.actions.setActiveModal("filters")}
-      />
+      {!isHubRoute && (
+        <GlobalFilterBar
+          filters={controller.state.filters}
+          customFilters={controller.state.customFilters}
+          activeCustomFilter={controller.state.activeCustomFilter}
+          onFilter={controller.actions.updateFilter}
+          onSaveCustom={controller.actions.saveCustomFilter}
+          onApplyCustom={controller.actions.applyCustomFilter}
+          onDeleteCustom={controller.actions.deleteCustomFilter}
+          onReset={controller.actions.resetFilters}
+          onOpenDrawer={() => controller.actions.setActiveModal("filters")}
+        />
+      )}
 
-      {activeView !== "details" && (
+      {activeView !== "details" && !isHubRoute && (
         <DrillDownBreadcrumb level={controller.state.drillLevel} onLevel={controller.actions.setDrillLevel} />
       )}
 

@@ -3,10 +3,9 @@ textarea,
 select {
   width: 100%;
   color: var(--color-text);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(246, 249, 255, 0.72));
-  border: 1px solid rgba(123, 145, 180, 0.26);
-  border-radius: 14px;
+  background: var(--glass-control);
+  border: 1px solid var(--glass-border-subtle);
+  border-radius: var(--glass-radius-sm);
   outline: none;
   appearance: none;
   -webkit-appearance: none;
@@ -19,13 +18,14 @@ select {
 
 input::placeholder,
 textarea::placeholder {
-  color: rgba(100, 116, 139, 0.68);
+  color: var(--color-text-muted);
 }
 
 input:hover,
 textarea:hover,
 select:hover {
-  border-color: rgba(74, 103, 255, 0.38);
+  border-color: var(--glass-border-active);
+  background: var(--glass-control-hover);
 }
 
 input:focus,
@@ -34,20 +34,17 @@ select:focus,
 input:focus-visible,
 textarea:focus-visible,
 select:focus-visible {
-  border-color: rgba(74, 103, 255, 0.72);
-  box-shadow:
-    0 0 0 4px rgba(74, 103, 255, 0.14),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 251, 255, 0.86));
+  border-color: var(--glass-border-active);
+  box-shadow: var(--focus-ring);
+  background: var(--glass-control-hover);
 }
 
 input:disabled,
 textarea:disabled,
 select:disabled {
   cursor: not-allowed;
-  opacity: 0.58;
-  background: rgba(241, 245, 249, 0.72);
+  opacity: 0.62;
+  background: var(--glass-surface-secondary);
 }
 
 input:invalid:not(:placeholder-shown),
@@ -62,7 +59,7 @@ select {
   background-image:
     linear-gradient(45deg, transparent 50%, rgba(71, 85, 105, 0.86) 50%),
     linear-gradient(135deg, rgba(71, 85, 105, 0.86) 50%, transparent 50%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(246, 249, 255, 0.72));
+    var(--glass-control);
   background-position:
     calc(100% - 20px) 50%,
     calc(100% - 15px) 50%,

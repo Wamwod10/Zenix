@@ -42,7 +42,8 @@ export const reportsNavigationGroups = [
     id: "overview",
     title: "Umumiy",
     items: [
-      { id: "dashboard", label: "Hisobotlar", path: "", icon: BarChart3 },
+      { id: "hub", label: "Hub", path: "", icon: BarChart3 },
+      { id: "dashboard", label: "Hisobotlar", path: "overview", icon: BarChart3 },
       { id: "health", label: "Biznes salomatligi", path: "business-health", icon: HeartPulse },
       { id: "executive", label: "Rahbar xulosasi", path: "executive", icon: BriefcaseBusiness },
     ],
@@ -215,6 +216,7 @@ export const defaultBuilder = {
 };
 
 export const reportTitles = {
+  hub: "Hisobotlar Hub",
   dashboard: "Hisobotlar",
   health: "Biznes salomatligi",
   executive: "Rahbar xulosasi",

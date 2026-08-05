@@ -30,6 +30,7 @@ import EmployeeCreate from "./EmployeeCreate/EmployeeCreate";
 import EmployeeDetails from "./EmployeeDetails/EmployeeDetails";
 import Employees from "./Employees/Employees";
 import HRDashboard from "./HRDashboard/HRDashboard";
+import HRHub from "./HRHub";
 import HRSettings from "./HRSettings/HRSettings";
 import LeaveManagement from "./LeaveManagement/LeaveManagement";
 import Messages from "./Messages/Messages";
@@ -44,7 +45,14 @@ import Tasks from "./Tasks/Tasks";
 import "./HR.scss";
 
 const navigationGroups = [
-  { id: "management", title: "Boshqaruv", items: [{ id: "dashboard", path: "/hr", label: "HR boshqaruv paneli", icon: LayoutDashboard }] },
+  {
+    id: "management",
+    title: "Boshqaruv",
+    items: [
+      { id: "hub", path: "/hr", label: "HR Hub", icon: LayoutDashboard },
+      { id: "dashboard", path: "/hr/overview", label: "HR boshqaruv paneli", icon: LayoutDashboard },
+    ],
+  },
   {
     id: "employees",
     title: "Xodimlar",
@@ -99,7 +107,8 @@ const navigationGroups = [
 ];
 
 const pathToView = {
-  "": "dashboard",
+  "": "hub",
+  overview: "dashboard",
   employees: "employees",
   "employee-create": "employee-create",
   departments: "departments",
@@ -118,7 +127,8 @@ const pathToView = {
 };
 
 const viewToPath = {
-  dashboard: "",
+  hub: "",
+  dashboard: "overview",
   employees: "employees",
   "employee-details": "employees",
   "employee-create": "employee-create",
@@ -144,30 +154,45 @@ const HRRoute = ({ element: Element }) => {
   return <Element {...context} />;
 };
 
+const HRRouteNotFound = ({ onNavigate }) => (
+  <section className="hr-empty-state">
+    <strong>Sahifa topilmadi</strong>
+    <span>Bu HR yo'nalishi mavjud emas yoki noto'g'ri manzil kiritilgan.</span>
+    <button type="button" className="hr-button is-primary" onClick={() => onNavigate("hub")}>
+      HR Hub
+    </button>
+  </section>
+);
+
 const HRShell = ({ controller, navigateView }) => {
   const location = useLocation();
   const segment = location.pathname.replace(/^\/hr\/?/, "").split("/").filter(Boolean)[0] || "";
-  const activeView = pathToView[segment] || "dashboard";
+  const activeView = pathToView[segment] || "not-found";
+  const isHubRoute = activeView === "hub";
   const unreadCount = controller.state.notifications.filter((item) => !item.read).length;
 
   return (
     <main className="zenix-hr">
-      <HRHeader
-        search={controller.employeeFilters.filters.search}
-        onSearch={(value) => controller.employeeFilters.updateFilter("search", value)}
-        employees={controller.state.employees}
-        dictionaries={controller.dictionaries}
-        role={controller.role}
-        roles={controller.roles}
-        onRoleChange={controller.actions.setRole}
-        onCreate={() => navigateView("employee-create")}
-        onReset={controller.actions.resetState}
-        notifications={controller.state.notifications}
-        unreadCount={unreadCount}
-        onNavigate={navigateView}
-      />
+      {!isHubRoute ? (
+        <>
+          <HRHeader
+            search={controller.employeeFilters.filters.search}
+            onSearch={(value) => controller.employeeFilters.updateFilter("search", value)}
+            employees={controller.state.employees}
+            dictionaries={controller.dictionaries}
+            role={controller.role}
+            roles={controller.roles}
+            onRoleChange={controller.actions.setRole}
+            onCreate={() => navigateView("employee-create")}
+            onReset={controller.actions.resetState}
+            notifications={controller.state.notifications}
+            unreadCount={unreadCount}
+            onNavigate={navigateView}
+          />
 
-      <HRNavigation groups={navigationGroups} activeView={segment === "employees" ? "employees" : activeView} />
+          <HRNavigation groups={navigationGroups} activeView={segment === "employees" ? "employees" : activeView} />
+        </>
+      ) : null}
 
       <Outlet context={{ controller, onNavigate: navigateView }} />
 
@@ -192,7 +217,8 @@ const HR = () => {
   return (
     <Routes>
       <Route element={<HRShell controller={controller} navigateView={navigateView} />}>
-        <Route index element={<HRRoute element={HRDashboard} />} />
+        <Route index element={<HRRoute element={HRHub} />} />
+        <Route path="overview" element={<HRRoute element={HRDashboard} />} />
         <Route path="employees" element={<HRRoute element={Employees} />} />
         <Route path="employees/:employeeId" element={<HRRoute element={EmployeeDetails} />} />
         <Route path="employee-create" element={<HRRoute element={EmployeeCreate} />} />
@@ -211,7 +237,7 @@ const HR = () => {
         <Route path="messages" element={<HRRoute element={Messages} />} />
         <Route path="reports" element={<HRRoute element={Reports} />} />
         <Route path="settings" element={<HRRoute element={HRSettings} />} />
-        <Route path="*" element={<Navigate to="/hr" replace />} />
+        <Route path="*" element={<HRRoute element={HRRouteNotFound} />} />
       </Route>
     </Routes>
   );
