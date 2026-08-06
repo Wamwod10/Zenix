@@ -4,8 +4,17 @@ import {
   PackageCheck,
   TrendingUp,
   Users,
+  AlertTriangle,
+  ReceiptText,
+  ShoppingBag,
+  WalletCards,
 } from "lucide-react";
-import { formatMoney, formatPercentChange, formatNumber } from "../../dashboardApi";
+import {
+  formatCompactMoney,
+  formatMoney,
+  formatNumber,
+  formatPercentChange,
+} from "../../dashboardApi";
 import StatCard from "../StatCard/StatCard";
 
 const getChange = (current, previous, positiveDown = false) =>
@@ -28,13 +37,15 @@ const StatsGrid = ({ currency = "uzs", isLoading = false, stats = {} }) => {
   const salesChange = getChange(stats?.todaySales, stats?.yesterdaySales);
   const receiptChange = getChange(stats?.avgReceipt, stats?.yesterdayAvgReceipt);
   const lowStockCount = Number(stats?.lowStockCount ?? 0);
+  const outOfStockCount = Number(stats?.outOfStockCount ?? 0);
+  const profitMargin = Number(stats?.profitMargin);
 
   const cards = [
     {
-      title: "Bugungi savdo",
-      value: formatMoney(stats?.todaySales, currency),
+      title: "Bugungi tushum",
+      value: formatCompactMoney(stats?.todaySales, currency),
       change: salesChange.label,
-      previous: stats?.yesterdaySales
+      previous: stats?.yesterdaySales != null
         ? `Kecha: ${formatMoney(stats.yesterdaySales, currency)}`
         : "Kecha bilan taqqoslash yo'q",
       icon: CircleDollarSign,
@@ -44,10 +55,24 @@ const StatsGrid = ({ currency = "uzs", isLoading = false, stats = {} }) => {
       path: "/reports/sales",
     },
     {
+      title: "Savdolar soni",
+      value: formatNumber(stats?.ordersToday ?? stats?.todayOrders ?? stats?.ordersCount),
+      change: "Tanlangan davr",
+      previous: "00:00-hozirgacha",
+      icon: ShoppingBag,
+      color: "cyan",
+      trend: null,
+      priority: "primary",
+      path: "/reports/sales",
+    },
+    {
       title: "Sof foyda",
-      value: formatMoney(stats?.netProfit, currency),
-      change: stats?.profitMargin != null ? `${stats.profitMargin}% marja` : "Marja yo'q",
-      previous: "Foyda hisoboti",
+      value: formatCompactMoney(stats?.netProfit, currency),
+      change:
+        Number.isFinite(profitMargin)
+          ? `${profitMargin.toFixed(1)}% marja`
+          : "Marja yo'q",
+      previous: "Tushum - tannarx - xarajat - qaytarish",
       icon: TrendingUp,
       color: "green",
       trend: null,
@@ -56,7 +81,7 @@ const StatsGrid = ({ currency = "uzs", isLoading = false, stats = {} }) => {
     },
     {
       title: "O'rtacha chek",
-      value: formatMoney(stats?.avgReceipt, currency),
+      value: formatCompactMoney(stats?.avgReceipt, currency),
       change: receiptChange.label,
       previous: "Savdo davri bo'yicha",
       icon: BarChart3,
@@ -65,11 +90,31 @@ const StatsGrid = ({ currency = "uzs", isLoading = false, stats = {} }) => {
       path: "/reports/sales",
     },
     {
+      title: "Xarajatlar",
+      value: formatCompactMoney(stats?.expenses, currency),
+      change: "Kategoriyalar kesimi",
+      previous: "Moliya nazorati",
+      icon: ReceiptText,
+      color: "orange",
+      trend: null,
+      path: "/finance/expenses",
+    },
+    {
+      title: "Qarzdorlik",
+      value: formatCompactMoney(stats?.debt, currency),
+      change: "Debitor qarz",
+      previous: "Mijoz va to'lovlar",
+      icon: WalletCards,
+      color: "purple",
+      trend: Number(stats?.debt ?? 0) > 0 ? "down" : null,
+      path: "/finance/debts",
+    },
+    {
       title: "Ombor riski",
-      value: `${formatNumber(lowStockCount)} ta`,
-      change: lowStockCount ? "E'tibor kerak" : "Barqaror",
+      value: `${formatNumber(lowStockCount + outOfStockCount)} ta`,
+      change: outOfStockCount ? `${formatNumber(outOfStockCount)} tugagan` : "Barqaror",
       previous: `${formatNumber(stats?.inventoryTotal)} jami SKU`,
-      icon: PackageCheck,
+      icon: outOfStockCount ? AlertTriangle : PackageCheck,
       color: lowStockCount ? "orange" : "green",
       trend: lowStockCount ? "down" : null,
       path: "/warehouse/stock",
@@ -92,7 +137,7 @@ const StatsGrid = ({ currency = "uzs", isLoading = false, stats = {} }) => {
 
   return (
     <section className="zenix-dashboard__stats">
-      {cards.slice(0, 4).map((stat, index) => (
+      {cards.map((stat, index) => (
         <StatCard key={stat.title} {...stat} index={index} />
       ))}
     </section>

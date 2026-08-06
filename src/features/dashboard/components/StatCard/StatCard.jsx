@@ -64,6 +64,8 @@ const StatCard = ({
 
           <small>{previous}</small>
         </div>
+
+        {isClickable ? <em className="stat-card__action">Hisobotni ko'rish</em> : null}
       </div>
     </article>
   );

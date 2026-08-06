@@ -70,6 +70,7 @@ export const baseApi = createApi({
     "PosShift",
     "PosSettings",
     "PosPermissions",
+    "DashboardSummary",
   ],
   endpoints: () => ({}),
 });

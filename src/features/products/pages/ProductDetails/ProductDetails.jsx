@@ -24,7 +24,7 @@ const detailTabs = [
 ];
 
 const formatPriceWithCurrency = (amount, currency = "UZS") =>
-  `${formatMoney(amount)} ${currency}`;
+  formatMoney(amount, currency);
 
 const ProductDetails = ({
   product,
@@ -210,7 +210,7 @@ const ProductDetails = ({
                       <small>{row.isPreferredSupplier ? "Preferred supplier" : row.supplierSku || "-"}</small>
                     </td>
                     <td>{formatPriceWithCurrency(row.purchasePrice, row.currency)}</td>
-                    <td>{formatMoney(row.convertedBasePrice)} UZS<small>Rate {row.exchangeRate}</small></td>
+                    <td>{formatMoney(row.convertedBasePrice)}<small>Rate {row.exchangeRate}</small></td>
                     <td>{row.discountType || "percentage"} {row.discountValue ?? row.discount ?? 0}</td>
                     <td>{row.vatRate ?? row.vat ?? 0}%<small>{row.taxInclusive ? "inclusive" : "exclusive"}</small></td>
                     <td>{row.leadTime ?? "-"} kun</td>

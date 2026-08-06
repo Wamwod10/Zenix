@@ -1,16 +1,18 @@
 import {
+  AlertTriangle,
   Barcode,
-  Boxes,
   Check,
+  FileText,
   ImagePlus,
   Layers3,
   PackageCheck,
   QrCode,
   Save,
-  Sparkles,
+  Settings2,
   Tag,
+  UploadCloud,
 } from "lucide-react";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import useProductForm from "../../hooks/useProductForm";
@@ -27,14 +29,10 @@ import {
 
 import "./ProductForm.scss";
 
-const steps = [
+const createSteps = [
   { id: "basic", label: "Asosiy", icon: PackageCheck },
-  { id: "taxonomy", label: "Kategoriya", icon: Tag },
-  { id: "codes", label: "Artikul / shtrix-kod", icon: Barcode },
-  { id: "pricing", label: "Narx", icon: Sparkles },
-  { id: "variants", label: "Variant", icon: Layers3 },
-  { id: "media", label: "Rasm va fayl", icon: ImagePlus },
-  { id: "integrations", label: "Ko'rib chiqish", icon: Boxes },
+  { id: "advanced", label: "Qo'shimcha", icon: Settings2 },
+  { id: "review", label: "Tekshirish", icon: Check },
 ];
 
 const integrationLabels = {
@@ -42,6 +40,16 @@ const integrationLabels = {
   warehouse: "Ombor",
   crm: "Mijozlar",
   finance: "Moliya",
+};
+
+const changeLabels = {
+  name: "Nomi",
+  categoryId: "Kategoriya",
+  unitId: "Birlik",
+  price: "Sotuv narxi",
+  cost: "Tannarx",
+  sku: "SKU",
+  barcode: "Shtrix-kod",
 };
 
 const ProductForm = ({
@@ -64,35 +72,40 @@ const ProductForm = ({
   const form = useProductForm({ product, products, onSubmit });
   const [newCategoryName, setNewCategoryName] = useState("");
   const [newBrandName, setNewBrandName] = useState("");
-  const currentStep = steps[form.step];
+  const isEdit = mode === "edit";
+  const activeStep = isEdit ? 0 : form.step;
+  const currentStep = createSteps[activeStep];
   const CurrentStepIcon = currentStep.icon;
   const profit = calculateProfit(form.form.price, form.form.cost);
   const margin = calculateMargin(form.form.price, form.form.cost);
   const markup = calculateMarkup(form.form.price, form.form.cost);
   const errorEntries = Object.entries(form.errors).filter(([, message]) => Boolean(message));
+  const costMissing = toNumber(form.form.cost) <= 0;
+  const firstBarcode = form.form.barcodes?.[0] || "";
 
-  const requiredByStep = [
-    ["name"],
-    ["categoryId", "unitId"],
-    [],
-    ["price"],
-    [],
-    [],
-    [],
-  ];
-  const isStepComplete = (index) =>
-    requiredByStep[index].every((key) => {
-      const value = form.form[key];
-      if (key === "price") return toNumber(value) > 0;
-      return String(value || "").trim();
-    });
-  const maxUnlockedStep = requiredByStep.reduce(
-    (max, _fields, index) => (index === max && isStepComplete(index) ? max + 1 : max),
-    0,
-  );
-  const goToStep = (index) => {
-    if (index <= maxUnlockedStep) form.actions.setStep(index);
-  };
+  const changedFields = useMemo(() => {
+    if (!isEdit || !product) return [];
+    const read = (source, key) => (key === "barcode" ? source.barcodes?.[0] || source.barcode || "" : source[key]);
+
+    return Object.keys(changeLabels)
+      .map((key) => ({
+        key,
+        label: changeLabels[key],
+        before: read(product, key),
+        after: read(form.form, key),
+      }))
+      .filter((item) => String(item.before ?? "") !== String(item.after ?? ""));
+  }, [form.form, isEdit, product]);
+
+  const basicComplete =
+    String(form.form.name || "").trim().length >= 3 &&
+    form.form.categoryId &&
+    form.form.unitId &&
+    toNumber(form.form.price) > 0 &&
+    toNumber(form.form.cost) > 0;
+  const maxUnlockedStep = basicComplete ? 2 : 0;
+  const canShowAdvanced = isEdit || activeStep === 1;
+  const canShowReview = isEdit || activeStep === 2;
 
   const updateNumber = (key, value) => form.actions.update(key, value === "" ? "" : toNumber(value));
 
@@ -107,20 +120,12 @@ const ProductForm = ({
   const createInlineBrand = () => {
     const name = newBrandName.trim();
     if (!name || typeof onCreateBrand !== "function") return;
-    const brand = onCreateBrand({ name, manufacturer: name });
+    const brand = onCreateBrand({ name, code: name.slice(0, 3).toUpperCase(), manufacturer: name });
     if (brand?.id) form.actions.update("brandId", brand.id);
     setNewBrandName("");
   };
 
   const generateCodes = () => {
-    const hasExistingCode = form.form.sku || form.form.barcodes?.some(Boolean) || form.form.qrCode;
-    const canReplace =
-      !hasExistingCode ||
-      typeof window === "undefined" ||
-      window.confirm("Mavjud artikul, shtrix-kod yoki QR almashtirilsinmi?");
-
-    if (!canReplace) return;
-
     const codes = onGenerateCodes({
       name: form.form.name,
       categoryId: form.form.categoryId,
@@ -128,9 +133,9 @@ const ProductForm = ({
     });
     form.actions.setForm((current) => ({
       ...current,
-      sku: codes.sku,
-      barcodes: [codes.barcode, ...(current.barcodes || []).slice(1)],
-      qrCode: codes.qrCode,
+      sku: current.sku || codes.sku,
+      barcodes: current.barcodes?.length ? current.barcodes : [codes.barcode],
+      qrCode: current.qrCode || codes.qrCode,
     }));
   };
 
@@ -144,9 +149,11 @@ const ProductForm = ({
   const updateBarcode = (index, value) => {
     form.actions.setForm((current) => ({
       ...current,
-      barcodes: (current.barcodes || []).map((barcode, itemIndex) =>
-        itemIndex === index ? value : barcode,
-      ),
+      barcodes: (current.barcodes || []).length
+        ? (current.barcodes || []).map((barcode, itemIndex) =>
+            itemIndex === index ? value : barcode,
+          )
+        : [value],
     }));
   };
 
@@ -158,9 +165,10 @@ const ProductForm = ({
         {
           id: createProductEntityId("var"),
           combination: "",
-          sku: `${current.sku || "ART"}-V${(current.variants || []).length + 1}`,
+          sku: `${current.sku || "SKU"}-V${(current.variants || []).length + 1}`,
           barcode: "",
           price: toNumber(current.price),
+          cost: toNumber(current.cost),
           stock: 0,
           status: "draft",
         },
@@ -172,7 +180,14 @@ const ProductForm = ({
     form.actions.setForm((current) => ({
       ...current,
       variants: (current.variants || []).map((variant, itemIndex) =>
-        itemIndex === index ? { ...variant, [key]: key === "price" || key === "stock" ? (value === "" ? "" : toNumber(value)) : value } : variant,
+        itemIndex === index
+          ? {
+              ...variant,
+              [key]: ["price", "cost", "stock"].includes(key)
+                ? value === "" ? "" : toNumber(value)
+                : value,
+            }
+          : variant,
       ),
     }));
   };
@@ -182,12 +197,15 @@ const ProductForm = ({
     const allowedTypes =
       kind === "media"
         ? ["image/png", "image/jpeg", "image/webp"]
-        : ["application/pdf", "image/png", "image/jpeg", "image/webp"];
+        : ["application/pdf"];
 
     if (!allowedTypes.includes(file.type) || file.size > 8 * 1024 * 1024) {
       form.actions.setErrors({
         ...form.errors,
-        media: "Fayl turi yoki hajmi noto'g'ri. 8MB gacha PNG, JPG, WEBP yoki PDF tanlang.",
+        media:
+          kind === "media"
+            ? "Rasm uchun faqat PNG, JPG yoki WEBP, 8MB gacha."
+            : "Hujjat uchun faqat PDF, 8MB gacha.",
       });
       return;
     }
@@ -202,6 +220,7 @@ const ProductForm = ({
           name: file.name,
           type: file.type,
           size: file.size,
+          primary: kind === "media" && !(current.media || []).length,
         },
       ],
     }));
@@ -211,6 +230,13 @@ const ProductForm = ({
     form.actions.setForm((current) => ({
       ...current,
       [kind]: (current[kind] || []).filter((file) => file.id !== fileId),
+    }));
+  };
+
+  const makePrimaryImage = (fileId) => {
+    form.actions.setForm((current) => ({
+      ...current,
+      media: (current.media || []).map((file) => ({ ...file, primary: file.id === fileId })),
     }));
   };
 
@@ -235,69 +261,83 @@ const ProductForm = ({
       lifecycle: "review",
     });
 
-  return (
-    <section className="products-form-shell">
-      <aside className="products-form-stepper" aria-label="Mahsulot formasi bosqichlari">
-        {steps.map((step, index) => {
-          const Icon = step.icon;
-          return (
-            <button
-              type="button"
-              key={step.id}
-              className={form.step === index ? "is-active" : ""}
-              aria-selected={form.step === index}
-              disabled={index > maxUnlockedStep}
-              onClick={() => goToStep(index)}
-            >
-              <Icon size={16} />
-              <span>{step.label}</span>
-            </button>
-          );
-        })}
-      </aside>
-
-      <section className="products-panel products-form">
-        <div className="products-panel__head">
-          <div>
-            <span>
-              <CurrentStepIcon size={13} />
-              {mode === "edit" ? "Mahsulotni tahrirlash" : "Mahsulot yaratish"}
-            </span>
-            <h2>{currentStep.label}</h2>
+  const renderStepBody = () => (
+    <>
+      {(isEdit || activeStep === 0) && (
+        <section className="products-form-section">
+          <div className="products-form-section__head">
+            <span><PackageCheck size={13} /> Asosiy forma</span>
+            <strong>Nom, kategoriya, birlik, tannarx, sotuv narxi va shtrix-kod</strong>
           </div>
-          <div className="products-form__status">
-            {form.dirty && <span>Saqlanmagan o'zgarishlar</span>}
-            <button type="button" className="products-mini-button" onClick={form.actions.saveDraft}>
-              <Save size={14} />
-              Qoralama
-            </button>
-          </div>
-        </div>
-
-        {errorEntries.length > 0 && (
-          <div className="products-form-errors" role="alert">
-            <strong>Saqlashdan oldin tekshiring</strong>
-            {errorEntries.map(([key, message]) => (
-              <button type="button" key={key} onClick={() => form.actions.setErrors({ ...form.errors, [key]: message })}>
-                {message}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {form.step === 0 && (
           <div className="products-form-grid">
-            <Field label="Nomi" required error={form.errors.name}>
+            <Field label="Mahsulot nomi" required error={form.errors.name}>
               <input value={form.form.name} onChange={(event) => form.actions.update("name", event.target.value)} />
             </Field>
-            <Field label="Hayot sikli">
-              <select value={form.form.lifecycle} onChange={(event) => form.actions.update("lifecycle", event.target.value)}>
-                <option value="draft">Qoralama</option>
-                <option value="active">Faol</option>
-                <option value="growth">O'sish</option>
-                <option value="mature">Barqaror</option>
-                <option value="phase-out">Bosqichma-bosqich chiqarish</option>
+            <Field label="Kategoriya" required error={form.errors.categoryId}>
+              <select value={form.form.categoryId} onChange={(event) => form.actions.update("categoryId", event.target.value)}>
+                <option value="">Tanlang</option>
+                {categories.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
               </select>
+            </Field>
+            <Field label="O'lchov birligi" required error={form.errors.unitId}>
+              <select value={form.form.unitId} onChange={(event) => form.actions.update("unitId", event.target.value)}>
+                <option value="">Tanlang</option>
+                {units.map((item) => <option key={item.id} value={item.id}>{item.name} ({item.code})</option>)}
+              </select>
+            </Field>
+            <Field label="Tannarx" required error={form.errors.cost}>
+              <input type="number" min="0" value={form.form.cost} onChange={(event) => updateNumber("cost", event.target.value)} />
+            </Field>
+            <Field label="Sotuv narxi" required error={form.errors.price}>
+              <input type="number" min="0" value={form.form.price} onChange={(event) => updateNumber("price", event.target.value)} />
+            </Field>
+            <Field label="Shtrix-kod" error={form.errors.barcodes}>
+              <input value={firstBarcode} onChange={(event) => updateBarcode(0, event.target.value)} />
+            </Field>
+          </div>
+          {costMissing && (
+            <div className="products-form-warning" role="alert">
+              <AlertTriangle size={16} />
+              <span>Tannarx kiritilmaguncha mahsulot faollashmaydi va foyda hisoblanmaydi.</span>
+            </div>
+          )}
+        </section>
+      )}
+
+      {canShowAdvanced && (
+        <details className="products-form-section products-advanced-settings" open={isEdit}>
+          <summary>
+            <Settings2 size={15} />
+            Qo'shimcha sozlamalar
+          </summary>
+          <div className="products-form-grid">
+            <Field label="Brend / ishlab chiqaruvchi">
+              <select value={form.form.brandId} onChange={(event) => form.actions.update("brandId", event.target.value)}>
+                <option value="">Tanlang</option>
+                {brands.map((item) => <option key={item.id} value={item.id}>{item.name} - {item.manufacturer || "Belgilanmagan"}</option>)}
+              </select>
+              <div className="products-inline-create">
+                <input
+                  value={newBrandName}
+                  placeholder="Yangi brend nomi"
+                  onChange={(event) => setNewBrandName(event.target.value)}
+                />
+                <button type="button" className="products-mini-button" onClick={createInlineBrand}>
+                  Qo'shish
+                </button>
+              </div>
+            </Field>
+            <Field label="Yangi kategoriya">
+              <div className="products-inline-create">
+                <input
+                  value={newCategoryName}
+                  placeholder="Yangi kategoriya nomi"
+                  onChange={(event) => setNewCategoryName(event.target.value)}
+                />
+                <button type="button" className="products-mini-button" onClick={createInlineCategory}>
+                  Qo'shish
+                </button>
+              </div>
             </Field>
             <Field label="Mahsulot turi">
               <select value={form.form.type} onChange={(event) => form.actions.update("type", event.target.value)}>
@@ -307,185 +347,147 @@ const ProductForm = ({
                 <option value="composite">Tarkibli</option>
               </select>
             </Field>
-            <Field label="Tavsif" wide>
-              <textarea value={form.form.description} onChange={(event) => form.actions.update("description", event.target.value)} />
-            </Field>
-          </div>
-        )}
-
-        {form.step === 1 && (
-          <div className="products-form-grid">
-            <Field label="Kategoriya" required error={form.errors.categoryId}>
-              <select value={form.form.categoryId} onChange={(event) => form.actions.update("categoryId", event.target.value)}>
-                <option value="">Tanlang</option>
-                {categories.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
-              </select>
-              <div className="products-inline-create">
-                <input
-                  value={newCategoryName}
-                  placeholder="Yangi kategoriya nomi"
-                  onChange={(event) => setNewCategoryName(event.target.value)}
-                />
-                <button type="button" className="products-mini-button" onClick={createInlineCategory}>
-                  + Qo'shish
-                </button>
-              </div>
-            </Field>
-            <Field label="Brend / ishlab chiqaruvchi">
-              <select value={form.form.brandId} onChange={(event) => form.actions.update("brandId", event.target.value)}>
-                <option value="">Tanlang</option>
-                {brands.map((item) => <option key={item.id} value={item.id}>{item.name} - {item.manufacturer}</option>)}
-              </select>
-              <div className="products-inline-create">
-                <input
-                  value={newBrandName}
-                  placeholder="Yangi brend nomi"
-                  onChange={(event) => setNewBrandName(event.target.value)}
-                />
-                <button type="button" className="products-mini-button" onClick={createInlineBrand}>
-                  + Qo'shish
-                </button>
-              </div>
-            </Field>
-            <Field label="O'lchov birligi" required error={form.errors.unitId}>
-              <select value={form.form.unitId} onChange={(event) => form.actions.update("unitId", event.target.value)}>
-                <option value="">Tanlang</option>
-                {units.map((item) => <option key={item.id} value={item.id}>{item.name} ({item.code})</option>)}
+            <Field label="Holat oqimi">
+              <select value={form.form.lifecycle} onChange={(event) => form.actions.update("lifecycle", event.target.value)}>
+                <option value="draft">Qoralama</option>
+                <option value="review">Tasdiq kutmoqda</option>
+                <option value="active">Faol</option>
+                <option value="inactive">Nofaol</option>
+                <option value="archived">Arxiv</option>
               </select>
             </Field>
-            <Field label="Belgilar">
-              <input value={(form.form.tags || []).join(", ")} onChange={(event) => form.actions.update("tags", event.target.value.split(",").map((item) => item.trim()).filter(Boolean))} />
-            </Field>
-          </div>
-        )}
-
-        {form.step === 2 && (
-          <div className="products-form-grid">
-            <Field label="Artikul" error={form.errors.sku}>
+            <Field label="SKU" error={form.errors.sku}>
               <input value={form.form.sku} onChange={(event) => form.actions.update("sku", event.target.value)} />
             </Field>
             <Field label="Ichki kod">
               <input value={form.form.internalCode} onChange={(event) => form.actions.update("internalCode", event.target.value)} />
             </Field>
-            <Field label="QR">
-              <input value={form.form.qrCode} onChange={(event) => form.actions.update("qrCode", event.target.value)} />
-            </Field>
-            <div className="products-form-grid__wide products-code-box">
-              <button type="button" className="products-button is-primary" onClick={generateCodes}>
-                <QrCode size={15} />
-                SKU / shtrix-kod / QR yaratish
-              </button>
-              <button type="button" className="products-mini-button" onClick={addBarcode}>Shtrix-kod qo'shish</button>
-              {form.errors.barcodes && <small>{form.errors.barcodes}</small>}
-              {(form.form.barcodes || []).map((barcode, index) => (
-                <input
-                  key={`${barcode}-${index}`}
-                  value={barcode}
-                  placeholder="Shtrix-kod"
-                  onChange={(event) => updateBarcode(index, event.target.value)}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {form.step === 3 && (
-          <div className="products-form-grid">
-            <Field label="Sotuv narxi" required error={form.errors.price}>
-              <input type="number" value={form.form.price} onChange={(event) => updateNumber("price", event.target.value)} />
-            </Field>
-            <Field label="Tannarx">
-              <input type="number" value={form.form.cost} onChange={(event) => updateNumber("cost", event.target.value)} />
-            </Field>
             <Field label="Eng past narx" error={form.errors.minPrice}>
-              <input type="number" value={form.form.minPrice} onChange={(event) => updateNumber("minPrice", event.target.value)} />
+              <input type="number" min="0" value={form.form.minPrice} onChange={(event) => updateNumber("minPrice", event.target.value)} />
             </Field>
             <Field label="Soliq %">
-              <input type="number" value={form.form.taxRate} onChange={(event) => updateNumber("taxRate", event.target.value)} />
+              <input type="number" min="0" value={form.form.taxRate} onChange={(event) => updateNumber("taxRate", event.target.value)} />
             </Field>
-            <div className="products-mini-grid products-form-grid__wide">
-              <article><strong>{formatMoney(profit)}</strong><span>Foyda</span></article>
-              <article><strong>{formatMargin(margin)}</strong><span>Marja</span></article>
-              <article><strong>{Math.round(markup)}%</strong><span>Ustama</span></article>
-              <article><strong>{labelProductStatus(form.form.approvalStatus)}</strong><span>Tasdiq</span></article>
-            </div>
+            <Field label="Belgilar">
+              <input value={(form.form.tags || []).join(", ")} onChange={(event) => form.actions.update("tags", event.target.value.split(",").map((item) => item.trim()).filter(Boolean))} />
+            </Field>
+            <Field label="Tavsif" wide>
+              <textarea value={form.form.description} onChange={(event) => form.actions.update("description", event.target.value)} />
+            </Field>
           </div>
-        )}
 
-        {form.step === 4 && (
-          <div className="products-form-grid">
-            <Field label="Rang">
-              <input value={form.form.attributes?.color || ""} onChange={(event) => form.actions.updateNested("attributes", "color", event.target.value)} />
-            </Field>
-            <Field label="O'lcham / Xotira">
-              <input value={form.form.attributes?.memory || form.form.attributes?.size || ""} onChange={(event) => form.actions.updateNested("attributes", "memory", event.target.value)} />
-            </Field>
-            <Field label="Material">
-              <input value={form.form.attributes?.material || ""} onChange={(event) => form.actions.updateNested("attributes", "material", event.target.value)} />
-            </Field>
-            <div className="products-form-grid__wide products-variant-matrix">
-              <button type="button" className="products-mini-button is-primary" onClick={addVariant}>Variant qo'shish</button>
-              {form.errors.variants && <small>{form.errors.variants}</small>}
-              {(form.form.variants || []).map((variant, index) => (
-                <article key={variant.id}>
-                  <input value={variant.combination} onChange={(event) => updateVariant(index, "combination", event.target.value)} aria-label="Variant birikmasi" />
-                  <input value={variant.sku} onChange={(event) => updateVariant(index, "sku", event.target.value)} aria-label="Variant artikuli" />
-                  <input value={variant.barcode} onChange={(event) => updateVariant(index, "barcode", event.target.value)} aria-label="Variant shtrix-kodi" />
-                  <input type="number" value={variant.price} onChange={(event) => updateVariant(index, "price", event.target.value)} aria-label="Variant narxi" />
-                  <input type="number" value={variant.stock} onChange={(event) => updateVariant(index, "stock", event.target.value)} aria-label="Variant qoldig'i" />
-                </article>
-              ))}
+          <div className="products-code-box">
+            <div className="products-form-section__head">
+              <span><Barcode size={13} /> SKU, shtrix-kod va QR</span>
+              <strong>Bir mahsulotga bir nechta shtrix-kod qo'shish mumkin</strong>
             </div>
-          </div>
-        )}
-
-        {form.step === 5 && (
-          <div className="products-form-grid">
-            <div className="products-form-grid__wide products-media-drop">
-              <ImagePlus size={28} />
-              <strong>Rasm va fayl yuklash namoyishi</strong>
-              <span>PNG, JPG, WEBP va PDF. Hajm 8MB dan oshmasligi kerak.</span>
-              {form.errors.media && <small>{form.errors.media}</small>}
+            <div className="products-code-box__actions">
+              <button type="button" className="products-button is-primary" onClick={generateCodes}>
+                <QrCode size={15} />
+                Kodlarni yaratish
+              </button>
+              <button type="button" className="products-mini-button" onClick={addBarcode}>Shtrix-kod qo'shish</button>
+            </div>
+            {(form.form.barcodes || []).map((barcode, index) => (
               <input
-                ref={mediaInputRef}
-                type="file"
-                accept="image/png,image/jpeg,image/webp"
-                className="products-file-input"
-                onChange={(event) => addMedia("media", event.target.files?.[0])}
+                key={`${barcode}-${index}`}
+                value={barcode}
+                placeholder={`Shtrix-kod ${index + 1}`}
+                onChange={(event) => updateBarcode(index, event.target.value)}
               />
-              <input
-                ref={documentInputRef}
-                type="file"
-                accept="application/pdf,image/png,image/jpeg,image/webp"
-                className="products-file-input"
-                onChange={(event) => addMedia("documents", event.target.files?.[0])}
-              />
+            ))}
+            <div className="products-qr-preview">
+              <QrCode size={42} />
               <div>
-                <button type="button" className="products-mini-button" onClick={() => mediaInputRef.current?.click()}>Rasm qo'shish</button>
-                <button type="button" className="products-mini-button" onClick={() => documentInputRef.current?.click()}>Hujjat qo'shish</button>
+                <strong>{form.form.qrCode || "QR hali yaratilmagan"}</strong>
+                <span>Preview, nusxalash va chop etish uchun tayyor maydon</span>
               </div>
+              <button type="button" className="products-mini-button" onClick={() => navigator.clipboard?.writeText(form.form.qrCode || "")}>
+                Nusxalash
+              </button>
             </div>
+          </div>
+
+          <div className="products-variant-matrix">
+            <div className="products-form-section__head">
+              <span><Layers3 size={13} /> Variantlar</span>
+              <strong>Oddiy mahsulotda ixtiyoriy, variantli mahsulotda alohida SKU/narx/qoldiq</strong>
+            </div>
+            <button type="button" className="products-mini-button is-primary" onClick={addVariant}>Variant qo'shish</button>
+            {form.errors.variants && <small>{form.errors.variants}</small>}
+            {(form.form.variants || []).map((variant, index) => (
+              <article key={variant.id}>
+                <input value={variant.combination} placeholder="Atributlar" onChange={(event) => updateVariant(index, "combination", event.target.value)} aria-label="Variant atributlari" />
+                <input value={variant.sku} placeholder="SKU" onChange={(event) => updateVariant(index, "sku", event.target.value)} aria-label="Variant SKU" />
+                <input value={variant.barcode} placeholder="Shtrix-kod" onChange={(event) => updateVariant(index, "barcode", event.target.value)} aria-label="Variant shtrix-kodi" />
+                <input type="number" value={variant.price} placeholder="Narx" onChange={(event) => updateVariant(index, "price", event.target.value)} aria-label="Variant narxi" />
+                <input type="number" value={variant.cost} placeholder="Tannarx" onChange={(event) => updateVariant(index, "cost", event.target.value)} aria-label="Variant tannarxi" />
+                <input type="number" value={variant.stock} placeholder="Qoldiq" onChange={(event) => updateVariant(index, "stock", event.target.value)} aria-label="Variant qoldig'i" />
+              </article>
+            ))}
+          </div>
+
+          <div className="products-media-drop" onDrop={(event) => { event.preventDefault(); addMedia("media", event.dataTransfer.files?.[0]); }} onDragOver={(event) => event.preventDefault()}>
+            <UploadCloud size={28} />
+            <strong>Rasm yuklash</strong>
+            <span>Drag-and-drop yoki tugma orqali PNG, JPG, WEBP rasm yuklang. PDF hujjatlar alohida saqlanadi.</span>
+            {form.errors.media && <small>{form.errors.media}</small>}
+            <input
+              ref={mediaInputRef}
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              className="products-file-input"
+              onChange={(event) => addMedia("media", event.target.files?.[0])}
+            />
+            <input
+              ref={documentInputRef}
+              type="file"
+              accept="application/pdf"
+              className="products-file-input"
+              onChange={(event) => addMedia("documents", event.target.files?.[0])}
+            />
+            <div>
+              <button type="button" className="products-mini-button" onClick={() => mediaInputRef.current?.click()}>
+                <ImagePlus size={14} />
+                Rasm qo'shish
+              </button>
+              <button type="button" className="products-mini-button" onClick={() => documentInputRef.current?.click()}>
+                <FileText size={14} />
+                Hujjat qo'shish
+              </button>
+            </div>
+          </div>
+          <div className="products-media-list">
             {(form.form.media || []).map((file) => (
               <article className="products-mini-card" key={file.id}>
                 <strong>{file.name}</strong>
-                <span>{file.type}</span>
-                <span>{Math.round(file.size / 1024)} KB</span>
-                <button type="button" className="products-mini-button" onClick={() => removeFile("media", file.id)}>Olib tashlash</button>
+                <span>{file.primary ? "Asosiy rasm" : "Qo'shimcha rasm"} - {Math.round(file.size / 1024)} KB</span>
+                <div className="products-row-actions products-row-actions--text">
+                  <button type="button" onClick={() => makePrimaryImage(file.id)}>Asosiy qilish</button>
+                  <button type="button" onClick={() => removeFile("media", file.id)}>Olib tashlash</button>
+                </div>
               </article>
             ))}
             {(form.form.documents || []).map((file) => (
               <article className="products-mini-card" key={file.id}>
                 <strong>{file.name}</strong>
-                <span>{file.type}</span>
-                <span>{Math.round(file.size / 1024)} KB</span>
+                <span>PDF hujjat - {Math.round(file.size / 1024)} KB</span>
                 <button type="button" className="products-mini-button" onClick={() => removeFile("documents", file.id)}>Olib tashlash</button>
               </article>
             ))}
           </div>
-        )}
 
-        {form.step === 6 && (
           <div className="products-form-grid">
+            {["pos", "warehouse", "crm", "finance"].map((key) => (
+              <label className="products-toggle" key={key}>
+                <input
+                  type="checkbox"
+                  checked={Boolean(form.form.integrations?.[key])}
+                  onChange={(event) => form.actions.updateNested("integrations", key, event.target.checked)}
+                />
+                <span>{integrationLabels[key]}</span>
+              </label>
+            ))}
             <Field label="Bog'langan mahsulotlar">
               <select
                 value=""
@@ -499,53 +501,130 @@ const ProductForm = ({
                 ))}
               </select>
             </Field>
-            {["pos", "warehouse", "crm", "finance"].map((key) => (
-              <label className="products-toggle" key={key}>
-                <input
-                  type="checkbox"
-                  checked={Boolean(form.form.integrations?.[key])}
-                  onChange={(event) => form.actions.updateNested("integrations", key, event.target.checked)}
-                />
-                <span>{integrationLabels[key]}</span>
-              </label>
-            ))}
-            <div className="products-preview products-form-grid__wide">
-              <span className="products-eyebrow">Ko'rib chiqish va saqlash</span>
-              <h3>{form.form.name || "Yangi mahsulot"}</h3>
-              <p>{form.form.description || "Tavsif kiritilmagan."}</p>
-              <div className="products-mini-grid">
-                <article><strong>{form.form.sku || "-"}</strong><span>Artikul</span></article>
-                <article><strong>{form.form.barcodes?.[0] || "-"}</strong><span>Shtrix-kod</span></article>
-                <article><strong>{formatMoney(form.form.price)}</strong><span>Narx</span></article>
-                <article><strong>{form.form.relations?.length || 0}</strong><span>Bog'lanishlar</span></article>
-              </div>
+          </div>
+        </details>
+      )}
+
+      {canShowReview && (
+        <section className="products-form-section">
+          <div className="products-form-section__head">
+            <span><Tag size={13} /> Tekshirish</span>
+            <strong>Saqlashdan oldingi foyda va holat</strong>
+          </div>
+          <div className="products-preview">
+            <h3>{form.form.name || "Yangi mahsulot"}</h3>
+            <p>{form.form.description || "Tavsif kiritilmagan."}</p>
+            <div className="products-mini-grid">
+              <article><strong>{form.form.sku || "Avto"}</strong><span>SKU</span></article>
+              <article><strong>{firstBarcode || "Belgilanmagan"}</strong><span>Shtrix-kod</span></article>
+              <article><strong>{formatMoney(form.form.price)}</strong><span>Sotuv narxi</span></article>
+              <article><strong>{formatMoney(form.form.cost)}</strong><span>Tannarx</span></article>
+              <article><strong>{formatMoney(profit)}</strong><span>Foyda</span></article>
+              <article><strong>{formatMargin(margin)}</strong><span>Marja</span></article>
+              <article><strong>{Math.round(markup)}%</strong><span>Ustama</span></article>
+              <article><strong>{labelProductStatus(form.form.approvalStatus)}</strong><span>Tasdiq</span></article>
             </div>
+          </div>
+        </section>
+      )}
+    </>
+  );
+
+  return (
+    <section className={`products-form-shell ${isEdit ? "is-edit" : ""}`}>
+      {!isEdit && (
+        <aside className="products-form-stepper" aria-label="Mahsulot formasi bosqichlari">
+          {createSteps.map((step, index) => {
+            const Icon = step.icon;
+            const hasError =
+              (index === 0 && ["name", "categoryId", "unitId", "price", "cost", "barcodes"].some((key) => form.errors[key])) ||
+              (index === 1 && ["sku", "minPrice", "variants", "media"].some((key) => form.errors[key]));
+
+            return (
+              <button
+                type="button"
+                key={step.id}
+                className={`${activeStep === index ? "is-active" : ""} ${hasError ? "has-error" : ""} ${index <= maxUnlockedStep ? "is-complete" : ""}`}
+                aria-selected={activeStep === index}
+                disabled={index > maxUnlockedStep}
+                onClick={() => form.actions.setStep(index)}
+              >
+                <Icon size={16} />
+                <span>{step.label}</span>
+              </button>
+            );
+          })}
+        </aside>
+      )}
+
+      <section className="products-panel products-form">
+        <div className="products-panel__head">
+          <div>
+            <span>
+              <CurrentStepIcon size={13} />
+              {isEdit ? "Mahsulotni tahrirlash" : "Mahsulot yaratish"}
+            </span>
+            <h2>{isEdit ? "Ixcham tahrirlash" : currentStep.label}</h2>
+          </div>
+          <div className="products-form__status">
+            {form.dirty && <span>Saqlanmagan o'zgarishlar</span>}
+            <button type="button" className="products-mini-button" disabled={form.isSubmitting} onClick={form.actions.saveDraft}>
+              <Save size={14} />
+              Qoralama
+            </button>
+          </div>
+        </div>
+
+        {errorEntries.length > 0 && (
+          <div className="products-form-errors" role="alert">
+            <strong>Saqlashdan oldin tekshiring</strong>
+            {errorEntries.map(([key, message]) => (
+              <span key={key}>{message}</span>
+            ))}
+          </div>
+        )}
+
+        {renderStepBody()}
+
+        {isEdit && changedFields.length > 0 && (
+          <div className="products-change-summary">
+            <strong>O'zgarayotgan qiymatlar</strong>
+            {changedFields.map((item) => (
+              <span key={item.key}>
+                {item.label}: {String(item.before || "Belgilanmagan")} {" -> "} {String(item.after || "Belgilanmagan")}
+              </span>
+            ))}
           </div>
         )}
 
         <footer className="products-form__footer">
-          <button type="button" className="products-mini-button" disabled={form.step === 0} onClick={() => form.actions.setStep(form.step - 1)}>
-            Orqaga
+          <button type="button" className="products-mini-button" onClick={() => navigate(-1)}>
+            Bekor qilish
           </button>
-          {form.step < steps.length - 1 ? (
-            <button type="button" className="products-mini-button is-primary" disabled={form.step + 1 > maxUnlockedStep} onClick={() => goToStep(form.step + 1)}>
+          {!isEdit && activeStep > 0 && (
+            <button type="button" className="products-mini-button" onClick={() => form.actions.setStep(activeStep - 1)}>
+              Orqaga
+            </button>
+          )}
+          {!isEdit && activeStep < createSteps.length - 1 ? (
+            <button type="button" className="products-mini-button is-primary" disabled={activeStep + 1 > maxUnlockedStep} onClick={() => form.actions.setStep(activeStep + 1)}>
               Keyingi
             </button>
           ) : (
             <>
-              <button type="button" className="products-mini-button" onClick={() => save({ status: "draft", approvalStatus: "draft" })}>
+              <button type="button" className="products-mini-button" disabled={form.isSubmitting} onClick={() => save({ status: "draft", approvalStatus: "draft", lifecycle: "draft" })}>
                 <Save size={15} />
                 Qoralama saqlash
               </button>
               {approvalRequired ? (
-                <button type="button" className="products-mini-button is-primary" onClick={submitForApproval}>
+                <button type="button" className="products-mini-button is-primary" disabled={form.isSubmitting} onClick={submitForApproval}>
                   <Check size={15} />
                   Tasdiqqa yuborish
                 </button>
               ) : (
-                <button type="button" className="products-mini-button is-primary" onClick={saveAndActivate}>
+                <button type="button" className="products-mini-button is-primary" disabled={form.isSubmitting} onClick={saveAndActivate}>
                   <Check size={15} />
-                  Saqlash va faollashtirish
+                  {isEdit ? "O'zgarishlarni saqlash" : "Saqlash va faollashtirish"}
                 </button>
               )}
             </>

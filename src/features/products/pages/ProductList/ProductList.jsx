@@ -1,12 +1,16 @@
 import { LayoutGrid, PackagePlus, Rows3, Table2 } from "lucide-react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { Modal } from "../../../../components/ui/Modal/Modal";
 import ProductSearch from "../../components/ProductSearch/ProductSearch";
 import ProductTable from "../../components/ProductTable/ProductTable";
 import BulkActionBar from "../../components/BulkActionBar/BulkActionBar";
 
 const ProductList = ({ controller }) => {
   const navigate = useNavigate();
+  const [archiveCandidateId, setArchiveCandidateId] = useState("");
+  const archiveCandidate = archiveCandidateId ? controller.productsById[archiveCandidateId] : null;
   const toggleSort = (key) => {
     controller.actions.setSort({
       key,
@@ -23,6 +27,16 @@ const ProductList = ({ controller }) => {
       return [...new Set([...current, ...ids])];
     });
   };
+  const duplicateToDraft = (productId) => {
+    const draft = controller.actions.duplicateProduct(productId);
+    if (!draft) return;
+    navigate("/products/new", { state: { prefill: draft } });
+  };
+  const confirmArchive = () => {
+    if (!archiveCandidateId) return;
+    const archived = controller.actions.archiveProduct(archiveCandidateId);
+    if (archived) setArchiveCandidateId("");
+  };
 
   return (
     <div className="products-view">
@@ -30,6 +44,7 @@ const ProductList = ({ controller }) => {
         filters={controller.filters}
         categories={controller.state.categories}
         brands={controller.state.brands}
+        warehouses={controller.warehouseOptions}
         savedFilters={controller.savedFilters}
         onFilter={controller.actions.updateFilter}
         onApplySavedFilter={controller.actions.writeFilters}
@@ -100,11 +115,11 @@ const ProductList = ({ controller }) => {
         onSelectAllFiltered={controller.actions.selectAllFiltered}
         onResetFilters={controller.actions.resetFilters}
         onOpenQuickView={controller.actions.openQuickView}
-        onDuplicate={controller.actions.duplicateProduct}
+        onDuplicate={duplicateToDraft}
         onActivate={controller.actions.activateProduct}
         onDeactivate={controller.actions.deactivateProduct}
         onSubmitApproval={controller.actions.submitProductForApproval}
-        onArchive={controller.actions.archiveProduct}
+        onArchive={setArchiveCandidateId}
         onRestore={controller.actions.restoreProduct}
       />
       <BulkActionBar
@@ -114,6 +129,27 @@ const ProductList = ({ controller }) => {
         onPending={controller.actions.bulkPending}
         onClear={controller.actions.clearSelection}
       />
+      <Modal
+        open={Boolean(archiveCandidate)}
+        title="Mahsulotni arxivlash"
+        description={archiveCandidate?.name}
+        onClose={() => setArchiveCandidateId("")}
+        footer={(
+          <>
+            <button type="button" className="products-mini-button" onClick={() => setArchiveCandidateId("")}>
+              Bekor qilish
+            </button>
+            <button type="button" className="products-mini-button is-danger" onClick={confirmArchive}>
+              Arxivlash
+            </button>
+          </>
+        )}
+      >
+        <div className="products-confirm-body">
+          <strong>Bu mahsulot katalogdan arxiv holatiga o'tkaziladi.</strong>
+          <span>Qoldiq, rezerv yoki kelayotgan kirim mavjud bo'lsa amal bloklanadi.</span>
+        </div>
+      </Modal>
     </div>
   );
 };

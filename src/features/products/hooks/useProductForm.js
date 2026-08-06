@@ -40,6 +40,7 @@ const useProductForm = ({ product, products, onSubmit }) => {
   const [step, setStep] = useState(0);
   const [dirty, setDirty] = useState(false);
   const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const handleBeforeUnload = (event) => {
@@ -74,14 +75,23 @@ const useProductForm = ({ product, products, onSubmit }) => {
   };
 
   const submit = (overrides = {}) => {
+    if (isSubmitting) return { ok: false, errors: { submit: "Saqlash jarayoni davom etmoqda." } };
+    setIsSubmitting(true);
     const payload = { ...form, ...overrides };
     const nextErrors = validateProduct(payload, products);
     setErrors(nextErrors);
-    if (Object.keys(nextErrors).length) return { ok: false, errors: nextErrors };
+    if (Object.keys(nextErrors).length) {
+      setIsSubmitting(false);
+      return { ok: false, errors: nextErrors };
+    }
 
-    const result = onSubmit(payload);
-    if (result?.ok) setDirty(false);
-    return result;
+    try {
+      const result = onSubmit(payload);
+      if (result?.ok) setDirty(false);
+      return result;
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return {
@@ -89,6 +99,7 @@ const useProductForm = ({ product, products, onSubmit }) => {
     step,
     dirty,
     errors,
+    isSubmitting,
     actions: {
       setStep,
       update,

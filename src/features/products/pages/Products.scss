@@ -51,6 +51,25 @@
     font: inherit;
   }
 
+  input,
+  select,
+  textarea {
+    box-sizing: border-box;
+  }
+
+  select {
+    appearance: none;
+    background-image:
+      linear-gradient(45deg, transparent 50%, rgba(15, 23, 42, 0.55) 50%),
+      linear-gradient(135deg, rgba(15, 23, 42, 0.55) 50%, transparent 50%);
+    background-position:
+      calc(100% - 16px) 50%,
+      calc(100% - 11px) 50%;
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+    padding-right: 32px !important;
+  }
+
   button {
     transition:
       transform 220ms var(--products-ease),
@@ -81,8 +100,11 @@
   select:focus-visible,
   textarea:focus-visible,
   [tabindex]:focus-visible {
-    outline: 3px solid rgba(92, 134, 245, 0.18);
-    outline-offset: 2px;
+    outline: 0;
+    border-color: rgba(43, 79, 188, 0.32);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.72),
+      0 0 0 3px rgba(92, 134, 245, 0.14);
   }
 
   .ui-modal__panel {
@@ -283,6 +305,15 @@
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.3),
     0 14px 32px rgba(70, 101, 174, 0.16);
+}
+
+.products-mini-button.is-danger,
+.products-button.is-danger {
+  color: rgba(255, 255, 255, 0.94);
+  border-color: rgba(210, 72, 82, 0.42);
+  background:
+    linear-gradient(180deg, rgba(226, 92, 104, 0.9), rgba(185, 50, 62, 0.92)),
+    rgba(210, 72, 82, 0.88);
 }
 
 .products-mini-button {
@@ -1263,7 +1294,7 @@
 .products-action-menu {
   position: relative;
 
-  summary {
+  > button {
     width: 42px;
     min-height: 42px;
     display: grid;
@@ -1274,15 +1305,18 @@
     background: var(--products-control-bg);
     box-shadow: var(--products-button-shadow);
     cursor: pointer;
-    list-style: none;
   }
 
-  &[open] div {
+  > div {
+    display: none;
+  }
+
+  &.is-open > div {
     position: absolute;
-    z-index: 30;
+    z-index: 90;
     right: 0;
     top: calc(100% + 6px);
-    min-width: 150px;
+    min-width: 176px;
     display: grid;
     gap: 5px;
     padding: 8px;
@@ -1301,6 +1335,41 @@
 
   .is-danger {
     color: var(--products-danger);
+  }
+}
+
+.products-table-product {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+
+  &__icon {
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--products-border-soft);
+    border-radius: 12px;
+    color: var(--products-accent);
+    background: rgba(255, 255, 255, 0.18);
+  }
+
+  small {
+    display: grid !important;
+    gap: 2px;
+  }
+}
+
+.products-confirm-body {
+  strong {
+    color: var(--products-text-primary);
+    font-size: 14px;
+  }
+
+  span {
+    color: var(--products-text-secondary);
+    font-size: 12px;
   }
 }
 

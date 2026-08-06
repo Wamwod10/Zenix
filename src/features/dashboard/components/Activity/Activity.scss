@@ -68,4 +68,22 @@
       color: rgba(32, 152, 176, 0.9);
     }
   }
+
+  &__all {
+    position: relative;
+    z-index: 2;
+    min-height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    margin-top: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.66);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.18);
+    color: rgba(43, 79, 188, 0.86);
+    font-size: 12px;
+    font-weight: 760;
+    cursor: pointer;
+  }
 }

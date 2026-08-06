@@ -1,9 +1,13 @@
 import { useState } from "react";
 import { Factory, Plus } from "lucide-react";
 
+import { Modal } from "../../../../components/ui/Modal/Modal";
+
 const Brands = ({ brands, units, onCreateBrand, onUpdateBrand, onDeleteBrand }) => {
   const [form, setForm] = useState({ name: "", code: "", manufacturer: "", country: "UZ" });
   const [editingId, setEditingId] = useState("");
+  const [deleteId, setDeleteId] = useState("");
+  const deleteCandidate = brands.find((item) => item.id === deleteId);
 
   const submit = () => {
     if (!form.name || !form.code) return;
@@ -14,6 +18,10 @@ const Brands = ({ brands, units, onCreateBrand, onUpdateBrand, onDeleteBrand }) 
     }
     setForm({ name: "", code: "", manufacturer: "", country: "UZ" });
     setEditingId("");
+  };
+  const confirmDelete = () => {
+    if (!deleteId) return;
+    if (onDeleteBrand(deleteId)) setDeleteId("");
   };
 
   const startEdit = (brand) => {
@@ -57,7 +65,7 @@ const Brands = ({ brands, units, onCreateBrand, onUpdateBrand, onDeleteBrand }) 
               <span>{brand.manufacturer}</span>
               <div className="products-row-actions products-row-actions--text">
                 <button type="button" onClick={() => startEdit(brand)}>Tahrirlash</button>
-                <button type="button" onClick={() => window.confirm("Brendni o'chirishni tasdiqlaysizmi?") && onDeleteBrand(brand.id)}>
+                <button type="button" onClick={() => setDeleteId(brand.id)}>
                   O'chirish
                 </button>
               </div>
@@ -78,6 +86,23 @@ const Brands = ({ brands, units, onCreateBrand, onUpdateBrand, onDeleteBrand }) 
           </div>
         </section>
       </section>
+      <Modal
+        open={Boolean(deleteCandidate)}
+        title="Brendni o'chirish"
+        description={deleteCandidate?.name}
+        onClose={() => setDeleteId("")}
+        footer={(
+          <>
+            <button type="button" className="products-mini-button" onClick={() => setDeleteId("")}>Bekor qilish</button>
+            <button type="button" className="products-mini-button is-danger" onClick={confirmDelete}>O'chirish</button>
+          </>
+        )}
+      >
+        <div className="products-confirm-body">
+          <strong>Brend o'chirishdan oldin mahsulot bog'lanishlari tekshiriladi.</strong>
+          <span>Mahsulot bog'langan bo'lsa amal bloklanadi. Avval mahsulotlarni boshqa brendga ko'chiring.</span>
+        </div>
+      </Modal>
     </div>
   );
 };

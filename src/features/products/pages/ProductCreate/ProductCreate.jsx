@@ -1,12 +1,14 @@
-import { useSearchParams } from "react-router-dom";
+import { useLocation, useSearchParams } from "react-router-dom";
 
 import { useSuppliers } from "../../../suppliers/suppliersApi";
 import ProductForm from "../../components/ProductForm/ProductForm";
 
 const ProductCreate = ({ controller }) => {
   const [searchParams] = useSearchParams();
+  const location = useLocation();
   const { actions: supplierActions } = useSuppliers();
   const supplierId = searchParams.get("supplierId");
+  const prefill = location.state?.prefill;
 
   const handleSubmit = (payload) => {
     const result = controller.actions.createOrUpdateProduct(payload);
@@ -35,6 +37,7 @@ const ProductCreate = ({ controller }) => {
   return (
     <ProductForm
       mode="create"
+      product={prefill}
       products={controller.state.products}
       categories={controller.state.categories}
       brands={controller.state.brands}

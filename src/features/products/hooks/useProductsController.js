@@ -354,6 +354,17 @@ const useProductsController = () => {
       }, {}),
     [products, purchaseHistoryRows, purchases.suppliers],
   );
+  const warehouseOptions = useMemo(() => {
+    const map = new Map();
+    products.forEach((product) => {
+      (product.stockSummary || []).forEach((row) => {
+        const id = row.warehouseId || row.warehouse || row.warehouseName;
+        if (!id) return;
+        map.set(id, row.warehouseName || row.warehouse || id);
+      });
+    });
+    return Array.from(map, ([id, name]) => ({ id, name }));
+  }, [products]);
 
   useEffect(() => {
     setPage((currentPage) => Math.min(Math.max(1, currentPage), pageCount));
@@ -556,10 +567,9 @@ const useProductsController = () => {
       if (!product) return null;
       const category = state.categories.find((item) => item.id === product.categoryId);
       const brand = state.brands.find((item) => item.id === product.brandId);
-      const duplicateId = generateProductId("prd");
       const duplicate = {
         ...product,
-        id: duplicateId,
+        id: "",
         name: `${product.name} nusxa`,
         sku: createUniqueSku({
           name: product.name,
@@ -570,19 +580,16 @@ const useProductsController = () => {
           products: state.products,
         }),
         barcodes: [productIdentityAdapter.generateProductBarcode({ products: state.products })],
-        qrCode: productIdentityAdapter.generateProductQrCode({ id: duplicateId }),
+        qrCode: "",
         status: "draft",
         approvalStatus: "draft",
-        createdAt: now(),
-        updatedAt: now(),
+        createdAt: "",
+        updatedAt: "",
       };
 
-      setState((current) => ({ ...current, products: [duplicate, ...current.products] }));
-      addAudit({ action: "Mahsulot nusxalandi", target: product.name, newValue: duplicate.sku });
-      notify({ title: "Nusxa yaratildi", message: duplicate.name });
       return duplicate;
     },
-    [addAudit, notify, productsById, setState, state],
+    [productsById, state],
   );
 
   const patchProducts = useCallback(
@@ -610,20 +617,43 @@ const useProductsController = () => {
   const archiveProduct = useCallback(
     (productId) => {
       const product = productsById[productId];
-      const canArchive =
-        typeof window === "undefined" ||
-        window.confirm(`${product?.name || "Mahsulot"} arxivlansinmi?`);
+      const stock = summarizeStock(product?.stockSummary || []);
 
-      if (!canArchive) return false;
+      if (stock.onHand > 0 || stock.reserved > 0 || stock.incoming > 0) {
+        notify({
+          level: "important",
+          title: "Mahsulot arxivlanmadi",
+          message: "Qoldiq, rezerv yoki kelayotgan kirim bor mahsulotni avval omborda yakunlang.",
+        });
+        setAsyncStatus({ type: "error", message: "Arxivlash bloklandi: qoldiq, rezerv yoki kirim mavjud." });
+        return false;
+      }
       return patchProducts([productId], { status: "archived" }, "Mahsulot arxivlandi");
     },
-    [patchProducts, productsById],
+    [notify, patchProducts, productsById],
   );
 
   const activateProduct = useCallback(
-    (productId) =>
-      patchProducts([productId], { status: "active", approvalStatus: "approved", lifecycle: "active" }, "Mahsulot faollashtirildi"),
-    [patchProducts],
+    (productId) => {
+      const product = productsById[productId];
+      const errors = validateProduct(
+        { ...product, status: "active", approvalStatus: "approved", lifecycle: "active" },
+        state.products,
+      );
+
+      if (Object.keys(errors).length) {
+        notify({
+          level: "important",
+          title: "Mahsulot faollashmadi",
+          message: Object.values(errors)[0],
+        });
+        setAsyncStatus({ type: "error", message: Object.values(errors)[0] });
+        return false;
+      }
+
+      return patchProducts([productId], { status: "active", approvalStatus: "approved", lifecycle: "active" }, "Mahsulot faollashtirildi");
+    },
+    [notify, patchProducts, productsById, state.products],
   );
 
   const deactivateProduct = useCallback(
@@ -962,6 +992,7 @@ const useProductsController = () => {
     aiInsights,
     purchaseHistoryRows,
     supplierSummariesByProductId,
+    warehouseOptions,
     permissions: {
       canCreate: canProduct(role, "create"),
       canViewCost: canProduct(role, "viewCost"),

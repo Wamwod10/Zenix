@@ -6,6 +6,7 @@ import { normalizeHubSections } from "../moduleHub.utils";
 import "./ModuleHub.scss";
 
 const ModuleHub = ({
+  as: Component = "main",
   config,
   permissions,
   loading = false,
@@ -20,7 +21,7 @@ const ModuleHub = ({
   const items = sections.flatMap((section) => section.items);
 
   return (
-    <main className="module-hub" aria-labelledby={`${config.id}-module-hub-title`}>
+    <Component className="module-hub" aria-labelledby={`${config.id}-module-hub-title`}>
       <ModuleHubHeader
         id={`${config.id}-module-hub-title`}
         title={config.title}
@@ -44,7 +45,7 @@ const ModuleHub = ({
           description="Bu modul uchun ko'rinadigan hub cardlar topilmadi."
         />
       )}
-    </main>
+    </Component>
   );
 };
 

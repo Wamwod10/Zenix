@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { FolderTree, Plus } from "lucide-react";
 
+import { Modal } from "../../../../components/ui/Modal/Modal";
 import { labelProductStatus } from "../../utils/productCalculations";
 
 const Categories = ({ categories, onCreateCategory, onUpdateCategory, onDeleteCategory }) => {
   const [form, setForm] = useState({ name: "", code: "", parentId: "" });
   const [editingId, setEditingId] = useState("");
+  const [deleteId, setDeleteId] = useState("");
+  const deleteCandidate = categories.find((item) => item.id === deleteId);
 
   const submit = () => {
     if (!form.name || !form.code) return;
@@ -16,6 +19,10 @@ const Categories = ({ categories, onCreateCategory, onUpdateCategory, onDeleteCa
     }
     setForm({ name: "", code: "", parentId: "" });
     setEditingId("");
+  };
+  const confirmDelete = () => {
+    if (!deleteId) return;
+    if (onDeleteCategory(deleteId)) setDeleteId("");
   };
 
   const startEdit = (category) => {
@@ -62,13 +69,30 @@ const Categories = ({ categories, onCreateCategory, onUpdateCategory, onDeleteCa
             <span>{item.productCount || 0} mahsulot · {labelProductStatus(item.status)}</span>
             <div className="products-row-actions products-row-actions--text">
               <button type="button" onClick={() => startEdit(item)}>Tahrirlash</button>
-              <button type="button" onClick={() => window.confirm("Kategoriyani o'chirishni tasdiqlaysizmi?") && onDeleteCategory(item.id)}>
+              <button type="button" onClick={() => setDeleteId(item.id)}>
                 O'chirish
               </button>
             </div>
           </article>
         ))}
       </section>
+      <Modal
+        open={Boolean(deleteCandidate)}
+        title="Kategoriyani o'chirish"
+        description={deleteCandidate?.name}
+        onClose={() => setDeleteId("")}
+        footer={(
+          <>
+            <button type="button" className="products-mini-button" onClick={() => setDeleteId("")}>Bekor qilish</button>
+            <button type="button" className="products-mini-button is-danger" onClick={confirmDelete}>O'chirish</button>
+          </>
+        )}
+      >
+        <div className="products-confirm-body">
+          <strong>{deleteCandidate?.productCount ? "Bu kategoriyada mahsulot bor." : "Kategoriya o'chiriladi."}</strong>
+          <span>Mahsulot bog'langan bo'lsa amal bloklanadi. Avval mahsulotlarni boshqa kategoriyaga ko'chiring.</span>
+        </div>
+      </Modal>
     </div>
   );
 };

@@ -9,12 +9,13 @@ import {
   Copy,
   Eye,
   MoreHorizontal,
+  Package,
   PackagePlus,
   Pencil,
   RotateCcw,
   Send,
 } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
@@ -31,9 +32,9 @@ const columnLabels = {
   name: "Mahsulot",
   taxonomy: "Kategoriya / brend",
   price: "Narx",
-  margin: "Marja",
+  margin: "Tannarx / marja",
   stock: "Qoldiq",
-  status: "Holat",
+  status: "Mahsulot holati",
   updatedAt: "Yangilangan",
 };
 
@@ -69,6 +70,9 @@ const ProductTable = ({
 }) => {
   const navigate = useNavigate();
   const selectAllRef = useRef(null);
+  const menuRef = useRef(null);
+  const [openMenuId, setOpenMenuId] = useState("");
+  const [pendingAction, setPendingAction] = useState("");
   const visibleIds = products.map((product) => product.id);
   const selectedVisibleCount = visibleIds.filter((id) => selectedIds.includes(id)).length;
   const allVisibleSelected = visibleIds.length > 0 && selectedVisibleCount === visibleIds.length;
@@ -78,6 +82,21 @@ const ProductTable = ({
       selectAllRef.current.indeterminate = selectedVisibleCount > 0 && !allVisibleSelected;
     }
   }, [allVisibleSelected, selectedVisibleCount]);
+
+  useEffect(() => {
+    const closeMenu = (event) => {
+      if (event.type === "keydown" && event.key !== "Escape") return;
+      if (event.type === "mousedown" && menuRef.current?.contains(event.target)) return;
+      setOpenMenuId("");
+    };
+
+    document.addEventListener("mousedown", closeMenu);
+    document.addEventListener("keydown", closeMenu);
+    return () => {
+      document.removeEventListener("mousedown", closeMenu);
+      document.removeEventListener("keydown", closeMenu);
+    };
+  }, []);
 
   if (!products.length) {
     return (
@@ -97,58 +116,75 @@ const ProductTable = ({
     );
   }
 
+  const runAction = (key, action) => {
+    setPendingAction(key);
+    setOpenMenuId("");
+    try {
+      action();
+    } finally {
+      setPendingAction("");
+    }
+  };
+
   const actionButtons = (product) => (
     <div className="products-row-actions">
-      <button type="button" title="Tezkor ko'rish" aria-label="Tezkor ko'rish" onClick={() => onOpenQuickView(product.id)}>
+      <button type="button" title="Tezkor ko'rish" aria-label="Tezkor ko'rish" disabled={Boolean(pendingAction)} onClick={() => onOpenQuickView(product.id)}>
         <Eye size={15} />
       </button>
-      <button type="button" title="Tahrirlash" aria-label="Tahrirlash" onClick={() => navigate(`/products/${product.id}/edit`)}>
+      <button type="button" title="Tahrirlash" aria-label="Tahrirlash" disabled={Boolean(pendingAction)} onClick={() => navigate(`/products/${product.id}/edit`)}>
         <Pencil size={15} />
       </button>
-      <details className="products-action-menu">
-        <summary aria-label="Qo'shimcha amallar" title="Qo'shimcha amallar">
+      <div className={`products-action-menu ${openMenuId === product.id ? "is-open" : ""}`} ref={openMenuId === product.id ? menuRef : null}>
+        <button
+          type="button"
+          aria-label="Qo'shimcha amallar"
+          title="Qo'shimcha amallar"
+          aria-expanded={openMenuId === product.id}
+          disabled={Boolean(pendingAction)}
+          onClick={() => setOpenMenuId((current) => (current === product.id ? "" : product.id))}
+        >
           <MoreHorizontal size={15} />
-        </summary>
+        </button>
         <div>
-          <button type="button" onClick={() => navigate(`/products/${product.id}/edit`)}>
+          <button type="button" onClick={() => runAction(`${product.id}:edit`, () => navigate(`/products/${product.id}/edit`))}>
             <Pencil size={14} />
             Tahrirlash
           </button>
           {product.status !== "active" && product.status !== "archived" && (
-            <button type="button" onClick={() => onActivate(product.id)}>
+            <button type="button" onClick={() => runAction(`${product.id}:activate`, () => onActivate(product.id))}>
               <CheckCircle2 size={14} />
               Faollashtirish
             </button>
           )}
           {product.status === "draft" && (
-            <button type="button" onClick={() => onSubmitApproval(product.id)}>
+            <button type="button" onClick={() => runAction(`${product.id}:approval`, () => onSubmitApproval(product.id))}>
               <Send size={14} />
               Tasdiqqa yuborish
             </button>
           )}
           {product.status === "active" && (
-            <button type="button" onClick={() => onDeactivate(product.id)}>
+            <button type="button" onClick={() => runAction(`${product.id}:deactivate`, () => onDeactivate(product.id))}>
               <Ban size={14} />
               Nofaol qilish
             </button>
           )}
-          <button type="button" onClick={() => onDuplicate(product.id)}>
+          <button type="button" onClick={() => runAction(`${product.id}:duplicate`, () => onDuplicate(product.id))}>
             <Copy size={14} />
             Nusxalash
           </button>
           {product.status === "archived" ? (
-            <button type="button" onClick={() => onRestore(product.id)}>
+            <button type="button" onClick={() => runAction(`${product.id}:restore`, () => onRestore(product.id))}>
               <RotateCcw size={14} />
               Tiklash
             </button>
           ) : (
-            <button type="button" className="is-danger" onClick={() => onArchive(product.id)}>
+            <button type="button" className="is-danger" onClick={() => runAction(`${product.id}:archive`, () => onArchive(product.id))}>
               <Archive size={14} />
               Arxivlash
             </button>
           )}
         </div>
-      </details>
+      </div>
     </div>
   );
 
@@ -159,15 +195,15 @@ const ProductTable = ({
           {products.map((product) => (
             <article className="product-card" key={product.id}>
               <div className="product-card__visual" aria-hidden="true">
-                <span>{product.name.slice(0, 2).toUpperCase()}</span>
+                <Package size={22} />
               </div>
               <div className="product-card__body">
                 <div className="product-card__chips">
-                  <span>{product.category?.name || "Kategoriya yo'q"}</span>
-                  <span>{product.brand?.name || "Brend yo'q"}</span>
+                  <span>{product.category?.name || "Belgilanmagan"}</span>
+                  <span>{product.brand?.name || "Belgilanmagan"}</span>
                 </div>
                 <h3>{product.name}</h3>
-                <p>{product.sku}</p>
+                <p>SKU: {product.sku || "Belgilanmagan"}</p>
               </div>
               <div className="product-card__metrics">
                 <strong>{formatMoney(product.price)}</strong>
@@ -240,23 +276,36 @@ const ProductTable = ({
                   />
                 </td>
                 <td>
-                  <button type="button" className="products-link-button" onClick={() => navigate(`/products/${product.id}`)}>
-                    {product.name}
-                  </button>
-                  <small title={product.internalCode}>
-                    {product.sku} · {product.barcodes?.[0] || "Shtrix-kod yo'q"}
-                  </small>
+                  <div className="products-table-product">
+                    <span className="products-table-product__icon"><Package size={17} /></span>
+                    <div>
+                      <button type="button" className="products-link-button" onClick={() => navigate(`/products/${product.id}`)}>
+                        {product.name}
+                      </button>
+                      <small title={product.internalCode}>
+                        <span>SKU: {product.sku || "Belgilanmagan"}</span>
+                        <span>Shtrix-kod: {product.barcodes?.[0] || "Belgilanmagan"}</span>
+                      </small>
+                    </div>
+                  </div>
                 </td>
                 <td>
-                  <strong className="products-table-meta">{product.category?.name || "-"}</strong>
-                  <small>{product.brand?.name || "-"}</small>
+                  <strong className="products-table-meta">{product.category?.name || "Belgilanmagan"}</strong>
+                  <small>{product.brand?.name || "Belgilanmagan"}</small>
                 </td>
                 <td>{formatMoney(product.price)}</td>
-                <td>{canViewCost ? formatMargin(product.margin) : "-"}</td>
+                <td>
+                  {canViewCost ? (
+                    <>
+                      <strong className="products-table-meta">{product.currentCost > 0 ? formatMoney(product.currentCost) : "Tannarx belgilanmagan"}</strong>
+                      <small>{formatMargin(product.margin)} marja</small>
+                    </>
+                  ) : "Yashirilgan"}
+                </td>
                 <td>
                   <StatusPill value={product.stockStatus} />
                   <small>
-                    {formatQuantity(product.stock.available, product.unit?.code)} mavjud · {formatQuantity(product.stock.reserved, product.unit?.code)} band
+                    {formatQuantity(product.stock.available, product.unit?.code)} mavjud, {formatQuantity(product.stock.reserved, product.unit?.code)} rezerv
                   </small>
                 </td>
                 <td><StatusPill value={product.status} /></td>

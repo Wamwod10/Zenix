@@ -38,6 +38,7 @@ const ProductRouteNotFound = () => {
 
 const ProductDetailsRoute = ({ controller, edit = false }) => {
   const { productId } = useParams();
+  const navigate = useNavigate();
   const product = productId ? controller.productsById[productId] : null;
 
   if (!product) return <ProductRouteNotFound />;
@@ -53,7 +54,10 @@ const ProductDetailsRoute = ({ controller, edit = false }) => {
       canViewCost={controller.permissions.canViewCost}
       purchaseHistoryRows={controller.purchaseHistoryRows.filter((row) => row.productId === product.id)}
       supplierSummary={controller.supplierSummariesByProductId[product.id]}
-      onDuplicate={controller.actions.duplicateProduct}
+      onDuplicate={(id) => {
+        const draft = controller.actions.duplicateProduct(id);
+        if (draft) navigate("/products/new", { state: { prefill: draft } });
+      }}
       onArchive={controller.actions.archiveProduct}
       onRestore={controller.actions.restoreProduct}
     />

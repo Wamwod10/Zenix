@@ -106,13 +106,32 @@ export const validateProduct = (product, products = []) => {
   const cost = toNumber(product.cost);
   const minPrice = toNumber(product.minPrice);
   const duplicates = detectDuplicateProduct(product, products);
+  const trimmedName = String(product.name || "").trim();
+  const requiresActivationData =
+    product.status !== "draft" ||
+    product.approvalStatus === "pending" ||
+    product.lifecycle === "active" ||
+    product.lifecycle === "review";
 
-  if (!String(product.name || "").trim()) errors.name = "Mahsulot nomi majburiy.";
-  if (!product.categoryId) errors.categoryId = "Kategoriya tanlang.";
-  if (!product.unitId) errors.unitId = "O'lchov birligi tanlang.";
-  if (price <= 0) errors.price = "Sotuv narxi 0 dan katta bo'lishi kerak.";
+  if (!trimmedName) {
+    errors.name = "Mahsulot nomi majburiy.";
+  } else if (trimmedName.length < 3) {
+    errors.name = "Mahsulot nomi kamida 3 ta belgidan iborat bo'lishi kerak.";
+  }
+  if (requiresActivationData && !product.categoryId) errors.categoryId = "Faollashtirish uchun kategoriya tanlang.";
+  if (requiresActivationData && !product.unitId) errors.unitId = "Faollashtirish uchun o'lchov birligi tanlang.";
+  if (requiresActivationData && price <= 0) errors.price = "Faollashtirish uchun sotuv narxi 0 dan katta bo'lishi kerak.";
+  if (requiresActivationData && cost <= 0) {
+    errors.cost = "Tannarxsiz mahsulotni faollashtirib bo'lmaydi. Foyda va marja hisoblanmaydi.";
+  }
   if (cost < 0 || minPrice < 0) errors.price = "Narxlar manfiy bo'lmasin.";
   if (price < minPrice) errors.minPrice = "Sotuv narxi eng past narxdan past bo'lmasin.";
+  if (
+    trimmedName &&
+    duplicates.some((item) => String(item.name || "").trim().toLowerCase() === trimmedName.toLowerCase())
+  ) {
+    errors.name = "Bu nomdagi mahsulot allaqachon bor. Takror yaratilayotgan bo'lsa nomni aniqlashtiring.";
+  }
   if (
     String(product.sku || "").trim() &&
     duplicates.some((item) => String(item.sku || "").toLowerCase() === String(product.sku || "").toLowerCase())
@@ -121,7 +140,11 @@ export const validateProduct = (product, products = []) => {
   }
   if (
     (product.barcodes || []).some(Boolean) &&
-    duplicates.some((item) => (item.barcodes || []).some((barcode) => (product.barcodes || []).includes(barcode)))
+    duplicates.some((item) =>
+      [item.barcode, ...(item.barcodes || [])]
+        .filter(Boolean)
+        .some((barcode) => (product.barcodes || []).includes(barcode)),
+    )
   ) {
     errors.barcodes = "Shtrix-kod noyob bo'lishi kerak.";
   }
@@ -150,15 +173,17 @@ export const validateProduct = (product, products = []) => {
 };
 
 export const formatMoney = (value, currency = "UZS") =>
-  new Intl.NumberFormat("uz-UZ", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(toNumber(value));
+  currency === "UZS"
+    ? `${new Intl.NumberFormat("uz-UZ", { maximumFractionDigits: 0 }).format(toNumber(value))} so'm`
+    : new Intl.NumberFormat("uz-UZ", {
+        style: "currency",
+        currency,
+        maximumFractionDigits: 0,
+      }).format(toNumber(value));
 
 export const formatMargin = (value) =>
   value == null || !Number.isFinite(Number(value))
-    ? "Tannarx yo'q"
+    ? "Tannarx belgilanmagan"
     : `${Math.round(Number(value))}%`;
 
 export const formatQuantity = (value, unit = "dona") =>

@@ -5,7 +5,12 @@ import "./DashboardGreeting.scss";
 const formatUpdatedAt = (timestamp) => {
   if (!timestamp) return "Yangilanish kutilmoqda";
 
-  const diffMs = Date.now() - Number(timestamp);
+  const parsed =
+    typeof timestamp === "number" ? timestamp : new Date(timestamp).getTime();
+
+  if (!Number.isFinite(parsed)) return "Yangilanish vaqti noma'lum";
+
+  const diffMs = Date.now() - parsed;
   const minutes = Math.max(0, Math.floor(diffMs / 60000));
 
   if (minutes < 1) return "Hozirgina yangilandi";
@@ -15,7 +20,7 @@ const formatUpdatedAt = (timestamp) => {
   return `${hours} soat oldin yangilandi`;
 };
 
-const DashboardGreeting = ({ isFetching, lastUpdated, onRefresh, summary }) => {
+const DashboardGreeting = ({ isFetching, isStale, lastUpdated, onRefresh, summary }) => {
   const navigate = useNavigate();
   const userName = summary?.user?.fullName;
   const tenantName = summary?.tenant?.name;
@@ -78,10 +83,17 @@ const DashboardGreeting = ({ isFetching, lastUpdated, onRefresh, summary }) => {
             type="button"
             aria-label="Dashboard ma'lumotlarini yangilash"
             title={formatUpdatedAt(lastUpdated)}
+            disabled={isFetching}
             onClick={onRefresh}
           >
             <RefreshCw size={16} />
-            <span>{isFetching ? "Yangilanmoqda" : formatUpdatedAt(lastUpdated)}</span>
+            <span>
+              {isFetching
+                ? "Yangilanmoqda"
+                : isStale
+                  ? "Ma'lumot eskirgan"
+                  : formatUpdatedAt(lastUpdated)}
+            </span>
           </button>
         </div>
       </div>

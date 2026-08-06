@@ -16,11 +16,7 @@ const DashboardHub = () => {
   const permissions = useMemo(() => resolveUserPermissions(user), [user]);
   const config = useMemo(() => createDashboardModulesConfig(), []);
 
-  return (
-    <main className="zenix-dashboard zenix-dashboard--hub">
-      <ModuleHub config={config} permissions={permissions} />
-    </main>
-  );
+  return <ModuleHub config={config} permissions={permissions} />;
 };
 
 export default DashboardHub;

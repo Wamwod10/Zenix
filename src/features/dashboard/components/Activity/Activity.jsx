@@ -1,5 +1,6 @@
 import {
   Activity as ActivityIcon,
+  ArrowRight,
   KeyRound,
   MailCheck,
   Settings2,
@@ -7,6 +8,7 @@ import {
   UserPlus,
   Wallet,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import "./Activity.scss";
 
 const actionLabels = {
@@ -50,11 +52,18 @@ function timeAgo(dateString) {
 
   const hours = Math.floor(minutes / 60);
   if (hours < 24) return `${hours} soat oldin`;
+  if (hours < 24 * 7) return `${Math.floor(hours / 24)} kun oldin`;
 
-  return `${Math.floor(hours / 24)} kun oldin`;
+  return date.toLocaleString("uz-UZ", {
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    month: "short",
+  });
 }
 
 const Activity = ({ items = [] }) => {
+  const navigate = useNavigate();
   const feed = Array.isArray(items) ? items : [];
 
   return (
@@ -93,27 +102,43 @@ const Activity = ({ items = [] }) => {
             tone: "blue",
           };
           const Icon = meta.icon;
+          const eventTime = item.createdAt || item.timestamp || item.at;
+          const objectLabel = item.entityName || item.objectName || item.newValue || item.entityId;
 
           return (
             <div
               className={`dashboard-activity__item dashboard-activity__item--${meta.tone}`}
-              key={item.id || `${item.action}-${index}`}
+              key={
+                item.id ||
+                item.auditId ||
+                `${item.action}-${item.entityId || "event"}-${eventTime || index}`
+              }
               style={{ "--item-index": index }}
+              title={eventTime ? new Date(eventTime).toLocaleString("uz-UZ") : undefined}
             >
               <span>
                 <Icon size={15} />
               </span>
               <div>
-                <strong>{meta.title}</strong>
+                <strong>{objectLabel ? `${meta.title}: ${objectLabel}` : meta.title}</strong>
                 <small>
-                  {item.userName ? `${item.userName} · ` : ""}
-                  {timeAgo(item.createdAt)}
+                  {item.userName || item.user ? `${item.userName || item.user} - ` : ""}
+                  {timeAgo(eventTime)}
                 </small>
               </div>
             </div>
           );
         })}
       </div>
+
+      <button
+        className="dashboard-activity__all"
+        type="button"
+        onClick={() => navigate("/reports/audit")}
+      >
+        Barcha faoliyatni ko'rish
+        <ArrowRight size={14} />
+      </button>
     </article>
   );
 };

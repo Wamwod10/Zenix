@@ -1,5 +1,27 @@
 import { MODULE_IDS, getModuleById } from "../../../config/modules";
 
+const ROUTES_AVAILABLE_IN_APP = new Set([
+  "/pos",
+  "/products",
+  "/crm",
+  "/warehouse",
+  "/purchases",
+  "/suppliers",
+  "/finance",
+  "/reports",
+  "/hr",
+  "/settings",
+]);
+
+const PRIORITY_MODULES_BY_BUSINESS_TYPE = {
+  retail: [MODULE_IDS.pos, MODULE_IDS.inventory, MODULE_IDS.finance, MODULE_IDS.purchases],
+  food: [MODULE_IDS.pos, MODULE_IDS.inventory, MODULE_IDS.purchases, MODULE_IDS.finance],
+  restaurant: [MODULE_IDS.pos, MODULE_IDS.inventory, MODULE_IDS.purchases, MODULE_IDS.finance],
+  production: [MODULE_IDS.inventory, MODULE_IDS.purchases, MODULE_IDS.finance, MODULE_IDS.reports],
+  services: [MODULE_IDS.crm, MODULE_IDS.finance, MODULE_IDS.reports, MODULE_IDS.hr],
+  default: [MODULE_IDS.pos, MODULE_IDS.inventory, MODULE_IDS.finance, MODULE_IDS.purchases],
+};
+
 const DASHBOARD_MODULES = [
   {
     id: MODULE_IDS.pos,
@@ -53,23 +75,47 @@ const DASHBOARD_MODULES = [
   },
 ];
 
-export const createDashboardModulesConfig = () => ({
+const orderDashboardModules = (businessTypeId) => {
+  const priority =
+    PRIORITY_MODULES_BY_BUSINESS_TYPE[businessTypeId] ||
+    PRIORITY_MODULES_BY_BUSINESS_TYPE.default;
+  const priorityScore = new Map(priority.map((id, index) => [id, index]));
+
+  return [...DASHBOARD_MODULES].sort((first, second) => {
+    const firstPriority = priorityScore.has(first.id) ? priorityScore.get(first.id) : 100;
+    const secondPriority = priorityScore.has(second.id) ? priorityScore.get(second.id) : 100;
+
+    if (firstPriority !== secondPriority) return firstPriority - secondPriority;
+
+    return (
+      DASHBOARD_MODULES.findIndex((item) => item.id === first.id) -
+      DASHBOARD_MODULES.findIndex((item) => item.id === second.id)
+    );
+  });
+};
+
+export const createDashboardModulesConfig = ({ businessTypeId } = {}) => ({
   id: "dashboard-modules",
-  title: "Dashboard",
-  description: "Kerakli bo'limni tanlang.",
+  title: "Bo'limlar",
+  description: "Asosiy modullarga tezkor kirish.",
   sections: [
     {
       id: "main",
-      items: DASHBOARD_MODULES.map((card, index) => {
+      items: orderDashboardModules(businessTypeId).flatMap((card, index) => {
         const module = getModuleById(card.id);
+        const route = module?.route;
 
-        return {
+        if (!route || !ROUTES_AVAILABLE_IN_APP.has(route)) {
+          return [];
+        }
+
+        return [{
           ...card,
           icon: module?.icon,
-          route: module?.route,
+          route,
           permission: module?.permission,
           order: index + 1,
-        };
+        }];
       }),
     },
   ],

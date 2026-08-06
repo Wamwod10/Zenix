@@ -7,6 +7,7 @@ const ProductSearch = ({
   filters,
   categories,
   brands,
+  warehouses = [],
   savedFilters,
   onFilter,
   onApplySavedFilter,
@@ -83,6 +84,15 @@ const ProductSearch = ({
           <option value="watch">Kuzatuvda</option>
           <option value="low">Kam qolgan</option>
           <option value="out">Tugagan</option>
+        </select>
+      </label>
+      <label>
+        <span>Ombor / filial</span>
+        <select value={filters.warehouse} onChange={(event) => onFilter("warehouse", event.target.value)}>
+          <option value="all">Barchasi</option>
+          {warehouses.map((item) => (
+            <option key={item.id} value={item.id}>{item.name}</option>
+          ))}
         </select>
       </label>
     </div>
