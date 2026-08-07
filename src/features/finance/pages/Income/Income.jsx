@@ -1,3 +1,4 @@
+import { GlassSelect } from "@/components/ui";
 import { useMemo, useState } from "react";
 
 import TransactionCreateDialog from "../../components/TransactionCreateDialog/TransactionCreateDialog";
@@ -43,29 +44,29 @@ const Income = ({ controller, onNavigate }) => {
           </label>
           <label>
             <span>Holat</span>
-            <select value={filters.status} onChange={(event) => setFilters((current) => ({ ...current, status: event.target.value }))}>
+            <GlassSelect value={filters.status} onChange={(event) => setFilters((current) => ({ ...current, status: event.target.value }))}>
               <option value="all">Barchasi</option>
               <option value="Draft">Qoralama</option>
               <option value="Pending">Tasdiq kutmoqda</option>
               <option value="Approved">Tasdiqlangan</option>
               <option value="Cancelled">Bekor qilingan</option>
-            </select>
+            </GlassSelect>
           </label>
           <label>
             <span>Hisob</span>
-            <select value={filters.account} onChange={(event) => setFilters((current) => ({ ...current, account: event.target.value }))}>
+            <GlassSelect value={filters.account} onChange={(event) => setFilters((current) => ({ ...current, account: event.target.value }))}>
               <option value="all">Barchasi</option>
               {controller.state.accounts.map((account) => (
                 <option key={account.id} value={account.id}>{account.code} | {account.name}</option>
               ))}
-            </select>
+            </GlassSelect>
           </label>
           <label>
             <span>Kategoriya</span>
-            <select value={filters.category} onChange={(event) => setFilters((current) => ({ ...current, category: event.target.value }))}>
+            <GlassSelect value={filters.category} onChange={(event) => setFilters((current) => ({ ...current, category: event.target.value }))}>
               <option value="all">Barchasi</option>
               {["Mahsulot savdosi", "Xizmat", "Boshqa daromad", "Foiz daromadi", "Investitsiya", "Boshqa"].map((item) => <option key={item} value={item}>{item}</option>)}
-            </select>
+            </GlassSelect>
           </label>
           <label><span>Sana boshidan</span><input type="date" value={filters.dateFrom} onChange={(event) => setFilters((current) => ({ ...current, dateFrom: event.target.value }))} /></label>
           <label><span>Sana oxiri</span><input type="date" value={filters.dateTo} onChange={(event) => setFilters((current) => ({ ...current, dateTo: event.target.value }))} /></label>

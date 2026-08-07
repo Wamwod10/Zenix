@@ -1,3 +1,4 @@
+import { GlassSelect } from "@/components/ui";
 import { useEffect, useMemo, useState } from "react";
 
 const today = new Date().toISOString().slice(0, 10);
@@ -160,9 +161,9 @@ const EmployeeCreate = ({ controller, onNavigate }) => {
           )}
           {currentStep.id === "job" && (
             <>
-              <label>Bo'lim<select value={form.departmentId} onChange={(event) => update("departmentId", event.target.value)}>{state.departments.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
-              <label>Lavozim<select value={form.positionId} onChange={(event) => update("positionId", event.target.value)}>{state.positions.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}</select></label>
-              <label>Filial<select value={form.branchId} onChange={(event) => update("branchId", event.target.value)}>{state.branches.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
+              <label>Bo'lim<GlassSelect value={form.departmentId} onChange={(event) => update("departmentId", event.target.value)}>{state.departments.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</GlassSelect></label>
+              <label>Lavozim<GlassSelect value={form.positionId} onChange={(event) => update("positionId", event.target.value)}>{state.positions.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}</GlassSelect></label>
+              <label>Filial<GlassSelect value={form.branchId} onChange={(event) => update("branchId", event.target.value)}>{state.branches.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</GlassSelect></label>
             </>
           )}
           {currentStep.id === "salary" && (
@@ -183,7 +184,7 @@ const EmployeeCreate = ({ controller, onNavigate }) => {
             <>
               <label>Login<input value={form.login} onChange={(event) => update("login", event.target.value)} />{renderError("login")}</label>
               <label>Parol<input type="password" value={form.password} onChange={(event) => update("password", event.target.value)} />{renderError("password")}</label>
-              <label>Rol<select value={form.role} onChange={(event) => update("role", event.target.value)}>{controller.roles.map((role) => <option key={role.id} value={role.id}>{role.label}</option>)}</select></label>
+              <label>Rol<GlassSelect value={form.role} onChange={(event) => update("role", event.target.value)}>{controller.roles.map((role) => <option key={role.id} value={role.id}>{role.label}</option>)}</GlassSelect></label>
             </>
           )}
           {currentStep.id === "preview" && preview.map(([label, value]) => (

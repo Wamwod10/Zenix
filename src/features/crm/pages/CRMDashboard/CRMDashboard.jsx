@@ -52,27 +52,6 @@ const formatMetricValue = (metric) => {
   return formatNumber(metric.value);
 };
 
-const createGrowthPoints = (items) => {
-  if (!items.length) {
-    return "";
-  }
-
-  const values = items.map((item) => item.customers);
-  const minimum = Math.min(...values);
-  const maximum = Math.max(...values);
-  const range = Math.max(maximum - minimum, 1);
-
-  return items
-    .map((item, index) => {
-      const x = (index / Math.max(items.length - 1, 1)) * 100;
-      const normalizedValue = (item.customers - minimum) / range;
-      const y = 86 - normalizedValue * 66;
-
-      return `${x.toFixed(2)},${y.toFixed(2)}`;
-    })
-    .join(" ");
-};
-
 const CRMDashboard = () => {
   const refreshTimerRef = useRef(null);
 
@@ -84,11 +63,7 @@ const CRMDashboard = () => {
   const metrics = useMemo(() => getCrmDashboardMetricList(), []);
 
   const growthData = useMemo(() => crmDashboardData.growth.slice(-8), []);
-
-  const growthPoints = useMemo(
-    () => createGrowthPoints(growthData),
-    [growthData],
-  );
+  const growthPoints = "";
 
   const totalGrowth =
     growthData[growthData.length - 1].customers - growthData[0].customers;
@@ -248,7 +223,17 @@ const CRMDashboard = () => {
             </div>
           </div>
 
-          <div className="crm-dashboard__chart">
+          <div className="crm-dashboard__growth-list" aria-label="Oxirgi sakkiz oydagi mijozlar o'sishi">
+            {growthData.map((item) => (
+              <article key={item.id}>
+                <span>{item.label}</span>
+                <strong>{formatNumber(item.customers)}</strong>
+                <small>+{formatNumber(item.newCustomers)} yangi</small>
+              </article>
+            ))}
+          </div>
+
+          <div className="crm-dashboard__chart" aria-hidden="true">
             <svg
               viewBox="0 0 100 100"
               preserveAspectRatio="none"

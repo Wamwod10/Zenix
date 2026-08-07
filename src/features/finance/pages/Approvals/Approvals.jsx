@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { BadgeCheck, ShieldCheck } from "lucide-react";
 
 import ConfirmDialog from "../../components/ConfirmDialog/ConfirmDialog";
 import StatusBadge from "../../components/StatusBadge/StatusBadge";
@@ -10,6 +11,7 @@ const Approvals = ({ controller }) => {
   const [reject, setReject] = useState({ id: "", reason: "" });
   const pending = controller.state.transactions.filter((item) => item.status === "Pending");
   const roleLabels = Object.fromEntries(financeRoles.map((role) => [role.id, role.label]));
+  const tones = ["is-flow", "is-income", "is-bank", "is-expense", "is-net", "is-cash"];
 
   return (
     <section className="finance-view">
@@ -21,12 +23,20 @@ const Approvals = ({ controller }) => {
           </div>
         </div>
         <div className="finance-card-grid">
-          {approvalMatrix.map((rule) => (
-            <article className="finance-mini-card" key={rule.id}>
-              <strong>{rule.label}</strong>
-              <span>{roleLabels[rule.role] || rule.role}</span>
-            </article>
-          ))}
+          {approvalMatrix.map((rule, index) => {
+            const Icon = index % 2 === 0 ? ShieldCheck : BadgeCheck;
+
+            return (
+              <article className={`finance-mini-card finance-mini-card--metric ${tones[index % tones.length]}`} key={rule.id}>
+                <span className="finance-mini-card__icon" aria-hidden="true">
+                  <Icon size={18} />
+                </span>
+                <span className="finance-mini-card__label">{roleLabels[rule.role] || rule.role}</span>
+                <strong>{rule.label}</strong>
+                <small>Maker-checker tasdiq bosqichi</small>
+              </article>
+            );
+          })}
         </div>
       </section>
 

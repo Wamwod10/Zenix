@@ -1,3 +1,4 @@
+import { GlassSelect } from "@/components/ui";
 import { UserPlus } from "lucide-react";
 
 import { formatMoney } from "../../utils/hrFormatters";
@@ -29,9 +30,9 @@ const Recruitment = ({ controller, onNavigate }) => {
               <article key={candidate.id}>
                 <strong>{candidate.fullName}</strong>
                 <span>{candidate.source} · score {candidate.score} · interview {candidate.interviewDate}</span>
-                <select value={candidate.stage} onChange={(event) => controller.actions.updateCandidateStage(candidate.id, event.target.value)} aria-label="Candidate stage">
+                <GlassSelect value={candidate.stage} onChange={(event) => controller.actions.updateCandidateStage(candidate.id, event.target.value)} aria-label="Candidate stage">
                   {stages.map((stage) => <option key={stage} value={stage}>{stage}</option>)}
-                </select>
+                </GlassSelect>
                 <button type="button" onClick={() => onNavigate("employee-create")}>
                   <UserPlus size={15} /> Employee formga o'tkazish
                 </button>

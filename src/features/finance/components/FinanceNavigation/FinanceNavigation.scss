@@ -3,7 +3,7 @@
   gap: 8px;
   padding: 10px;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(219, 219, 219, 0.78);
   border-radius: 24px;
   background: rgba(255, 255, 255, 0.12);
   box-shadow:
@@ -13,6 +13,7 @@
   &__group {
     display: grid;
     gap: 7px;
+    padding: 2px 0px;
   }
 
   &__group-trigger {
@@ -22,7 +23,7 @@
     justify-content: space-between;
     gap: 8px;
     padding: 0 10px;
-    border: 1px solid rgba(255, 255, 255, 0.66);
+    border: 1px solid rgba(136, 136, 136, 0.66);
     border-radius: 13px;
     background: rgba(255, 255, 255, 0.14);
     color: rgba(15, 23, 42, 0.42);
@@ -50,7 +51,9 @@
     display: flex;
     gap: 7px;
     overflow-x: auto;
-    padding-bottom: 1px;
+    padding-bottom: 5px;
+    padding-top: 5px;
+    padding-left: 5px;
   }
 
   button {

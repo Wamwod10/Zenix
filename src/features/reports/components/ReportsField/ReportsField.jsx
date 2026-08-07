@@ -1,3 +1,4 @@
+import { GlassSelect } from "@/components/ui";
 import "./ReportsField.scss";
 
 const ReportsField = ({ label, type = "text", value, options = [], onChange, error, children, ...props }) => (
@@ -5,7 +6,7 @@ const ReportsField = ({ label, type = "text", value, options = [], onChange, err
     <span>{label}</span>
     {children || (
       type === "select" ? (
-        <select value={value} onChange={(event) => onChange?.(event.target.value)} {...props}>
+        <GlassSelect value={value} onChange={(event) => onChange?.(event.target.value)} {...props}>
           {options.map((item) => {
             const option = typeof item === "string" ? { value: item, label: item } : item;
             return (
@@ -14,7 +15,7 @@ const ReportsField = ({ label, type = "text", value, options = [], onChange, err
               </option>
             );
           })}
-        </select>
+        </GlassSelect>
       ) : (
         <input type={type} value={value} onChange={(event) => onChange?.(event.target.value)} {...props} />
       )

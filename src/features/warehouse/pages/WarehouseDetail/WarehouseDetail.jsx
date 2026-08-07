@@ -114,7 +114,7 @@ const WarehouseDetail = ({
             {rows.map((row) => (
               <article key={row.id}>
                 <div><strong>{row.name}</strong><span>{row.movementSpeed} · {row.abc}{row.xyz}</span></div>
-                <meter min="0" max={row.maximum} value={row.stocks?.[warehouse.id]?.onHand || 0} />
+                <b>{formatQuantity(row.stocks?.[warehouse.id]?.onHand || 0, row.unit)} / {formatQuantity(row.maximum, row.unit)}</b>
               </article>
             ))}
           </div>

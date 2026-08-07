@@ -1,3 +1,4 @@
+import { GlassSelect } from "@/components/ui";
 import {
   CalendarDays,
   CheckCircle2,
@@ -246,7 +247,7 @@ const CustomerPurchases = ({ customer, customerId }) => {
           </label>
 
           <label className="crm-customer-purchases__filter">
-            <select
+            <GlassSelect
               value={statusFilter}
               onChange={(event) => setStatusFilter(event.target.value)}
               aria-label="Xarid statusini tanlash"
@@ -256,7 +257,7 @@ const CustomerPurchases = ({ customer, customerId }) => {
               <option value="pending">Kutilmoqda</option>
               <option value="refunded">Qaytarilgan</option>
               <option value="cancelled">Bekor qilingan</option>
-            </select>
+            </GlassSelect>
 
             <ChevronDown size={15} aria-hidden="true" />
           </label>

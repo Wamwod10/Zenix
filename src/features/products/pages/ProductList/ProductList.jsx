@@ -1,3 +1,4 @@
+import { GlassSelect } from "@/components/ui";
 import { LayoutGrid, PackagePlus, Rows3, Table2 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -64,11 +65,11 @@ const ProductList = ({ controller }) => {
         <div className="products-results-toolbar__actions">
           <label className="products-page-size">
             <span>Sahifa</span>
-            <select value={controller.pageSize} onChange={(event) => controller.actions.setPageSize(event.target.value)}>
+            <GlassSelect value={controller.pageSize} onChange={(event) => controller.actions.setPageSize(event.target.value)}>
               {[6, 10, 20, 50].map((size) => (
                 <option key={size} value={size}>{size}</option>
               ))}
-            </select>
+            </GlassSelect>
           </label>
           <div className="products-view-toggle" aria-label="Mahsulotlar ko'rinishi">
             {[

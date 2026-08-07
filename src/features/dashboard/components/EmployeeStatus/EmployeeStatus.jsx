@@ -9,7 +9,6 @@ const EmployeeStatus = ({ employees }) => {
   const total = Number(employees?.total ?? 0);
   const active = Number(employees?.activeToday ?? 0);
   const inactive = Math.max(total - active, 0);
-  const progress = total > 0 ? Math.round((active / total) * 100) : 0;
 
   return (
     <article className="zenix-dashboard__panel dashboard-widget dashboard-widget--green employee-status">
@@ -35,11 +34,9 @@ const EmployeeStatus = ({ employees }) => {
             ? `${formatNumber(inactive)} xodim bugun hali faol emas`
             : "Smena va davomat endpointi ulanganda ko'rinadi"}
         </p>
-        <span
-          className="dashboard-widget__meter"
-          style={{ "--widget-progress": `${progress}%` }}
-        >
-          <i />
+        <span className="dashboard-widget__split">
+          <b>{formatNumber(active)}</b>
+          <small>Bugun faol</small>
         </span>
         <button
           type="button"

@@ -1,7 +1,7 @@
 .ui-modal {
   position: fixed;
   inset: 0;
-  z-index: 1800;
+  z-index: 2200;
   display: grid;
   place-items: center;
   padding: 24px;
@@ -101,13 +101,13 @@
 
 @media (max-width: 640px) {
   .ui-modal {
-    padding: 0;
-    align-items: end;
+    padding: 14px;
+    place-items: center;
 
     &__panel {
       width: 100%;
-      max-height: calc(100vh - 12px);
-      border-radius: 24px 24px 0 0;
+      max-height: calc(100dvh - 28px);
+      border-radius: 24px;
     }
 
     &__header,

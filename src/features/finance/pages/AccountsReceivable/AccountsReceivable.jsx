@@ -1,3 +1,4 @@
+import { GlassSelect } from "@/components/ui";
 import { useMemo, useState } from "react";
 
 import StatusBadge from "../../components/StatusBadge/StatusBadge";
@@ -37,8 +38,8 @@ const AccountsReceivable = ({ controller }) => {
         </div>
         <div className="finance-filters">
           <label><span>Qidirish</span><input value={filters.search} onChange={(event) => setFilters((current) => ({ ...current, search: event.target.value }))} placeholder="Mijoz yoki invoice" /></label>
-          <label><span>Holat</span><select value={filters.status} onChange={(event) => setFilters((current) => ({ ...current, status: event.target.value }))}><option value="all">Barchasi</option><option value="open">Ochiq</option><option value="overdue">Muddati o'tgan</option><option value="partial">Qisman</option><option value="paid">To'langan</option></select></label>
-          <label><span>Saralash</span><select value={filters.sort} onChange={(event) => setFilters((current) => ({ ...current, sort: event.target.value }))}><option value="dueDate">Muddat</option><option value="customer">Mijoz</option><option value="balance">Qoldiq</option></select></label>
+          <label><span>Holat</span><GlassSelect value={filters.status} onChange={(event) => setFilters((current) => ({ ...current, status: event.target.value }))}><option value="all">Barchasi</option><option value="open">Ochiq</option><option value="overdue">Muddati o'tgan</option><option value="partial">Qisman</option><option value="paid">To'langan</option></GlassSelect></label>
+          <label><span>Saralash</span><GlassSelect value={filters.sort} onChange={(event) => setFilters((current) => ({ ...current, sort: event.target.value }))}><option value="dueDate">Muddat</option><option value="customer">Mijoz</option><option value="balance">Qoldiq</option></GlassSelect></label>
           <button type="button" className="finance-button" onClick={() => { setFilters({ search: "", status: "all", sort: "dueDate" }); setPage(1); }}>Filtrlarni tozalash</button>
         </div>
         {visible.length ? (

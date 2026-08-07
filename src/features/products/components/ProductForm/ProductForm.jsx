@@ -1,3 +1,4 @@
+import { GlassSelect } from "@/components/ui";
 import {
   AlertTriangle,
   Barcode,
@@ -274,16 +275,16 @@ const ProductForm = ({
               <input value={form.form.name} onChange={(event) => form.actions.update("name", event.target.value)} />
             </Field>
             <Field label="Kategoriya" required error={form.errors.categoryId}>
-              <select value={form.form.categoryId} onChange={(event) => form.actions.update("categoryId", event.target.value)}>
+              <GlassSelect value={form.form.categoryId} onChange={(event) => form.actions.update("categoryId", event.target.value)}>
                 <option value="">Tanlang</option>
                 {categories.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
-              </select>
+              </GlassSelect>
             </Field>
             <Field label="O'lchov birligi" required error={form.errors.unitId}>
-              <select value={form.form.unitId} onChange={(event) => form.actions.update("unitId", event.target.value)}>
+              <GlassSelect value={form.form.unitId} onChange={(event) => form.actions.update("unitId", event.target.value)}>
                 <option value="">Tanlang</option>
                 {units.map((item) => <option key={item.id} value={item.id}>{item.name} ({item.code})</option>)}
-              </select>
+              </GlassSelect>
             </Field>
             <Field label="Tannarx" required error={form.errors.cost}>
               <input type="number" min="0" value={form.form.cost} onChange={(event) => updateNumber("cost", event.target.value)} />
@@ -312,10 +313,10 @@ const ProductForm = ({
           </summary>
           <div className="products-form-grid">
             <Field label="Brend / ishlab chiqaruvchi">
-              <select value={form.form.brandId} onChange={(event) => form.actions.update("brandId", event.target.value)}>
+              <GlassSelect value={form.form.brandId} onChange={(event) => form.actions.update("brandId", event.target.value)}>
                 <option value="">Tanlang</option>
                 {brands.map((item) => <option key={item.id} value={item.id}>{item.name} - {item.manufacturer || "Belgilanmagan"}</option>)}
-              </select>
+              </GlassSelect>
               <div className="products-inline-create">
                 <input
                   value={newBrandName}
@@ -340,21 +341,21 @@ const ProductForm = ({
               </div>
             </Field>
             <Field label="Mahsulot turi">
-              <select value={form.form.type} onChange={(event) => form.actions.update("type", event.target.value)}>
+              <GlassSelect value={form.form.type} onChange={(event) => form.actions.update("type", event.target.value)}>
                 <option value="simple">Oddiy</option>
                 <option value="variant">Variantli</option>
                 <option value="bundle">To'plam</option>
                 <option value="composite">Tarkibli</option>
-              </select>
+              </GlassSelect>
             </Field>
             <Field label="Holat oqimi">
-              <select value={form.form.lifecycle} onChange={(event) => form.actions.update("lifecycle", event.target.value)}>
+              <GlassSelect value={form.form.lifecycle} onChange={(event) => form.actions.update("lifecycle", event.target.value)}>
                 <option value="draft">Qoralama</option>
                 <option value="review">Tasdiq kutmoqda</option>
                 <option value="active">Faol</option>
                 <option value="inactive">Nofaol</option>
                 <option value="archived">Arxiv</option>
-              </select>
+              </GlassSelect>
             </Field>
             <Field label="SKU" error={form.errors.sku}>
               <input value={form.form.sku} onChange={(event) => form.actions.update("sku", event.target.value)} />
@@ -489,7 +490,7 @@ const ProductForm = ({
               </label>
             ))}
             <Field label="Bog'langan mahsulotlar">
-              <select
+              <GlassSelect
                 value=""
                 onChange={(event) =>
                   form.actions.update("relations", [...new Set([...(form.form.relations || []), event.target.value])].filter(Boolean))
@@ -499,7 +500,7 @@ const ProductForm = ({
                 {allProducts.filter((item) => item.id !== form.form.id).map((item) => (
                   <option key={item.id} value={item.id}>{item.name}</option>
                 ))}
-              </select>
+              </GlassSelect>
             </Field>
           </div>
         </details>

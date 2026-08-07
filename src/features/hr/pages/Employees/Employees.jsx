@@ -1,3 +1,4 @@
+import { GlassSelect } from "@/components/ui";
 import { useEffect, useMemo, useState } from "react";
 import { Download, Grid2X2, List, MessageSquare, UserPlus } from "lucide-react";
 
@@ -204,13 +205,13 @@ const Employees = ({ controller, onNavigate }) => {
 
         <div className="hr-pagination">
           <span>{sortedEmployees.length} ta natija</span>
-          <select
+          <GlassSelect
             value={pagination.pageSize}
             onChange={(event) => setPagination({ page: 1, pageSize: Number(event.target.value) })}
             aria-label="Sahifadagi xodimlar soni"
           >
             {[6, 12, 24].map((size) => <option key={size} value={size}>{size} ta</option>)}
-          </select>
+          </GlassSelect>
           <button type="button" disabled={safePage === 1} onClick={() => setPage(safePage - 1)}>
             Oldingi
           </button>
@@ -229,11 +230,11 @@ const Employees = ({ controller, onNavigate }) => {
         <div className="hr-form-grid">
           <label>
             Yangi filial
-            <select value={transferBranchId} onChange={(event) => setTransferBranchId(event.target.value)}>
+            <GlassSelect value={transferBranchId} onChange={(event) => setTransferBranchId(event.target.value)}>
               {state.branches.map((branch) => (
                 <option key={branch.id} value={branch.id}>{branch.name}</option>
               ))}
-            </select>
+            </GlassSelect>
           </label>
           <label>
             Kuchga kirish sanasi

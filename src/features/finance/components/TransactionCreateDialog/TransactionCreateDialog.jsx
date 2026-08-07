@@ -1,3 +1,4 @@
+import { GlassSelect } from "@/components/ui";
 import { useEffect, useMemo, useState } from "react";
 
 import ConfirmDialog from "../ConfirmDialog/ConfirmDialog";
@@ -105,7 +106,7 @@ const TransactionCreateDialog = ({ controller, open, initialType = "expense" }) 
       <div className="finance-form-grid">
         <label>
           <span>Tur</span>
-          <select value={form.type} onChange={(event) => update("type", event.target.value)} aria-invalid={Boolean(touched && errors.type)}>
+          <GlassSelect value={form.type} onChange={(event) => update("type", event.target.value)} aria-invalid={Boolean(touched && errors.type)}>
             <option value="income">Daromad</option>
             <option value="expense">Xarajat</option>
             <option value="transfer">Hisoblararo o'tkazma</option>
@@ -113,7 +114,7 @@ const TransactionCreateDialog = ({ controller, open, initialType = "expense" }) 
             <option value="adjustment">Balans tuzatish</option>
             <option value="opening">Boshlang'ich qoldiq</option>
             <option value="exchange">Valyuta ayirboshlash</option>
-          </select>
+          </GlassSelect>
           {fieldError("type")}
         </label>
         <label>
@@ -127,40 +128,40 @@ const TransactionCreateDialog = ({ controller, open, initialType = "expense" }) 
         </label>
         <label>
           <span>Valyuta</span>
-          <select value={form.currency} onChange={(event) => update("currency", event.target.value)} aria-invalid={Boolean(touched && errors.currency)}>
+          <GlassSelect value={form.currency} onChange={(event) => update("currency", event.target.value)} aria-invalid={Boolean(touched && errors.currency)}>
             {controller.state.currencies.map((currency) => (
               <option key={currency.code} value={currency.code}>{currency.code}</option>
             ))}
-          </select>
+          </GlassSelect>
           {fieldError("currency")}
         </label>
         <label>
           <span>{form.type === "transfer" ? "Qaysi hisobdan" : "Hisob (Bank/Kassa)"}</span>
-          <select value={form.accountId} onChange={(event) => update("accountId", event.target.value)} aria-invalid={Boolean(touched && errors.accountId)}>
+          <GlassSelect value={form.accountId} onChange={(event) => update("accountId", event.target.value)} aria-invalid={Boolean(touched && errors.accountId)}>
             {controller.state.accounts.map((account) => (
               <option key={account.id} value={account.id}>{account.code} | {account.name}</option>
             ))}
-          </select>
+          </GlassSelect>
           {fieldError("accountId")}
         </label>
         {form.type === "transfer" && (
           <label>
             <span>Qaysi hisobga</span>
-            <select value={form.destinationAccountId} onChange={(event) => update("destinationAccountId", event.target.value)} aria-invalid={Boolean(touched && errors.destinationAccountId)}>
+            <GlassSelect value={form.destinationAccountId} onChange={(event) => update("destinationAccountId", event.target.value)} aria-invalid={Boolean(touched && errors.destinationAccountId)}>
               {controller.state.accounts.map((account) => (
                 <option key={account.id} value={account.id}>{account.code} | {account.name}</option>
               ))}
-            </select>
+            </GlassSelect>
             {fieldError("destinationAccountId")}
           </label>
         )}
         <label>
           <span>Hamkor turi</span>
-          <select value={form.partnerType} onChange={(event) => update("partnerType", event.target.value)}>
+          <GlassSelect value={form.partnerType} onChange={(event) => update("partnerType", event.target.value)}>
             <option value="Customer">Customer</option>
             <option value="Supplier">Supplier</option>
             <option value="Other">Other</option>
-          </select>
+          </GlassSelect>
         </label>
         <label>
           <span>Hamkor</span>
@@ -169,24 +170,24 @@ const TransactionCreateDialog = ({ controller, open, initialType = "expense" }) 
         </label>
         <label>
           <span>Kategoriya</span>
-          <select value={form.category} onChange={(event) => update("category", event.target.value)} aria-invalid={Boolean(touched && errors.category)}>
+          <GlassSelect value={form.category} onChange={(event) => update("category", event.target.value)} aria-invalid={Boolean(touched && errors.category)}>
             {(form.type === "income"
               ? ["Mahsulot savdosi", "Xizmat", "Boshqa daromad", "Foiz daromadi", "Investitsiya", "Boshqa"]
               : ["Ijara", "Ish haqi", "Transport", "Kommunal to'lov", "Marketing", "Soliq", "Tovar xaridi", "Xizmat xaridi", "Ofis xarajatlari", "Boshqa"]
             ).map((category) => <option key={category} value={category}>{category}</option>)}
-          </select>
+          </GlassSelect>
           {fieldError("category")}
         </label>
         <label>
           <span>Manba</span>
-          <select value={form.source} onChange={(event) => update("source", event.target.value)}>
+          <GlassSelect value={form.source} onChange={(event) => update("source", event.target.value)}>
             <option value="Naqd">Naqd</option>
             <option value="Bank">Bank</option>
             <option value="Click">Click</option>
             <option value="Payme">Payme</option>
             <option value="Terminal">Terminal</option>
             <option value="Boshqa">Boshqa</option>
-          </select>
+          </GlassSelect>
         </label>
         <label>
           <span>Filial</span>

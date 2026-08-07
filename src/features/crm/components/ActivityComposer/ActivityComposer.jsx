@@ -1,3 +1,4 @@
+import { GlassSelect } from "@/components/ui";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
@@ -366,7 +367,7 @@ const ActivityComposer = ({ open, customerName, onClose, onSubmit }) => {
                 <span aria-hidden="true">*</span>
               </label>
 
-              <select
+              <GlassSelect
                 id="crm-activity-type"
                 name="type"
                 value={values.type}
@@ -382,7 +383,7 @@ const ActivityComposer = ({ open, customerName, onClose, onSubmit }) => {
                     {option.label}
                   </option>
                 ))}
-              </select>
+              </GlassSelect>
 
               {errors.type ? (
                 <small
@@ -537,7 +538,7 @@ const ActivityComposer = ({ open, customerName, onClose, onSubmit }) => {
             <div className="crm-activity-composer__field">
               <label htmlFor="crm-activity-status">Natija holati</label>
 
-              <select
+              <GlassSelect
                 id="crm-activity-status"
                 name="status"
                 value={values.status}
@@ -549,7 +550,7 @@ const ActivityComposer = ({ open, customerName, onClose, onSubmit }) => {
                     {option.label}
                   </option>
                 ))}
-              </select>
+              </GlassSelect>
             </div>
           </div>
 

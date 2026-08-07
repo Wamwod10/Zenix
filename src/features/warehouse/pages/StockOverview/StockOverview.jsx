@@ -1,3 +1,4 @@
+import { GlassSelect } from "@/components/ui";
 import { Download, PackagePlus, Repeat2, SlidersHorizontal } from "lucide-react";
 
 import StatusBadge from "../../components/StatusBadge/StatusBadge";
@@ -48,63 +49,63 @@ const StockOverview = ({
         <div className="warehouse-filters" aria-label="Ombor zaxira filtrlari">
           <label>
             Ombor
-            <select value={filters.warehouseId} onChange={(event) => onFilter("warehouseId", event.target.value)}>
+            <GlassSelect value={filters.warehouseId} onChange={(event) => onFilter("warehouseId", event.target.value)}>
               <option value="all">Barcha omborlar</option>
               {warehouses.map((warehouse) => (
                 <option key={warehouse.id} value={warehouse.id}>
                   {warehouse.name}
                 </option>
               ))}
-            </select>
+            </GlassSelect>
           </label>
           <label>
             Kategoriya
-            <select value={filters.category} onChange={(event) => onFilter("category", event.target.value)}>
+            <GlassSelect value={filters.category} onChange={(event) => onFilter("category", event.target.value)}>
               {categories.map((category) => (
                 <option key={category} value={category}>
                   {category === "all" ? "Barchasi" : category}
                 </option>
               ))}
-            </select>
+            </GlassSelect>
           </label>
           <label>
             Brend
-            <select value={filters.brand} onChange={(event) => onFilter("brand", event.target.value)}>
+            <GlassSelect value={filters.brand} onChange={(event) => onFilter("brand", event.target.value)}>
               {brands.map((brand) => (
                 <option key={brand} value={brand}>
                   {brand === "all" ? "Barchasi" : brand}
                 </option>
               ))}
-            </select>
+            </GlassSelect>
           </label>
           <label>
             Holat
-            <select value={filters.status} onChange={(event) => onFilter("status", event.target.value)}>
+            <GlassSelect value={filters.status} onChange={(event) => onFilter("status", event.target.value)}>
               <option value="all">Barchasi</option>
               <option value="healthy">Bor</option>
               <option value="low">Kam</option>
               <option value="out">Tugagan</option>
               <option value="reserved">Band qilingan bor</option>
-            </select>
+            </GlassSelect>
           </label>
           <label>
             Harakat
-            <select value={filters.speed} onChange={(event) => onFilter("speed", event.target.value)}>
+            <GlassSelect value={filters.speed} onChange={(event) => onFilter("speed", event.target.value)}>
               <option value="all">Barchasi</option>
               <option value="fast">Tez aylanadigan</option>
               <option value="medium">O'rtacha aylanadigan</option>
               <option value="slow">Sekin aylanadigan</option>
               <option value="dead">O'lik zaxira</option>
-            </select>
+            </GlassSelect>
           </label>
           <label>
             Qiymat
-            <select value={filters.value} onChange={(event) => onFilter("value", event.target.value)}>
+            <GlassSelect value={filters.value} onChange={(event) => onFilter("value", event.target.value)}>
               <option value="all">Barchasi</option>
               <option value="high">Yuqori qiymat</option>
               <option value="medium">O'rtacha qiymat</option>
               <option value="low">Past qiymat</option>
-            </select>
+            </GlassSelect>
           </label>
           <button type="button" className="warehouse-mini-button" onClick={onResetFilters}>
             Filtrlarni tozalash

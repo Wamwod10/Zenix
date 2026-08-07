@@ -1,14 +1,6 @@
-// PDF 73 (Interactive Charts / Trend Analysis): yengil CSS-asosli ustunli
-// grafik — loyihada chart kutubxonasi ishlatilmaydi (Dashboard modulidagi
-// SalesChart/RevenueChart bilan bir xil --bar-height CSS o'zgaruvchisi
-// yondashuvi), shu sabab Purchases doirasida mustaqil, xuddi shu uslubda
-// qayta quriladi.
-
 import "./ReportBarChart.scss";
 
 const ReportBarChart = ({ data = [], valueFormatter = (value) => value, onBarClick, tone = "primary" }) => {
-  const max = Math.max(...data.map((entry) => entry.value), 1);
-
   if (!data.length) {
     return <p className="report-bar-chart__empty">Ma'lumot yo'q.</p>;
   }
@@ -16,33 +8,19 @@ const ReportBarChart = ({ data = [], valueFormatter = (value) => value, onBarCli
   return (
     <div className={`report-bar-chart report-bar-chart--${tone}`}>
       {data.map((entry, index) => {
-        const percent = entry.value > 0 ? Math.max((entry.value / max) * 100, 2) : 0;
+        const Component = onBarClick ? "button" : "article";
 
         return (
-          <div
-            className={[
-              "report-bar-chart__col",
-              onBarClick ? "report-bar-chart__col--clickable" : "",
-            ]
-              .filter(Boolean)
-              .join(" ")}
+          <Component
+            className="report-bar-chart__item"
             key={entry.key || entry.label || index}
-            style={{ "--bar-height": `${percent}%` }}
+            type={onBarClick ? "button" : undefined}
             onClick={onBarClick ? () => onBarClick(entry) : undefined}
           >
-            <span className="report-bar-chart__value">{valueFormatter(entry.value)}</span>
-            <span className="report-bar-chart__track">
-              <span
-                className={[
-                  "report-bar-chart__fill",
-                  entry.value === 0 ? "report-bar-chart__fill--zero" : "",
-                ]
-                  .filter(Boolean)
-                  .join(" ")}
-              />
-            </span>
-            <span className="report-bar-chart__label">{entry.label}</span>
-          </div>
+            <span>{entry.label}</span>
+            <strong>{valueFormatter(entry.value)}</strong>
+            <em>{Number(entry.value || 0).toLocaleString("uz-UZ")}</em>
+          </Component>
         );
       })}
     </div>

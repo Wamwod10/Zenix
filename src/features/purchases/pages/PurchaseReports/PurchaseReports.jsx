@@ -1,6 +1,6 @@
 // Enterprise Reports & Analytics (PDF 73-80): Xaridlar bo'yicha to'liq
 // hisobot va tahlil markazi. Mavjud hisoblash formulalari (purchaseCalculations,
-// budgetCalculations) va komponentlar (PurchaseKpiCard, PurchaseProgressBar,
+// budgetCalculations) va komponentlar (PurchaseKpiCard,
 // PurchaseStatusBadge, PurchaseTabs) qayta ishlatiladi — yangi dizayn
 // yaratilmaydi, faqat mavjud Liquid Glass tizimi kengaytiriladi.
 
@@ -35,7 +35,6 @@ import {
 
 import PageHeader from "../../../../components/layout/PageHeader/PageHeader";
 import PurchaseKpiCard from "../../components/PurchaseKpiCard/PurchaseKpiCard";
-import PurchaseProgressBar from "../../components/PurchaseProgressBar/PurchaseProgressBar";
 import PurchaseSelectField from "../../components/PurchaseSelectField/PurchaseSelectField";
 import PurchaseStatusBadge from "../../components/PurchaseStatusBadge/PurchaseStatusBadge";
 import PurchaseTabs from "../../components/PurchaseTabs/PurchaseTabs";
@@ -135,8 +134,6 @@ const PurchaseReports = () => {
 
   const [activeTab, setActiveTab] = useState("overview");
   const [priceProductId, setPriceProductId] = useState(products[0]?.id || "");
-
-  const maxStatusCount = Math.max(...summary.byStatus.map((entry) => entry.count), 1);
 
   const priceTrend = useMemo(
     () => (priceProductId ? getProductPriceTrend(priceProductId) : []),
@@ -326,8 +323,7 @@ const PurchaseReports = () => {
               {summary.byStatus.map((entry) => (
                 <div className="purchase-reports__status-row" key={entry.status}>
                   <PurchaseStatusBadge status={entry.status} />
-                  <PurchaseProgressBar value={entry.count} max={maxStatusCount} minPercent={8} />
-                  <span>{entry.count}</span>
+                  <span>{entry.count} ta</span>
                 </div>
               ))}
             </div>
@@ -548,12 +544,9 @@ const PurchaseReports = () => {
                       <strong>{entry.budget.name}</strong>
                       <small>{entry.scopeLabel} · {entry.periodLabel}</small>
                     </div>
-                    <PurchaseProgressBar
-                      value={Math.min(entry.consumption.utilizationPercent, 100)}
-                      max={100}
-                      tone={entry.consumption.utilizationPercent >= 90 ? "danger" : entry.consumption.utilizationPercent >= 75 ? "warning" : "success"}
-                      label={`${Math.round(entry.consumption.utilizationPercent)}%`}
-                    />
+                    <span className="purchase-reports__budget-percent">
+                      {Math.round(entry.consumption.utilizationPercent)}%
+                    </span>
                     <BudgetStatusBadge status={entry.status} />
                   </div>
                 ))}

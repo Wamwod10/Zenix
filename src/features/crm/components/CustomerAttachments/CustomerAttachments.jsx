@@ -1,3 +1,4 @@
+import { GlassSelect } from "@/components/ui";
 import {
   AlertCircle,
   CheckCircle2,
@@ -478,7 +479,7 @@ const CustomerAttachments = ({ customerId, canManageAttachments = true }) => {
                   <small>{attachment.uploadedBy} tomonidan yuklangan</small>
                 </div>
 
-                <select
+                <GlassSelect
                   value={attachment.category}
                   disabled={!canManageAttachments}
                   onChange={(event) =>
@@ -493,7 +494,7 @@ const CustomerAttachments = ({ customerId, canManageAttachments = true }) => {
                       </option>
                     ),
                   )}
-                </select>
+                </GlassSelect>
 
                 <div className="crm-customer-attachments__actions">
                   <button

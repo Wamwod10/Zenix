@@ -27,13 +27,13 @@ $liquid-workspaces:
   --workspace-text: var(--color-text);
   --workspace-text-soft: var(--color-text-soft);
   --workspace-muted: var(--color-text-muted);
-  --workspace-panel: var(--glass-surface-secondary);
+  --workspace-panel: var(--glass-card, var(--glass-surface-secondary));
   --workspace-panel-strong: var(--glass-surface-elevated);
   --workspace-control: var(--glass-control);
   --workspace-control-hover: var(--glass-control-hover);
-  --workspace-border: var(--glass-border);
+  --workspace-border: var(--glass-card-border, var(--glass-border));
   --workspace-border-soft: var(--glass-border-subtle);
-  --workspace-shadow: var(--glass-shadow-soft);
+  --workspace-shadow: var(--glass-card-shadow, var(--glass-shadow-soft));
   --workspace-shadow-elevated: var(--glass-shadow-elevated);
   --workspace-radius-sm: var(--glass-radius-sm);
   --workspace-radius-md: var(--glass-radius-md);
@@ -98,6 +98,27 @@ $liquid-workspaces:
 }
 
 :where(#{$liquid-workspaces}) :where(
+  [class$="__metric"],
+  [class*="__metric "],
+  [class$="-metric"],
+  [class*="-metric "],
+  [class$="__stat"],
+  [class*="__stat "],
+  [class$="-stat"],
+  [class*="-stat "],
+  [class$="__summary"],
+  [class*="__summary "],
+  [class$="-summary"],
+  [class*="-summary "]
+):not(.module-hub-card):not(.module-hub-card *) {
+  border-color: transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+:where(#{$liquid-workspaces}) :where(
   [class$="__panel"],
   [class*="__panel "],
   [class$="-panel"],
@@ -115,12 +136,12 @@ $liquid-workspaces:
   button,
   .ui-button,
   [role="button"]
-):not(.module-hub-card):not([class*="product"]):not([class*="card"]):not([class*="stat"]):not([class*="kpi"]):not([class*="metric"]) {
+):not(.module-hub-card):not(.ui-glass-select__control):not(.ui-glass-select__option):not([class*="product"]):not([class*="card"]):not([class*="stat"]):not([class*="kpi"]):not([class*="metric"]) {
   min-height: var(--control-height);
-  border-color: var(--workspace-border-soft) !important;
+  border-color: var(--glass-button-border, var(--workspace-border-soft)) !important;
   border-radius: var(--workspace-radius-sm) !important;
-  background: var(--workspace-control) !important;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.68) !important;
+  background: var(--glass-button, var(--workspace-control)) !important;
+  box-shadow: var(--glass-button-shadow, inset 0 1px 0 rgba(255, 255, 255, 0.68)) !important;
   color: var(--workspace-text-soft) !important;
   transition:
     transform var(--transition-ui),
@@ -134,9 +155,9 @@ $liquid-workspaces:
   button,
   .ui-button,
   [role="button"]
-):not(.module-hub-card):not([class*="product"]):not([class*="card"]):not([class*="stat"]):not([class*="kpi"]):not([class*="metric"]):hover:not(:disabled) {
-  border-color: var(--glass-border-active) !important;
-  background: var(--workspace-control-hover) !important;
+):not(.module-hub-card):not(.ui-glass-select__control):not(.ui-glass-select__option):not([class*="product"]):not([class*="card"]):not([class*="stat"]):not([class*="kpi"]):not([class*="metric"]):hover:not(:disabled) {
+  border-color: var(--glass-button-border-hover, var(--glass-border-active)) !important;
+  background: var(--glass-button-hover, var(--workspace-control-hover)) !important;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.74),
     0 12px 30px rgba(64, 86, 136, 0.08) !important;
@@ -161,6 +182,7 @@ $liquid-workspaces:
   select,
   textarea,
   .ui-input__control,
+  .ui-glass-select__control,
   .ui-dropdown__control
 ) {
   min-height: var(--control-height);
@@ -177,20 +199,82 @@ $liquid-workspaces:
   select,
   textarea,
   .ui-input__control,
+  .ui-glass-select__control,
   .ui-dropdown__control
 ):hover:not(:disabled) {
   border-color: var(--glass-border-active) !important;
   background: var(--workspace-control-hover) !important;
 }
 
+:where(#{$liquid-workspaces}) select {
+  min-height: var(--control-height) !important;
+  padding: 0 42px 0 14px !important;
+  cursor: pointer;
+  font-weight: 650;
+  background-image:
+    linear-gradient(45deg, transparent 50%, currentColor 50%),
+    linear-gradient(135deg, currentColor 50%, transparent 50%),
+    var(--workspace-control) !important;
+  background-position:
+    calc(100% - 20px) 50%,
+    calc(100% - 15px) 50%,
+    0 0 !important;
+  background-size:
+    5px 5px,
+    5px 5px,
+    100% 100% !important;
+  background-repeat: no-repeat !important;
+}
+
+:where(#{$liquid-workspaces}) select:hover:not(:disabled) {
+  background-image:
+    linear-gradient(45deg, transparent 50%, currentColor 50%),
+    linear-gradient(135deg, currentColor 50%, transparent 50%),
+    var(--workspace-control-hover) !important;
+}
+
+:where(#{$liquid-workspaces}) select option,
+:where(#{$liquid-workspaces}) select optgroup {
+  color: var(--glass-dropdown-option-text) !important;
+  background: var(--glass-dropdown-panel) !important;
+  font-weight: 650;
+}
+
+:where(#{$liquid-workspaces}) select option:checked,
+:where(#{$liquid-workspaces}) select option:active {
+  color: var(--glass-dropdown-option-selected-text) !important;
+  background: var(--glass-dropdown-option-selected) !important;
+  box-shadow: 0 0 0 999px var(--glass-dropdown-option-selected) inset !important;
+}
+
 :where(#{$liquid-workspaces}) :where(
   input,
   select,
   textarea,
-  button,
-  [tabindex],
+  .ui-input__control,
+  .ui-glass-select__control,
   .ui-dropdown__control
-):focus-visible {
+):focus,
+:where(#{$liquid-workspaces}) :where(
+  input,
+  select,
+  textarea,
+  .ui-input__control,
+  .ui-glass-select__control,
+  .ui-dropdown__control
+):focus-visible,
+:where(#{$liquid-workspaces}) :where(.ui-input:focus-within .ui-input__control) {
+  outline: 0 !important;
+  border-color: var(--workspace-border-soft) !important;
+  background: var(--workspace-control) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.68) !important;
+}
+
+:where(#{$liquid-workspaces}) :where(
+  button,
+  [tabindex]:not(input):not(select):not(textarea),
+  .ui-dropdown__control[tabindex]
+):focus-visible:not(.ui-glass-select__option) {
   outline: 0 !important;
   border-color: var(--glass-border-active) !important;
   box-shadow: var(--focus-ring) !important;
@@ -327,6 +411,70 @@ $liquid-workspaces:
   border-radius: var(--workspace-radius-md) !important;
   background: var(--workspace-control) !important;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.68) !important;
+}
+
+:where(#{$liquid-workspaces}) .ui-glass-select {
+  width: 100%;
+  min-width: 0;
+}
+
+:where(#{$liquid-workspaces}) .ui-glass-select__control {
+  border-color: var(--workspace-border-soft) !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.76), rgba(246, 250, 255, 0.36)),
+    rgba(255, 255, 255, 0.18) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    0 12px 30px rgba(64, 86, 136, 0.07) !important;
+}
+
+:where(#{$liquid-workspaces}) .ui-glass-select__control:hover {
+  border-color: var(--glass-border-active) !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(236, 244, 255, 0.5)),
+    rgba(225, 237, 255, 0.3) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.86),
+    0 16px 38px rgba(64, 86, 136, 0.1) !important;
+}
+
+:where(#{$liquid-workspaces}) .ui-glass-select--open .ui-glass-select__control {
+  border-color: var(--glass-border-active) !important;
+  box-shadow:
+    var(--focus-ring),
+    0 18px 45px rgba(64, 86, 136, 0.12) !important;
+}
+
+:where(#{$liquid-workspaces}) .ui-glass-select__menu {
+  display: grid !important;
+  gap: 3px !important;
+  padding: 8px !important;
+  background: var(--glass-dropdown-panel) !important;
+}
+
+:where(#{$liquid-workspaces}) .ui-glass-select__option {
+  min-height: 39px !important;
+  border-color: transparent !important;
+  border-radius: 12px !important;
+  color: var(--glass-dropdown-option-muted) !important;
+  background: var(--glass-dropdown-option) !important;
+  box-shadow: none !important;
+  transform: none;
+}
+
+:where(#{$liquid-workspaces}) .ui-glass-select__option:hover,
+:where(#{$liquid-workspaces}) .ui-glass-select__option:focus-visible {
+  border-color: rgba(74, 103, 255, 0.18) !important;
+  color: var(--glass-dropdown-option-text) !important;
+  background: var(--glass-dropdown-option-hover) !important;
+  box-shadow: none !important;
+  transform: translateX(2px);
+}
+
+:where(#{$liquid-workspaces}) .ui-glass-select__option--selected {
+  border-color: rgba(74, 103, 255, 0.26) !important;
+  color: var(--glass-dropdown-option-selected-text) !important;
+  background: var(--glass-dropdown-option-selected) !important;
 }
 
 @media (max-width: 768px) {

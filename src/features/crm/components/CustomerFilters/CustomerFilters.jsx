@@ -1,3 +1,4 @@
+import { GlassSelect } from "@/components/ui";
 import {
   useEffect,
   useMemo,
@@ -329,7 +330,7 @@ const CustomerFilters = ({
             Saralash
           </label>
 
-          <select
+          <GlassSelect
             id="crm-customer-sort"
             value={filters.sortBy}
             onChange={handleSortChange}
@@ -342,7 +343,7 @@ const CustomerFilters = ({
                 {option.label}
               </option>
             ))}
-          </select>
+          </GlassSelect>
 
           <button
             type="button"
@@ -448,7 +449,7 @@ const CustomerFilters = ({
           <label>
             <span>Mijoz holati</span>
 
-            <select
+            <GlassSelect
               value={filters.status}
               onChange={(event) =>
                 actions.setFilter(
@@ -465,13 +466,13 @@ const CustomerFilters = ({
                   {option.label}
                 </option>
               ))}
-            </select>
+            </GlassSelect>
           </label>
 
           <label>
             <span>Mijoz guruhi</span>
 
-            <select
+            <GlassSelect
               value={filters.group}
               onChange={(event) =>
                 actions.setFilter(
@@ -488,13 +489,13 @@ const CustomerFilters = ({
                   {option.label}
                 </option>
               ))}
-            </select>
+            </GlassSelect>
           </label>
 
           <label>
             <span>Sodiqlik darajasi</span>
 
-            <select
+            <GlassSelect
               value={filters.loyalty}
               onChange={(event) =>
                 actions.setFilter(
@@ -511,13 +512,13 @@ const CustomerFilters = ({
                   {option.label}
                 </option>
               ))}
-            </select>
+            </GlassSelect>
           </label>
 
           <label>
             <span>Kelgan manba</span>
 
-            <select
+            <GlassSelect
               value={filters.source}
               onChange={(event) =>
                 actions.setFilter(
@@ -534,13 +535,13 @@ const CustomerFilters = ({
                   {option.label}
                 </option>
               ))}
-            </select>
+            </GlassSelect>
           </label>
 
           <label>
             <span>Qarz holati</span>
 
-            <select
+            <GlassSelect
               value={filters.debt}
               onChange={(event) =>
                 actions.setFilter(
@@ -557,13 +558,13 @@ const CustomerFilters = ({
                   {option.label}
                 </option>
               ))}
-            </select>
+            </GlassSelect>
           </label>
 
           <label>
             <span>Mijozni yo'qotish xavfi</span>
 
-            <select
+            <GlassSelect
               value={filters.churn}
               onChange={(event) =>
                 actions.setFilter(
@@ -580,13 +581,13 @@ const CustomerFilters = ({
                   {option.label}
                 </option>
               ))}
-            </select>
+            </GlassSelect>
           </label>
 
           <label>
             <span>Mijoz tegi</span>
 
-            <select
+            <GlassSelect
               value={filters.tag}
               onChange={(event) =>
                 actions.setFilter(
@@ -603,7 +604,7 @@ const CustomerFilters = ({
                   {option.label}
                 </option>
               ))}
-            </select>
+            </GlassSelect>
           </label>
         </div>
       )}

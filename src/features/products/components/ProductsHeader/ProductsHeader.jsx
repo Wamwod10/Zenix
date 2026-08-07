@@ -1,3 +1,4 @@
+import { GlassSelect } from "@/components/ui";
 import {
   Bell,
   Download,
@@ -115,7 +116,7 @@ const ProductsHeader = ({
         {import.meta.env.DEV ? (
           <label className="products-select">
             <ShieldCheck size={15} />
-            <select
+            <GlassSelect
               value={role}
               onChange={(event) => onRoleChange(event.target.value)}
               aria-label="Mahsulotlar roli"
@@ -125,7 +126,7 @@ const ProductsHeader = ({
                   {value.label}
                 </option>
               ))}
-            </select>
+            </GlassSelect>
           </label>
         ) : (
           <span className="products-role-pill">

@@ -1,3 +1,4 @@
+import { GlassSelect } from "@/components/ui";
 import { ArrowDownUp, ChevronLeft, ChevronRight, Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
@@ -71,9 +72,9 @@ const DataTable = ({ title = "Hisobot jadvali", rows = [], columns, schema = "de
           <Search size={14} />
           <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Jadvaldan qidirish" />
         </label>
-        <select value={pageSize} onChange={(event) => setPageSize(Number(event.target.value))} aria-label="Sahifadagi qatorlar soni">
+        <GlassSelect value={pageSize} onChange={(event) => setPageSize(Number(event.target.value))} aria-label="Sahifadagi qatorlar soni">
           {[5, 10, 20].map((size) => <option key={size} value={size}>{size} ta</option>)}
-        </select>
+        </GlassSelect>
         <button type="button" onClick={() => window.print()}>Print</button>
       </div>
 

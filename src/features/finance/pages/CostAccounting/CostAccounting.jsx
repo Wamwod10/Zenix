@@ -1,7 +1,46 @@
+import { Boxes, Calculator, PackageCheck, ReceiptText, Truck } from "lucide-react";
+
 import { formatMoney } from "../../utils/financeFormatters";
 
 const CostAccounting = ({ controller }) => {
   const cost = controller.state.costAccounting;
+  const summaryCards = [
+    {
+      icon: Boxes,
+      label: "Tovar qiymati",
+      value: formatMoney(cost.inventoryValuation),
+      hint: "Ombordagi zaxiralar bahosi",
+      tone: "is-flow",
+    },
+    {
+      icon: ReceiptText,
+      label: "Sotilgan tovar tannarxi",
+      value: formatMoney(cost.cogs),
+      hint: "Sotuvga chiqqan mahsulot tannarxi",
+      tone: "is-expense",
+    },
+    {
+      icon: Truck,
+      label: "Yetkazish va bojxona xarajati",
+      value: formatMoney(controller.costBreakdown.landedCost),
+      hint: "Landed cost qo'shimcha xarajatlari",
+      tone: "is-cash",
+    },
+    {
+      icon: PackageCheck,
+      label: "Yakuniy tannarx",
+      value: formatMoney(controller.costBreakdown.finalCost),
+      hint: "Mahsulotning yakuniy qiymati",
+      tone: "is-income",
+    },
+    {
+      icon: Calculator,
+      label: "Birlik tannarxi",
+      value: formatMoney(controller.costBreakdown.unitCost),
+      hint: "Bir dona mahsulot tannarxi",
+      tone: "is-net",
+    },
+  ];
 
   return (
     <section className="finance-view">
@@ -27,11 +66,20 @@ const CostAccounting = ({ controller }) => {
           ))}
         </div>
         <div className="finance-card-grid">
-          <article className="finance-mini-card"><strong>{formatMoney(cost.inventoryValuation)}</strong><span>Tovar qiymati</span></article>
-          <article className="finance-mini-card"><strong>{formatMoney(cost.cogs)}</strong><span>Sotilgan tovar tannarxi</span></article>
-          <article className="finance-mini-card"><strong>{formatMoney(controller.costBreakdown.landedCost)}</strong><span>Yetkazish va bojxona xarajati</span></article>
-          <article className="finance-mini-card"><strong>{formatMoney(controller.costBreakdown.finalCost)}</strong><span>Yakuniy tannarx</span></article>
-          <article className="finance-mini-card"><strong>{formatMoney(controller.costBreakdown.unitCost)}</strong><span>Birlik tannarxi</span></article>
+          {summaryCards.map((card) => {
+            const Icon = card.icon;
+
+            return (
+              <article className={`finance-mini-card finance-mini-card--metric ${card.tone}`} key={card.label}>
+                <span className="finance-mini-card__icon" aria-hidden="true">
+                  <Icon size={18} />
+                </span>
+                <span className="finance-mini-card__label">{card.label}</span>
+                <strong>{card.value}</strong>
+                <small>{card.hint}</small>
+              </article>
+            );
+          })}
         </div>
       </section>
     </section>

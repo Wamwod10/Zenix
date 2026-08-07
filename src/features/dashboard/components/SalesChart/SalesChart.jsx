@@ -1,8 +1,9 @@
 import {
   ArrowRight,
-  BarChart3,
+  Activity,
   CircleDollarSign,
   CreditCard,
+  ListChecks,
   ShoppingBag,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -29,7 +30,6 @@ const toHourlyData = (summary = {}, stats = {}) => {
 const SalesChart = ({ currency = "uzs", stats = {}, summary }) => {
   const navigate = useNavigate();
   const hourlyData = toHourlyData(summary, stats);
-  const maxValue = Math.max(...hourlyData.map((item) => item.value), 1);
   const salesChange = formatPercentChange(stats?.todaySales, stats?.yesterdaySales);
 
   const salesMetrics = [
@@ -61,11 +61,11 @@ const SalesChart = ({ currency = "uzs", stats = {}, summary }) => {
       <div className="zenix-dashboard__panel-head">
         <div className="zenix-dashboard__panel-title">
           <span>
-            <BarChart3 size={14} />
+            <Activity size={14} />
             Savdo oqimi
           </span>
-          <h3>Bugungi savdo ritmi</h3>
-          <p>Soatlar bo'yicha tushum backenddan kelganda real scale bilan chiziladi.</p>
+          <h3>Bugungi savdo qiymatlari</h3>
+          <p>Soatlar bo'yicha tushum backenddan kelganda raqamli ko'rinishda chiqadi.</p>
         </div>
 
         <button
@@ -101,31 +101,20 @@ const SalesChart = ({ currency = "uzs", stats = {}, summary }) => {
         </div>
 
         {hourlyData.length ? (
-          <div className="sales-chart__bars" aria-label="Bugungi savdo charti">
-            {hourlyData.slice(-12).map((item, index) => {
-              const level = Math.max(4, Math.round((item.value / maxValue) * 100));
-
-              return (
-                <span
-                  className="sales-chart__bar"
-                  key={`${item.label}-${index}`}
-                  title={`${item.label}: ${formatMoney(item.value, currency)}`}
-                  style={{
-                    "--bar-height": `${level}%`,
-                    "--bar-index": index,
-                  }}
-                >
-                  <i />
-                  <small>{item.label}</small>
-                </span>
-              );
-            })}
+          <div className="sales-chart__analysis" aria-label="Bugungi savdo qiymatlari">
+            {hourlyData.slice(-12).map((item, index) => (
+              <article key={`${item.label}-${index}`} title={`${item.label}: ${formatMoney(item.value, currency)}`}>
+                <span>{item.label}</span>
+                <strong>{formatMoney(item.value, currency)}</strong>
+                <em>{index === hourlyData.slice(-12).length - 1 ? "So'nggi" : "Soat"}</em>
+              </article>
+            ))}
           </div>
         ) : (
           <div className="sales-chart__empty">
-            <BarChart3 size={18} />
-            <strong>Soatlik savdo grafigi hali ulanmagan</strong>
-            <span>Hardcoded barlar o'rniga real analytics kutilmoqda.</span>
+            <ListChecks size={18} />
+            <strong>Soatlik savdo analitikasi hali ulanmagan</strong>
+            <span>Real analytics qiymatlari kutilmoqda.</span>
           </div>
         )}
       </div>

@@ -1,3 +1,4 @@
+import { GlassSelect } from "@/components/ui";
 import { useState } from "react";
 import { FolderTree, Plus } from "lucide-react";
 
@@ -48,10 +49,10 @@ const Categories = ({ categories, onCreateCategory, onUpdateCategory, onDeleteCa
           <label><span>Kod</span><input value={form.code} onChange={(event) => setForm({ ...form, code: event.target.value.toUpperCase() })} /></label>
           <label>
             <span>Yuqori kategoriya</span>
-            <select value={form.parentId} onChange={(event) => setForm({ ...form, parentId: event.target.value })}>
+            <GlassSelect value={form.parentId} onChange={(event) => setForm({ ...form, parentId: event.target.value })}>
               <option value="">Asosiy</option>
               {categories.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
-            </select>
+            </GlassSelect>
           </label>
           <button type="button" className="products-button is-primary" onClick={submit}><Plus size={15} /> {editingId ? "Kategoriyani saqlash" : "Kategoriya yaratish"}</button>
           {editingId && (

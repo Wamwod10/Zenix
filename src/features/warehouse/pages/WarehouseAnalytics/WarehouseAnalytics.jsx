@@ -62,7 +62,7 @@ const WarehouseAnalytics = ({
                   <strong>{row.name}</strong>
                   <span>{formatQuantity(row.onHand, row.unit)} · {formatMoney(row.value)}</span>
                 </div>
-                <meter min="0" max={row.maximum || 1} value={row.onHand} />
+                <b>{row.maximum ? `${Math.round((row.onHand / row.maximum) * 100)}%` : "0%"}</b>
               </article>
             ))}
           </div>

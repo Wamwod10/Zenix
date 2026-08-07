@@ -1,3 +1,4 @@
+import { GlassSelect } from "@/components/ui";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import "./SupplierPagination.scss";
@@ -30,13 +31,13 @@ const SupplierPagination = ({
       </span>
       <label>
         <span>Sahifa hajmi</span>
-        <select value={pageSize} onChange={(event) => onPageSizeChange(event.target.value)}>
+        <GlassSelect value={pageSize} onChange={(event) => onPageSizeChange(event.target.value)}>
           {pageSizeOptions.map((size) => (
             <option value={size} key={size}>
               {size}
             </option>
           ))}
-        </select>
+        </GlassSelect>
       </label>
       <div className="supplier-pagination__pages">
         <button

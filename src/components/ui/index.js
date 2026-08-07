@@ -4,6 +4,7 @@ export { Input } from "./Input";
 export { Badge } from "./Badge";
 export { Modal } from "./Modal";
 export { Dropdown } from "./Dropdown";
+export { GlassSelect } from "./GlassSelect";
 export { Table } from "./Table";
 export { EmptyState } from "./EmptyState";
 export { Loading } from "./Loading";

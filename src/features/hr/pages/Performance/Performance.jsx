@@ -14,7 +14,7 @@ const Performance = ({ controller }) => {
               <strong>{formatEmployeeName(dictionaries.employeeById[item.employeeId])}</strong>
               <span>Attendance {item.attendance}% · Tasks {item.taskCompletion}%</span>
               <span>Sales {item.sales} · Goal {item.goalProgress}%</span>
-              <meter min="0" max="100" value={item.efficiency} />
+              <b>Efficiency {item.efficiency}%</b>
               <StatusBadge status={item.trend === "up" ? "active" : "warning"} label={item.review} />
               <button type="button" onClick={() => controller.actions.addNotification("Manager review started.")}>Start review</button>
             </article>

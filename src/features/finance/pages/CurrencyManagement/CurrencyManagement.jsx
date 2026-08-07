@@ -1,3 +1,4 @@
+import { GlassSelect } from "@/components/ui";
 import { useState } from "react";
 
 import ConfirmDialog from "../../components/ConfirmDialog/ConfirmDialog";
@@ -52,11 +53,11 @@ const CurrencyManagement = ({ controller }) => {
         <div className="finance-form-grid">
           <label>
             <span>Valyuta</span>
-            <select value={form.code} onChange={(event) => setForm((current) => ({ ...current, code: event.target.value }))}>
+            <GlassSelect value={form.code} onChange={(event) => setForm((current) => ({ ...current, code: event.target.value }))}>
               {controller.state.currencies.filter((item) => item.code !== "UZS").map((currency) => (
                 <option key={currency.code} value={currency.code}>{currency.code}</option>
               ))}
-            </select>
+            </GlassSelect>
           </label>
           <label><span>Valyuta summasi</span><input type="number" min="0" value={form.amount} onChange={(event) => setForm((current) => ({ ...current, amount: Number(event.target.value) }))} /></label>
           <label><span>Yangi kurs</span><input type="number" min="0" value={form.newRate} onChange={(event) => setForm((current) => ({ ...current, newRate: Number(event.target.value) }))} /></label>
@@ -82,8 +83,8 @@ const CurrencyManagement = ({ controller }) => {
         confirmDisabled={!exchange.fromAccountId || !exchange.toAccountId || exchange.fromAccountId === exchange.toAccountId || Number(exchange.amount || 0) <= 0 || Number(exchange.rate || 0) <= 0}
       >
         <div className="finance-form-grid">
-          <label><span>Manba hisob</span><select value={exchange.fromAccountId} onChange={(event) => setExchange((current) => ({ ...current, fromAccountId: event.target.value }))}>{controller.state.accounts.map((account) => <option key={account.id} value={account.id}>{account.code} | {account.name}</option>)}</select></label>
-          <label><span>Qabul qiluvchi hisob</span><select value={exchange.toAccountId} onChange={(event) => setExchange((current) => ({ ...current, toAccountId: event.target.value }))}>{controller.state.accounts.map((account) => <option key={account.id} value={account.id}>{account.code} | {account.name}</option>)}</select></label>
+          <label><span>Manba hisob</span><GlassSelect value={exchange.fromAccountId} onChange={(event) => setExchange((current) => ({ ...current, fromAccountId: event.target.value }))}>{controller.state.accounts.map((account) => <option key={account.id} value={account.id}>{account.code} | {account.name}</option>)}</GlassSelect></label>
+          <label><span>Qabul qiluvchi hisob</span><GlassSelect value={exchange.toAccountId} onChange={(event) => setExchange((current) => ({ ...current, toAccountId: event.target.value }))}>{controller.state.accounts.map((account) => <option key={account.id} value={account.id}>{account.code} | {account.name}</option>)}</GlassSelect></label>
           <label><span>Summa</span><input type="number" min="0" value={exchange.amount} onChange={(event) => setExchange((current) => ({ ...current, amount: event.target.value }))} /></label>
           <label><span>Kurs</span><input type="number" min="0" value={exchange.rate} onChange={(event) => setExchange((current) => ({ ...current, rate: event.target.value }))} /></label>
         </div>

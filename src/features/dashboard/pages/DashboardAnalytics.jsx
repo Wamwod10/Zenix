@@ -1,3 +1,4 @@
+import { GlassSelect } from "@/components/ui";
 import { useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import { AlertTriangle, RotateCw } from "lucide-react";
@@ -143,7 +144,7 @@ const DashboardAnalytics = () => {
 
         <label>
           <span>Filial</span>
-          <select
+          <GlassSelect
             value={filters.branchId}
             onChange={(event) => updateFilter("branchId", event.target.value)}
           >
@@ -152,12 +153,12 @@ const DashboardAnalytics = () => {
                 {branch.name}
               </option>
             ))}
-          </select>
+          </GlassSelect>
         </label>
 
         <label>
           <span>Ombor</span>
-          <select
+          <GlassSelect
             value={filters.warehouseId}
             onChange={(event) => updateFilter("warehouseId", event.target.value)}
           >
@@ -166,7 +167,7 @@ const DashboardAnalytics = () => {
                 {warehouse.name}
               </option>
             ))}
-          </select>
+          </GlassSelect>
         </label>
       </section>
 

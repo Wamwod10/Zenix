@@ -2,56 +2,61 @@ import { formatMoney } from "../../utils/financeFormatters";
 
 import "./FinanceCharts.scss";
 
-const normalize = (value, max) => Math.max(6, Math.round((Number(value || 0) / Math.max(max, 1)) * 100));
+const buildSummary = (rows = []) => {
+  const values = rows.map((item) => Number(item.value || 0));
+  const total = values.reduce((sum, value) => sum + value, 0);
+  const positive = values.filter((value) => value > 0).reduce((sum, value) => sum + value, 0);
+  const negative = Math.abs(values.filter((value) => value < 0).reduce((sum, value) => sum + value, 0));
+  const average = values.length ? total / values.length : 0;
 
-export const FinanceBarChart = ({ rows = [], title }) => {
-  const max = Math.max(...rows.map((item) => Math.abs(Number(item.value || 0))), 1);
-
-  return (
-    <div className="finance-chart" role="img" aria-label={title}>
-      <div className="finance-chart__plot">
-        {rows.map((item) => {
-          const height = normalize(Math.abs(item.value), max);
-
-          return (
-            <div className="finance-chart__bar" key={item.label}>
-              <svg viewBox="0 0 28 112" aria-hidden="true">
-                <rect x="5" y={112 - height} width="18" height={height} rx="7" />
-              </svg>
-              <span>{item.label}</span>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
+  return [
+    { label: "Jami", value: total },
+    { label: "Kirim", value: positive },
+    { label: "Chiqim", value: negative },
+    { label: "O'rtacha", value: average },
+  ];
 };
 
-export const FinanceTrendChart = ({ rows = [], title }) => {
-  const max = Math.max(...rows.map((item) => Math.abs(Number(item.value || 0))), 1);
-  const points = rows
-    .map((item, index) => {
-      const x = rows.length <= 1 ? 6 : 6 + (index * 188) / (rows.length - 1);
-      const y = 104 - normalize(Math.abs(item.value), max);
-      return `${x},${y}`;
-    })
-    .join(" ");
+const FinanceAnalyticsBlock = ({ rows = [], title, mode = "trend" }) => {
+  const visibleRows = rows.slice(-12);
 
+  if (!rows.length) {
+    return (
+      <div className="finance-analytics-block">
+        <p className="finance-analytics-block__empty">{title} uchun ma'lumot yo'q.</p>
+      </div>
+    );
+  }
+
+  const summary = buildSummary(rows);
   return (
-    <div className="finance-trend" role="img" aria-label={title}>
-      <svg viewBox="0 0 200 112" preserveAspectRatio="none">
-        <polyline points={points} fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
-        {rows.map((item, index) => {
-          const x = rows.length <= 1 ? 6 : 6 + (index * 188) / (rows.length - 1);
-          const y = 104 - normalize(Math.abs(item.value), max);
-          return <circle key={item.label} cx={x} cy={y} r="4" />;
-        })}
-      </svg>
-      <div>
-        {rows.map((item) => (
-          <span key={item.label}>{item.label}: {formatMoney(item.value)}</span>
+    <div className={`finance-analytics-block finance-analytics-block--${mode}`} aria-label={title}>
+      <div className="finance-analytics-block__summary">
+        {summary.map((item) => (
+          <article key={item.label}>
+            <span>{item.label}</span>
+            <strong>{formatMoney(item.value)}</strong>
+          </article>
+        ))}
+      </div>
+
+      <div className="finance-analytics-block__rows">
+        {visibleRows.map((item, index) => (
+          <article key={`${item.label}-${index}`}>
+            <span>{item.label}</span>
+            <strong>{formatMoney(item.value)}</strong>
+            <em>{Number(item.value || 0) >= 0 ? "Kirim" : "Chiqim"}</em>
+          </article>
         ))}
       </div>
     </div>
   );
 };
+
+export const FinanceBarChart = ({ rows = [], title }) => (
+  <FinanceAnalyticsBlock rows={rows} title={title} mode="distribution" />
+);
+
+export const FinanceTrendChart = ({ rows = [], title }) => (
+  <FinanceAnalyticsBlock rows={rows} title={title} mode="trend" />
+);

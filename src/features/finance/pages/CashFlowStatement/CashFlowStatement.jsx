@@ -1,3 +1,5 @@
+import { GlassSelect } from "@/components/ui";
+import { Banknote, Landmark, TrendingDown, TrendingUp } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { FinanceTrendChart } from "../../components/FinanceCharts/FinanceCharts";
@@ -79,6 +81,36 @@ const CashFlowStatement = ({ controller }) => {
     ["Summary", "Sof o'zgarish", inflow - outflow],
     ["Summary", "Davr oxiridagi pul", endingCash],
   ];
+  const summaryCards = [
+    {
+      icon: Banknote,
+      label: "Davr boshidagi pul",
+      value: formatMoney(openingCash),
+      hint: "Hisobot davri boshidagi qoldiq",
+      tone: "is-flow",
+    },
+    {
+      icon: TrendingUp,
+      label: "Jami kirim",
+      value: formatMoney(inflow),
+      hint: "Davr ichidagi pul tushumlari",
+      tone: "is-income",
+    },
+    {
+      icon: TrendingDown,
+      label: "Jami chiqim",
+      value: formatMoney(outflow),
+      hint: "Davr ichidagi pul chiqimlari",
+      tone: "is-expense",
+    },
+    {
+      icon: Landmark,
+      label: "Davr oxiridagi pul",
+      value: formatMoney(endingCash),
+      hint: "Yakuniy bank va kassa qoldig'i",
+      tone: "is-bank",
+    },
+  ];
 
   return (
     <section className="finance-view">
@@ -99,18 +131,28 @@ const CashFlowStatement = ({ controller }) => {
           <label><span>Filial</span><input value={filters.branch === "all" ? "" : filters.branch} placeholder="Barcha filiallar" onChange={(event) => setFilters((current) => ({ ...current, branch: event.target.value.trim() || "all" }))} /></label>
           <label>
             <span>Valyuta</span>
-            <select value={filters.currency} onChange={(event) => setFilters((current) => ({ ...current, currency: event.target.value }))}>
+            <GlassSelect value={filters.currency} onChange={(event) => setFilters((current) => ({ ...current, currency: event.target.value }))}>
               <option value="all">Barchasi</option>
               {controller.state.currencies.map((currency) => <option key={currency.code} value={currency.code}>{currency.code}</option>)}
-            </select>
+            </GlassSelect>
           </label>
         </div>
 
         <div className="finance-card-grid">
-          <article className="finance-mini-card"><strong>{formatMoney(openingCash)}</strong><span>Davr boshidagi pul</span></article>
-          <article className="finance-mini-card"><strong>{formatMoney(inflow)}</strong><span>Jami kirim</span></article>
-          <article className="finance-mini-card"><strong>{formatMoney(outflow)}</strong><span>Jami chiqim</span></article>
-          <article className="finance-mini-card"><strong>{formatMoney(endingCash)}</strong><span>Davr oxiridagi pul</span></article>
+          {summaryCards.map((card) => {
+            const Icon = card.icon;
+
+            return (
+              <article className={`finance-mini-card finance-mini-card--metric ${card.tone}`} key={card.label}>
+                <span className="finance-mini-card__icon" aria-hidden="true">
+                  <Icon size={18} />
+                </span>
+                <span className="finance-mini-card__label">{card.label}</span>
+                <strong>{card.value}</strong>
+                <small>{card.hint}</small>
+              </article>
+            );
+          })}
         </div>
 
         {postedTransactions.length ? (

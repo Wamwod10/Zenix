@@ -1,5 +1,14 @@
 import { useMemo, useState } from "react";
-import { CheckCircle2, FileClock, Send, XCircle } from "lucide-react";
+import {
+  CalendarClock,
+  CheckCircle2,
+  CircleAlert,
+  FileClock,
+  Hourglass,
+  Send,
+  WalletCards,
+  XCircle,
+} from "lucide-react";
 
 import ConfirmDialog from "../../components/ConfirmDialog/ConfirmDialog";
 import StatusBadge from "../../components/StatusBadge/StatusBadge";
@@ -68,6 +77,43 @@ const PaymentOrders = ({ controller }) => {
     overdue: controller.state.paymentOrders.filter((order) => order.dueDate && new Date(order.dueDate) < new Date() && order.status !== PAYMENT_ORDER_STATUS.PAID).length,
     planned: controller.state.paymentOrders.reduce((sum, order) => sum + Number(order.amount || 0), 0),
   };
+  const summaryCards = [
+    {
+      icon: FileClock,
+      label: "Jami topshiriqlar",
+      value: summary.total,
+      hint: "Barcha bank to'lov topshiriqlari",
+      tone: "is-flow",
+    },
+    {
+      icon: Hourglass,
+      label: "Tasdiq kutilmoqda",
+      value: summary.pending,
+      hint: "Tasdiqlash jarayonidagi hujjatlar",
+      tone: "is-bank",
+    },
+    {
+      icon: CalendarClock,
+      label: "Bugun to'lanadi",
+      value: summary.dueToday,
+      hint: "Bugungi muddatli topshiriqlar",
+      tone: "is-income",
+    },
+    {
+      icon: CircleAlert,
+      label: "Muddati o'tgan",
+      value: summary.overdue,
+      hint: "E'tibor talab qiladigan to'lovlar",
+      tone: "is-expense",
+    },
+    {
+      icon: WalletCards,
+      label: "Rejalashtirilgan summa",
+      value: formatMoney(summary.planned),
+      hint: "To'lovga rejalangan umumiy summa",
+      tone: "is-net",
+    },
+  ];
 
   const fillFromPayable = (payableId) => {
     const payable = controller.state.payables.find((item) => item.id === payableId);
@@ -106,11 +152,20 @@ const PaymentOrders = ({ controller }) => {
         </div>
 
         <div className="finance-card-grid">
-          <article className="finance-mini-card"><strong>{summary.total}</strong><span>Jami topshiriqlar</span></article>
-          <article className="finance-mini-card"><strong>{summary.pending}</strong><span>Tasdiq kutilmoqda</span></article>
-          <article className="finance-mini-card"><strong>{summary.dueToday}</strong><span>Bugun to'lanadi</span></article>
-          <article className="finance-mini-card"><strong>{summary.overdue}</strong><span>Muddati o'tgan</span></article>
-          <article className="finance-mini-card"><strong>{formatMoney(summary.planned)}</strong><span>Rejalashtirilgan summa</span></article>
+          {summaryCards.map((card) => {
+            const Icon = card.icon;
+
+            return (
+              <article className={`finance-mini-card finance-mini-card--metric ${card.tone}`} key={card.label}>
+                <span className="finance-mini-card__icon" aria-hidden="true">
+                  <Icon size={18} />
+                </span>
+                <span className="finance-mini-card__label">{card.label}</span>
+                <strong>{card.value}</strong>
+                <small>{card.hint}</small>
+              </article>
+            );
+          })}
         </div>
 
         <div className="finance-filters">

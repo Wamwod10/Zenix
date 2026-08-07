@@ -1,3 +1,4 @@
+import { GlassSelect } from "@/components/ui";
 import { Boxes, Download, Search, Sparkles, Upload } from "lucide-react";
 
 import { warehouseRoles } from "../../utils/warehousePermissions";
@@ -50,7 +51,7 @@ const WarehouseHeader = ({
       </label>
 
       <div className="warehouse-header__actions">
-        <select
+        <GlassSelect
           value={role}
           onChange={(event) => onRoleChange(event.target.value)}
           aria-label="Ombor roli"
@@ -60,7 +61,7 @@ const WarehouseHeader = ({
               {roleLabels[item.id] || item.label}
             </option>
           ))}
-        </select>
+        </GlassSelect>
 
         <button type="button" onClick={onOpenReceipt}>
           <Boxes size={16} />

@@ -1,85 +1,40 @@
 .purchase-progress {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  min-width: 0;
+  display: inline-grid;
+  gap: 3px;
+  padding: 7px 9px;
+  border: 1px solid rgba(255, 255, 255, 0.68);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.16);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
 
-  &__track {
-    position: relative;
-    flex: 1;
-    min-width: 40px;
-    height: 4px;
-    border-radius: 999px;
-    background: #e6edf5;
-    overflow: hidden;
-  }
-
-  &__fill {
-    position: relative;
-    display: block;
-    height: 100%;
-    border-radius: inherit;
-    transition: width 0.45s ease;
-    overflow: hidden;
-
-    &::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      border-radius: inherit;
-      background: linear-gradient(
-        180deg,
-        rgba(255, 255, 255, 0.45) 0%,
-        rgba(255, 255, 255, 0.15) 45%,
-        transparent 100%
-      );
-    }
-
-    &--neutral {
-      background: linear-gradient(
-        90deg,
-        #c5cfdb 0%,
-        #aab7c7 100%
-      );
-    }
-
-    &--info {
-      background: linear-gradient(
-        90deg,
-        #c0cbff 0%,
-        #8da2ff 100%
-      );
-    }
-
-    &--success {
-      background: linear-gradient(
-        90deg,
-        #a7ecc7 0%,
-        #57d887 100%
-      );
-    }
-
-    &--warning {
-      background: linear-gradient(
-        90deg,
-        #ffe29d 0%,
-        #f5c54c 100%
-      );
-    }
-
-    &--danger {
-      background: linear-gradient(
-        90deg,
-        #ffc3bf 0%,
-        #f47b7b 100%
-      );
-    }
-  }
-
-  &__label {
-    flex-shrink: 0;
+  strong {
+    color: rgba(5, 14, 35, 0.78);
     font-size: 12px;
-    font-weight: 650;
-    color: rgba(5, 14, 35, 0.55);
+    font-weight: 780;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  small {
+    overflow: hidden;
+    color: rgba(5, 14, 35, 0.46);
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1.1;
+    text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  &--success strong {
+    color: #16834c;
+  }
+
+  &--warning strong {
+    color: #a45c05;
+  }
+
+  &--danger strong {
+    color: #b42323;
   }
 }

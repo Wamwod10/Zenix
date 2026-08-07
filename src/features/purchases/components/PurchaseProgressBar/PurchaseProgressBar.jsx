@@ -6,22 +6,15 @@ const PurchaseProgressBar = ({
   tone = "info",
   label,
   className = "",
-  minPercent = 0,
 }) => {
   const raw = max > 0 ? Math.min(Math.max((value / max) * 100, 0), 100) : 0;
-  const percent = Math.max(raw, minPercent);
+  const displayLabel = label || `${Math.round(raw)}%`;
 
   return (
-    <div className={["purchase-progress", className].filter(Boolean).join(" ")}>
-      <span className="purchase-progress__track">
-        <span
-          className={`purchase-progress__fill purchase-progress__fill--${tone}`}
-          style={{ width: `${percent}%` }}
-        />
-      </span>
-
-      {label && <span className="purchase-progress__label">{label}</span>}
-    </div>
+    <span className={["purchase-progress", `purchase-progress--${tone}`, className].filter(Boolean).join(" ")}>
+      <strong>{displayLabel}</strong>
+      <small>{Number(value || 0).toLocaleString("uz-UZ")} / {Number(max || 0).toLocaleString("uz-UZ")}</small>
+    </span>
   );
 };
 

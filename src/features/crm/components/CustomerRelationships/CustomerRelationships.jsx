@@ -1,3 +1,4 @@
+import { GlassSelect } from "@/components/ui";
 import {
   AlertCircle,
   BriefcaseBusiness,
@@ -354,7 +355,7 @@ const CustomerRelationships = ({
               <div className="crm-customer-relationships__field">
                 <label htmlFor="crm-relationship-type">Bog‘lanish turi</label>
 
-                <select
+                <GlassSelect
                   id="crm-relationship-type"
                   value={form.type}
                   disabled={isSaving}
@@ -367,7 +368,7 @@ const CustomerRelationships = ({
                       </option>
                     ),
                   )}
-                </select>
+                </GlassSelect>
               </div>
 
               <div className="crm-customer-relationships__field">
@@ -415,7 +416,7 @@ const CustomerRelationships = ({
               <div className="crm-customer-relationships__field">
                 <label htmlFor="crm-relationship-status">Holati</label>
 
-                <select
+                <GlassSelect
                   id="crm-relationship-status"
                   value={form.status}
                   disabled={isSaving}
@@ -428,7 +429,7 @@ const CustomerRelationships = ({
                       </option>
                     ),
                   )}
-                </select>
+                </GlassSelect>
               </div>
 
               <div className="crm-customer-relationships__field">

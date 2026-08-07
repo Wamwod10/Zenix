@@ -152,7 +152,7 @@
 
   &__status-row {
     display: grid;
-    grid-template-columns: 150px 1fr auto;
+    grid-template-columns: minmax(150px, 1fr) auto;
     gap: 14px;
     align-items: center;
     padding: 8px 10px 8px 4px;
@@ -247,7 +247,7 @@
 
   &__budget-row {
     display: grid;
-    grid-template-columns: 1fr 1fr auto;
+    grid-template-columns: 1fr auto auto;
     align-items: center;
     gap: 16px;
     padding: 12px 14px;
@@ -258,6 +258,21 @@
     @media (max-width: 720px) {
       grid-template-columns: 1fr;
     }
+  }
+
+  &__budget-percent {
+    min-height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 10px;
+    border: 1px solid rgba(255, 255, 255, 0.68);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.2);
+    color: rgba(5, 14, 35, 0.76);
+    font-size: 12px;
+    font-weight: 780;
+    font-variant-numeric: tabular-nums;
   }
 
   &__budget-info {

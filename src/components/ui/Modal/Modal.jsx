@@ -1,4 +1,5 @@
 import { X } from "lucide-react";
+import { createPortal } from "react-dom";
 import "./Modal.scss";
 
 export function Modal({
@@ -12,7 +13,7 @@ export function Modal({
 }) {
   if (!open) return null;
 
-  return (
+  const modal = (
     <div className="ui-modal" role="dialog" aria-modal="true">
       <button
         className="ui-modal__backdrop"
@@ -39,4 +40,6 @@ export function Modal({
       </section>
     </div>
   );
+
+  return typeof document === "undefined" ? modal : createPortal(modal, document.body);
 }

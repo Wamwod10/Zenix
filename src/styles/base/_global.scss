@@ -29,7 +29,7 @@ body {
   color: var(--color-text);
 }
 
-:focus-visible {
+:focus-visible:not(:where(input, textarea, select, .ui-input__field)) {
   @include focus-ring;
 }
 

@@ -1,3 +1,4 @@
+import { GlassSelect } from "@/components/ui";
 import { useState } from "react";
 import { Send } from "lucide-react";
 
@@ -26,7 +27,7 @@ const Messages = ({ controller }) => {
         <article className="hr-panel">
           <div className="hr-panel__head"><div><span>Broadcast</span><h2>All, branch, department, selected</h2></div></div>
           <div className="hr-form-grid">
-            <label>Type<select value={type} onChange={(event) => setType(event.target.value)}><option value="broadcast">All employees</option><option value="branch">Selected branch</option><option value="department">Department</option><option value="personal">Selected employee</option></select></label>
+            <label>Type<GlassSelect value={type} onChange={(event) => setType(event.target.value)}><option value="broadcast">All employees</option><option value="branch">Selected branch</option><option value="department">Department</option><option value="personal">Selected employee</option></GlassSelect></label>
             <label className="hr-form-grid__wide">Message<textarea value={text} onChange={(event) => setText(event.target.value)} /></label>
           </div>
           <button type="button" onClick={() => { if (controller.actions.sendMessage({ text, type, to: ["all"] })) setText(""); }}>

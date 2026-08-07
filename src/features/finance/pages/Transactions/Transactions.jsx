@@ -1,3 +1,4 @@
+import { GlassSelect } from "@/components/ui";
 import TransactionCreateDialog from "../../components/TransactionCreateDialog/TransactionCreateDialog";
 import TransactionTable from "../../components/TransactionTable/TransactionTable";
 
@@ -25,25 +26,25 @@ const Transactions = ({ controller, onNavigate }) => (
         </label>
         <label>
           <span>Hisob</span>
-          <select value={controller.filters.account} onChange={(event) => controller.actions.updateFilter("account", event.target.value)}>
+          <GlassSelect value={controller.filters.account} onChange={(event) => controller.actions.updateFilter("account", event.target.value)}>
             <option value="all">Barchasi</option>
             {controller.state.accounts.map((account) => (
               <option key={account.id} value={account.id}>{account.code} | {account.name}</option>
             ))}
-          </select>
+          </GlassSelect>
         </label>
         <label>
           <span>Valyuta</span>
-          <select value={controller.filters.currency} onChange={(event) => controller.actions.updateFilter("currency", event.target.value)}>
+          <GlassSelect value={controller.filters.currency} onChange={(event) => controller.actions.updateFilter("currency", event.target.value)}>
             <option value="all">Barchasi</option>
             {controller.state.currencies.map((currency) => (
               <option key={currency.code} value={currency.code}>{currency.code}</option>
             ))}
-          </select>
+          </GlassSelect>
         </label>
         <label>
           <span>Tur</span>
-          <select value={controller.filters.type} onChange={(event) => controller.actions.updateFilter("type", event.target.value)}>
+          <GlassSelect value={controller.filters.type} onChange={(event) => controller.actions.updateFilter("type", event.target.value)}>
             <option value="all">Barchasi</option>
             <option value="income">Daromad</option>
             <option value="expense">Xarajat</option>
@@ -52,18 +53,18 @@ const Transactions = ({ controller, onNavigate }) => (
             <option value="adjustment">Balans tuzatish</option>
             <option value="opening">Boshlang'ich qoldiq</option>
             <option value="exchange">Valyuta ayirboshlash</option>
-          </select>
+          </GlassSelect>
         </label>
         <label>
           <span>Holat</span>
-          <select value={controller.filters.status} onChange={(event) => controller.actions.updateFilter("status", event.target.value)}>
+          <GlassSelect value={controller.filters.status} onChange={(event) => controller.actions.updateFilter("status", event.target.value)}>
             <option value="all">Barchasi</option>
             <option value="Draft">Qoralama</option>
             <option value="Pending">Tasdiq kutilmoqda</option>
             <option value="Approved">Tasdiqlangan</option>
             <option value="Posted">O'tkazilgan</option>
             <option value="Cancelled">Bekor qilingan</option>
-          </select>
+          </GlassSelect>
         </label>
         <label><span>Hamkor</span><input value={controller.filters.counterparty} onChange={(event) => controller.actions.updateFilter("counterparty", event.target.value)} placeholder="Hamkor nomi" /></label>
         <label><span>Kategoriya</span><input value={controller.filters.category === "all" ? "" : controller.filters.category} onChange={(event) => controller.actions.updateFilter("category", event.target.value || "all")} placeholder="Kategoriya" /></label>

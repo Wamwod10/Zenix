@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Landmark, Scale, ShieldCheck, WalletCards } from "lucide-react";
 
 import StatusBadge from "../../components/StatusBadge/StatusBadge";
 import { sumBy } from "../../utils/financeCalculations";
@@ -51,6 +52,37 @@ const BalanceSheet = ({ controller }) => {
     ...equity.map((row) => ["Kapital", row.label, row.value]),
     ["Formula", "Aktivlar - Majburiyatlar - Kapital", difference],
   ];
+  const reportCurrency = filters.currency === "all" ? "UZS" : filters.currency;
+  const summaryCards = [
+    {
+      icon: WalletCards,
+      label: "Jami aktivlar",
+      value: formatMoney(totalAssets, reportCurrency),
+      hint: "Naqd, bank, debitor va zaxiralar",
+      tone: "is-income",
+    },
+    {
+      icon: Landmark,
+      label: "Jami majburiyatlar",
+      value: formatMoney(totalLiabilities, reportCurrency),
+      hint: "Kreditor va soliq majburiyatlari",
+      tone: "is-expense",
+    },
+    {
+      icon: ShieldCheck,
+      label: "Jami kapital",
+      value: formatMoney(totalEquity, reportCurrency),
+      hint: "Kapital va joriy davr foydasi",
+      tone: "is-bank",
+    },
+    {
+      icon: Scale,
+      label: "Balans farqi",
+      value: formatMoney(difference, reportCurrency),
+      hint: balanced ? "Formula teng" : "Tekshiruv kerak",
+      tone: balanced ? "is-flow" : "is-cash",
+    },
+  ];
 
   return (
     <section className="finance-view">
@@ -71,10 +103,20 @@ const BalanceSheet = ({ controller }) => {
           <label><span>Valyuta</span><input value={filters.currency} onChange={(event) => setFilters((current) => ({ ...current, currency: event.target.value.trim() || "all" }))} /></label>
         </div>
         <div className="finance-card-grid">
-          <article className="finance-mini-card"><strong>{formatMoney(totalAssets, filters.currency === "all" ? "UZS" : filters.currency)}</strong><span>Jami aktivlar</span></article>
-          <article className="finance-mini-card"><strong>{formatMoney(totalLiabilities, filters.currency === "all" ? "UZS" : filters.currency)}</strong><span>Jami majburiyatlar</span></article>
-          <article className="finance-mini-card"><strong>{formatMoney(totalEquity, filters.currency === "all" ? "UZS" : filters.currency)}</strong><span>Jami kapital</span></article>
-          <article className="finance-mini-card"><strong>{formatMoney(difference, filters.currency === "all" ? "UZS" : filters.currency)}</strong><span>Balans farqi</span></article>
+          {summaryCards.map((card) => {
+            const Icon = card.icon;
+
+            return (
+              <article className={`finance-mini-card finance-mini-card--metric ${card.tone}`} key={card.label}>
+                <span className="finance-mini-card__icon" aria-hidden="true">
+                  <Icon size={18} />
+                </span>
+                <span className="finance-mini-card__label">{card.label}</span>
+                <strong>{card.value}</strong>
+                <small>{card.hint}</small>
+              </article>
+            );
+          })}
         </div>
         {[["Aktivlar", assets], ["Majburiyatlar", liabilities], ["Kapital", equity]].map(([title, rows]) => (
           <div className="finance-statement" key={title}>

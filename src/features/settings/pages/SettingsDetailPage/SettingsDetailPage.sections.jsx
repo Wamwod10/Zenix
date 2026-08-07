@@ -654,7 +654,7 @@ export const IntegrationsPage = ({ controller }) => {
                 <strong>{item.name}</strong>
                 <span>{item.type} - {item.mode}</span>
               </div>
-              <meter value={item.health} max="100" />
+              <b>{item.health}% sog'lom</b>
               <small>{statusLabels[item.status] || item.status} - oxirgi sync {item.lastSync}</small>
               <small>{item.statistics} | {item.syncHistory}</small>
               {item.errorDetails && <small>{item.errorDetails}</small>}
@@ -833,7 +833,7 @@ export const BackupPage = ({ controller }) => (
       title="Backup tarixi"
       action={<button type="button" className="settings-detail__button is-primary" onClick={controller.actions.runBackup}><DatabaseBackup size={15} /> Backup yaratish</button>}
     >
-      {controller.progress && <div className="settings-detail__progress"><span>{controller.progress.label}</span><meter value={controller.progress.value} max="100" /></div>}
+      {controller.progress && <div className="settings-detail__progress"><span>{controller.progress.label}</span><b>{controller.progress.value}%</b></div>}
       <div className="settings-detail__table">
         {controller.state.backup.history.map((backup) => (
           <article key={backup.id}>

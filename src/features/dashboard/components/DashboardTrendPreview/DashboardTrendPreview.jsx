@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, BarChart3 } from "lucide-react";
+import { Activity, ArrowRight } from "lucide-react";
 import { formatMoney } from "../../dashboardApi";
 import "./DashboardTrendPreview.scss";
 
@@ -11,15 +11,13 @@ const DashboardTrendPreview = ({ metrics, currency }) => {
 
   if (values.length < 2) return null;
 
-  const max = Math.max(...values.map((item) => item.value), 1);
-
   return (
     <section className="dashboard-trend-preview" aria-labelledby="dashboard-trend-title">
       <div className="dashboard-trend-preview__head">
         <div>
           <span>
-            <BarChart3 size={14} aria-hidden="true" />
-            Trend
+            <Activity size={14} aria-hidden="true" />
+            Taqqoslash
           </span>
           <h2 id="dashboard-trend-title">Savdo ritmi</h2>
         </div>
@@ -29,15 +27,12 @@ const DashboardTrendPreview = ({ metrics, currency }) => {
         </Link>
       </div>
 
-      <div className="dashboard-trend-preview__bars" aria-label="Kecha va bugungi savdo taqqoslanishi">
+      <div className="dashboard-trend-preview__values" aria-label="Kecha va bugungi savdo taqqoslanishi">
         {values.map((item) => (
-          <label key={item.label}>
+          <article key={item.label}>
             <span>{item.label}</span>
-            <meter min="0" max={max} value={item.value}>
-              {formatMoney(item.value, currency)}
-            </meter>
             <strong>{formatMoney(item.value, currency)}</strong>
-          </label>
+          </article>
         ))}
       </div>
     </section>

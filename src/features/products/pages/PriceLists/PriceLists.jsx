@@ -1,3 +1,4 @@
+import { GlassSelect } from "@/components/ui";
 import { CheckCircle2, CircleDollarSign, XCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -39,7 +40,7 @@ const PriceLists = ({ products, priceLists, canApprove, onSubmitApproval, onReso
           <div className="products-form-grid">
             <label>
               <span>Mahsulot</span>
-              <select
+              <GlassSelect
                 value={draft.productId}
                 onChange={(event) => {
                   const product = products.find((item) => item.id === event.target.value);
@@ -47,7 +48,7 @@ const PriceLists = ({ products, priceLists, canApprove, onSubmitApproval, onReso
                 }}
               >
                 {products.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
-              </select>
+              </GlassSelect>
             </label>
             <label><span>Sotuv narxi</span><input type="number" value={draft.price} onChange={(event) => setDraft({ ...draft, price: Number(event.target.value) })} /></label>
             <label><span>Tannarx</span><input type="number" value={draft.cost} onChange={(event) => setDraft({ ...draft, cost: Number(event.target.value) })} /></label>

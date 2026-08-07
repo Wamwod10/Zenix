@@ -1,3 +1,4 @@
+import { GlassSelect } from "@/components/ui";
 import { useEffect, useMemo, useState } from "react";
 import {
   Check,
@@ -151,7 +152,7 @@ const BulkActionBar = ({
             <div className="crm-bulk-action-bar__field">
               <label htmlFor="crm-bulk-action-type">Amal</label>
 
-              <select
+              <GlassSelect
                 id="crm-bulk-action-type"
                 value={actionType}
                 disabled={loading}
@@ -164,7 +165,7 @@ const BulkActionBar = ({
                     {action.label}
                   </option>
                 ))}
-              </select>
+              </GlassSelect>
             </div>
 
             {activeAction ? (
@@ -176,7 +177,7 @@ const BulkActionBar = ({
                 <div className="crm-bulk-action-bar__value-control">
                   {ActiveIcon ? <ActiveIcon aria-hidden="true" /> : null}
 
-                  <select
+                  <GlassSelect
                     id="crm-bulk-action-value"
                     value={actionValue}
                     disabled={loading}
@@ -189,7 +190,7 @@ const BulkActionBar = ({
                         {option.label}
                       </option>
                     ))}
-                  </select>
+                  </GlassSelect>
                 </div>
               </div>
             ) : null}

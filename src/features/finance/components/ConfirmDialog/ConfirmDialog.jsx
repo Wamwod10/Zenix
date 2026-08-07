@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 
 import "./ConfirmDialog.scss";
@@ -12,6 +13,7 @@ const ConfirmDialog = ({
   onConfirm,
   onClose,
   confirmDisabled = false,
+  panelClassName = "",
 }) => {
   useEffect(() => {
     if (!open) return undefined;
@@ -33,7 +35,7 @@ const ConfirmDialog = ({
 
   if (!open) return null;
 
-  return (
+  const dialog = (
     <div className="finance-dialog" role="dialog" aria-modal="true" aria-labelledby="finance-dialog-title">
       <button
         className="finance-dialog__backdrop"
@@ -41,7 +43,7 @@ const ConfirmDialog = ({
         aria-label="Modalni yopish"
         onClick={onClose}
       />
-      <section className="finance-dialog__panel">
+      <section className={["finance-dialog__panel", panelClassName].filter(Boolean).join(" ")}>
         <header>
           <div>
             <h2 id="finance-dialog-title">{title}</h2>
@@ -63,6 +65,8 @@ const ConfirmDialog = ({
       </section>
     </div>
   );
+
+  return typeof document === "undefined" ? dialog : createPortal(dialog, document.body);
 };
 
 export default ConfirmDialog;

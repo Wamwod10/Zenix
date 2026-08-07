@@ -1,5 +1,5 @@
 import "./RevenueChart.scss";
-import { BarChart3, CalendarDays, CircleDollarSign } from "lucide-react";
+import { CalendarDays, CircleDollarSign, ListChecks } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { formatMoney, formatNumber, formatPercentChange } from "../../dashboardApi";
 
@@ -31,7 +31,6 @@ const toTrendData = (stats = {}) => {
 const RevenueChart = ({ currency = "uzs", stats = {} }) => {
   const navigate = useNavigate();
   const trendData = toTrendData(stats);
-  const maxValue = Math.max(...trendData.map((item) => item.value), 1);
   const salesChange = formatPercentChange(stats?.todaySales, stats?.yesterdaySales);
   const totalRevenue = trendData.reduce((sum, item) => sum + item.value, 0);
 
@@ -43,8 +42,8 @@ const RevenueChart = ({ currency = "uzs", stats = {} }) => {
             <CircleDollarSign size={14} />
             Daromad nazorati
           </span>
-          <h3>Savdo va foyda trendi</h3>
-          <p>Real summary asosida bugungi tushum va yaqin davr dinamikasi.</p>
+          <h3>Savdo va foyda ko'rsatkichlari</h3>
+          <p>Real summary asosida bugungi tushum va yaqin davr qiymatlari.</p>
         </div>
 
         <button
@@ -78,28 +77,20 @@ const RevenueChart = ({ currency = "uzs", stats = {} }) => {
       </div>
 
       {trendData.length ? (
-        <div className="revenue-panel__chart" aria-label="Daromad trendi">
-          {trendData.slice(-12).map((item, index) => {
-            const level = Math.max(4, Math.round((item.value / maxValue) * 100));
-
-            return (
-              <span
-                className="revenue-panel__bar"
-                key={`${item.label}-${index}`}
-                title={`${item.label}: ${formatMoney(item.value, currency)}`}
-                style={{ "--bar-level": `${level}%`, "--bar-index": index }}
-              >
-                <i />
-                <small>{item.label}</small>
-              </span>
-            );
-          })}
+        <div className="revenue-panel__analysis" aria-label="Daromad qiymatlari">
+          {trendData.slice(-12).map((item, index) => (
+            <article key={`${item.label}-${index}`} title={`${item.label}: ${formatMoney(item.value, currency)}`}>
+              <span>{item.label}</span>
+              <strong>{formatMoney(item.value, currency)}</strong>
+              <em>{index === trendData.length - 1 ? "Joriy" : "Oldingi"}</em>
+            </article>
+          ))}
         </div>
       ) : (
         <div className="revenue-panel__empty">
-          <BarChart3 size={18} />
-          <strong>Trend uchun real savdo ma'lumoti hali yo'q</strong>
-          <span>POS savdolari yig'ilgach chart avtomatik to'ladi.</span>
+          <ListChecks size={18} />
+          <strong>Analitika uchun real savdo ma'lumoti hali yo'q</strong>
+          <span>POS savdolari yig'ilgach ko'rsatkichlar avtomatik to'ladi.</span>
         </div>
       )}
 

@@ -1,3 +1,4 @@
+import { GlassSelect } from "@/components/ui";
 import { useState } from "react";
 
 import ConfirmDialog from "../../components/ConfirmDialog/ConfirmDialog";
@@ -26,7 +27,7 @@ const Budget = ({ controller }) => {
                 <strong>{budget.category}</strong>
                 <span>{budget.period} | mas'ul {budget.owner}</span>
                 <b>{formatMoney(budget.actual)} / {formatMoney(budget.planned)}</b>
-                <meter min="0" max="100" value={Math.min(progress, 100)} />
+                <span>{Math.min(progress, 100)}% ishlatilgan</span>
                 <button type="button" disabled={budget.status !== "Pending"} onClick={() => controller.actions.approveBudget(budget.id)}>Tasdiqlash</button>
               </article>
             );
@@ -50,7 +51,7 @@ const Budget = ({ controller }) => {
       >
         <div className="finance-form-grid">
           <label><span>Kategoriya</span><input value={form.category} onChange={(event) => setForm((current) => ({ ...current, category: event.target.value }))} /></label>
-          <label><span>Period</span><select value={form.period} onChange={(event) => setForm((current) => ({ ...current, period: event.target.value }))}>{controller.state.periods.map((period) => <option key={period.id} value={period.id}>{period.label}</option>)}</select></label>
+          <label><span>Period</span><GlassSelect value={form.period} onChange={(event) => setForm((current) => ({ ...current, period: event.target.value }))}>{controller.state.periods.map((period) => <option key={period.id} value={period.id}>{period.label}</option>)}</GlassSelect></label>
           <label><span>Reja summa</span><input type="number" min="1" value={form.planned} onChange={(event) => setForm((current) => ({ ...current, planned: event.target.value }))} /></label>
           <label><span>Mas'ul</span><input value={form.owner} onChange={(event) => setForm((current) => ({ ...current, owner: event.target.value }))} /></label>
         </div>

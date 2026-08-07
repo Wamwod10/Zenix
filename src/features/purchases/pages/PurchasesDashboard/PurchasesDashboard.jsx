@@ -19,7 +19,6 @@ import PurchaseStatusBadge from "../../components/PurchaseStatusBadge/PurchaseSt
 import PageHeader from "../../../../components/layout/PageHeader/PageHeader";
 import BudgetStatusBadge from "../../components/BudgetStatusBadge/BudgetStatusBadge";
 import PurchaseKpiCard from "../../components/PurchaseKpiCard/PurchaseKpiCard";
-import PurchaseProgressBar from "../../components/PurchaseProgressBar/PurchaseProgressBar";
 import BudgetManagerModal from "../../modals/BudgetManagerModal/BudgetManagerModal";
 import AIWorkspace from "../../ai/components/AIWorkspace/AIWorkspace";
 import usePurchaseDashboard from "../../hooks/usePurchaseDashboard";
@@ -78,14 +77,6 @@ const PurchasesDashboard = () => {
     ),
   ).length;
 
-  const maxMonthly = Math.max(
-    ...dashboard.monthlySeries.map((entry) => entry.total),
-    1,
-  );
-  const maxStatusCount = Math.max(
-    ...dashboard.statusOverview.map((entry) => entry.count),
-    1,
-  );
   const getOrderPrimaryLabel = (order) => {
     const supplierName = getSupplier(order.supplierId)?.name || "Noma'lum yetkazib beruvchi";
     const productName = order.items?.[0]?.name;
@@ -103,12 +94,6 @@ const PurchasesDashboard = () => {
 
     return formatPurchaseDate(order.expectedDate);
   };
-  const getBarHeight = (total) => {
-    if (!total) return 0;
-
-    return Math.max((total / maxMonthly) * 100, 2);
-  };
-
   return (
     <div className="purchases-dashboard">
       <PageHeader
@@ -158,35 +143,19 @@ const PurchasesDashboard = () => {
 
       <section className="purchases-dashboard__grid">
 
-        <article className="purchases-dashboard__panel purchases-dashboard__panel--chart">
+        <article className="purchases-dashboard__panel purchases-dashboard__panel--analytics">
           <h3>
             <Wallet size={16} />
-            Oxirgi 6 oy — xarid dinamikasi
+            Oxirgi 6 oy xarid ko'rsatkichlari
           </h3>
 
-          <div className="purchases-dashboard__chart">
+          <div className="purchases-dashboard__analytics">
             {dashboard.monthlySeries.map((entry) => (
-              <div className="purchases-dashboard__bar-wrap" key={entry.label}>
-                <span className="purchases-dashboard__bar-value">
-                  {formatCompactMoney(entry.total)}
-                </span>
-                <span
-                  className={[
-                    "purchases-dashboard__bar",
-                    entry.total === 0 ? "purchases-dashboard__bar--zero" : "",
-                  ]
-                    .filter(Boolean)
-                    .join(" ")}
-                  style={{ "--bar-height": `${getBarHeight(entry.total)}%` }}
-                  aria-label={`${entry.label}: ${formatMoney(entry.total)}`}
-                  title={`${entry.label}: ${formatMoney(entry.total)}`}
-                >
-                  <span className="purchases-dashboard__bar-tooltip">
-                    {entry.label} · {formatMoney(entry.total)}
-                  </span>
-                </span>
-                <span className="purchases-dashboard__bar-label">{entry.label}</span>
-              </div>
+              <article key={entry.label} title={`${entry.label}: ${formatMoney(entry.total)}`}>
+                <span>{entry.label}</span>
+                <strong>{formatCompactMoney(entry.total)}</strong>
+                <em>{formatMoney(entry.total)}</em>
+              </article>
             ))}
           </div>
         </article>
@@ -243,12 +212,6 @@ const PurchasesDashboard = () => {
                 key={entry.status}
               >
                 <PurchaseStatusBadge status={entry.status} />
-                <PurchaseProgressBar
-                  value={entry.count}
-                  max={maxStatusCount}
-                  tone={entry.tone}
-                  minPercent={8}
-                />
                 <span className="purchases-dashboard__status-count">
                   {entry.count}
                 </span>

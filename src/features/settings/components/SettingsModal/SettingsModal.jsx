@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Download, Upload, Users, X } from "lucide-react";
 
 import "./SettingsModal.scss";
@@ -82,7 +83,7 @@ const SettingsModal = ({ type, backup, onClose, onConfirm }) => {
     onConfirm?.({ reason, fileMeta, shareEmail });
   };
 
-  return (
+  const modal = (
     <div className="settings-modal" role="dialog" aria-modal="true" aria-labelledby="settings-modal-title">
       <button className="settings-modal__backdrop" type="button" aria-label="Modalni yopish" onClick={onClose} />
       <section className="settings-modal__panel" ref={panelRef}>
@@ -161,6 +162,8 @@ const SettingsModal = ({ type, backup, onClose, onConfirm }) => {
       </section>
     </div>
   );
+
+  return typeof document === "undefined" ? modal : createPortal(modal, document.body);
 };
 
 export default SettingsModal;

@@ -1,8 +1,7 @@
 .report-bar-chart {
-  display: flex;
-  align-items: flex-end;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
-  height: 180px;
   padding-top: 8px;
 
   &__empty {
@@ -13,82 +12,55 @@
     color: rgba(5, 14, 35, 0.48);
   }
 
-  &__col {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 6px;
-    height: 100%;
+  &__item {
     min-width: 0;
+    display: grid;
+    gap: 6px;
+    padding: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.68);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.16);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+    color: inherit;
+    font: inherit;
+    text-align: left;
 
-    &--clickable {
-      cursor: pointer;
+    span,
+    em {
+      overflow: hidden;
+      color: rgba(5, 14, 35, 0.48);
+      font-size: 11px;
+      font-style: normal;
+      font-weight: 700;
+      line-height: 1.2;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
 
-      &:hover .report-bar-chart__fill {
-        filter: brightness(1.12);
-      }
-
-      &:hover .report-bar-chart__value {
-        color: #2436b8;
-      }
+    strong {
+      overflow: hidden;
+      color: rgba(5, 14, 35, 0.78);
+      font-size: 15px;
+      font-weight: 780;
+      line-height: 1.05;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
     }
   }
 
-  &__value {
-    font-size: 10.5px;
-    font-weight: 650;
-    color: rgba(5, 14, 35, 0.55);
-    white-space: nowrap;
-  }
+  button.report-bar-chart__item {
+    cursor: pointer;
 
-  &__track {
-    display: flex;
-    align-items: flex-end;
-    width: 100%;
-    max-width: 44px;
-    height: 100%;
-    border-radius: 10px 10px 4px 4px;
-    background: rgba(100, 116, 139, 0.08);
-    overflow: hidden;
-  }
-
-  &__fill {
-    width: 100%;
-    height: var(--bar-height, 0%);
-    border-radius: 10px 10px 4px 4px;
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.42), transparent 28%),
-      linear-gradient(180deg, rgba(74, 103, 255, 0.78), rgba(74, 103, 255, 0.3));
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.66);
-    transition: height 0.3s ease, filter 0.15s ease;
-
-    &--zero {
-      min-height: 2px;
-      background: rgba(100, 116, 139, 0.18);
-      box-shadow: none;
+    &:hover {
+      border-color: rgba(74, 103, 255, 0.24);
+      background: rgba(255, 255, 255, 0.24);
     }
   }
+}
 
-  &__label {
-    font-size: 11px;
-    color: rgba(5, 14, 35, 0.45);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 100%;
-  }
-
-  &--success &__fill {
-    background: linear-gradient(180deg, rgba(22, 163, 74, 0.78), rgba(22, 163, 74, 0.28));
-  }
-
-  &--warning &__fill {
-    background: linear-gradient(180deg, rgba(217, 119, 6, 0.78), rgba(217, 119, 6, 0.26));
-  }
-
-  &--danger &__fill {
-    background: linear-gradient(180deg, rgba(220, 38, 38, 0.78), rgba(220, 38, 38, 0.26));
+@media (max-width: 760px) {
+  .report-bar-chart {
+    grid-template-columns: 1fr;
   }
 }

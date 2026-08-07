@@ -1,3 +1,4 @@
+import { GlassSelect } from "@/components/ui";
 import { useMemo, useState } from "react";
 
 import ConfirmDialog from "../../components/ConfirmDialog/ConfirmDialog";
@@ -115,10 +116,10 @@ const Invoices = ({ controller }) => {
           <label><span>Mijoz rekvizitlari</span><input value={form.customerDetails} onChange={(event) => setForm((current) => ({ ...current, customerDetails: event.target.value }))} /></label>
           <label><span>Yaratilgan sana</span><input type="date" value={form.date} onChange={(event) => setForm((current) => ({ ...current, date: event.target.value }))} /></label>
           <label><span>Muddat</span><input type="date" value={form.dueDate} onChange={(event) => setForm((current) => ({ ...current, dueDate: event.target.value }))} /></label>
-          <label><span>Valyuta</span><select value={form.currency} onChange={(event) => setForm((current) => ({ ...current, currency: event.target.value }))}>{controller.state.currencies.map((currency) => <option key={currency.code}>{currency.code}</option>)}</select></label>
+          <label><span>Valyuta</span><GlassSelect value={form.currency} onChange={(event) => setForm((current) => ({ ...current, currency: event.target.value }))}>{controller.state.currencies.map((currency) => <option key={currency.code}>{currency.code}</option>)}</GlassSelect></label>
           <label><span>Filial</span><input value={form.branch} onChange={(event) => setForm((current) => ({ ...current, branch: event.target.value }))} /></label>
           <label><span>Mas'ul xodim</span><input value={form.owner} onChange={(event) => setForm((current) => ({ ...current, owner: event.target.value }))} /></label>
-          <label><span>To'lov hisobi</span><select value={form.accountId} onChange={(event) => setForm((current) => ({ ...current, accountId: event.target.value }))}>{controller.state.accounts.map((account) => <option key={account.id} value={account.id}>{account.code} | {account.name}</option>)}</select></label>
+          <label><span>To'lov hisobi</span><GlassSelect value={form.accountId} onChange={(event) => setForm((current) => ({ ...current, accountId: event.target.value }))}>{controller.state.accounts.map((account) => <option key={account.id} value={account.id}>{account.code} | {account.name}</option>)}</GlassSelect></label>
           <label><span>Fayl</span><input value={form.attachmentName} onChange={(event) => setForm((current) => ({ ...current, attachmentName: event.target.value }))} placeholder="invoice.pdf" /></label>
           <div className="finance-form-grid__wide finance-invoice-lines">
             <div className="finance-panel__head">
@@ -158,11 +159,11 @@ const Invoices = ({ controller }) => {
           <label><span>Summa</span><input type="number" min="1" value={payment.amount} onChange={(event) => setPayment((current) => ({ ...current, amount: event.target.value }))} /></label>
           <label>
             <span>Qabul qiluvchi hisob</span>
-            <select value={payment.accountId} onChange={(event) => setPayment((current) => ({ ...current, accountId: event.target.value }))}>
+            <GlassSelect value={payment.accountId} onChange={(event) => setPayment((current) => ({ ...current, accountId: event.target.value }))}>
               {controller.state.accounts.filter((account) => account.kind === "bank" || account.kind === "cash").map((account) => (
                 <option key={account.id} value={account.id}>{account.code} | {account.name}</option>
               ))}
-            </select>
+            </GlassSelect>
           </label>
         </div>
       </ConfirmDialog>

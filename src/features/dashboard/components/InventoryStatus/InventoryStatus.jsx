@@ -9,7 +9,6 @@ const InventoryStatus = ({ stats = {} }) => {
   const lowStock = Number(stats?.lowStockCount ?? 0);
   const outOfStock = Number(stats?.outOfStockCount ?? 0);
   const healthy = Math.max(total - lowStock - outOfStock, 0);
-  const progress = total > 0 ? Math.round((healthy / total) * 100) : 0;
 
   return (
     <article className="zenix-dashboard__panel dashboard-widget dashboard-widget--blue inventory-status">
@@ -31,11 +30,9 @@ const InventoryStatus = ({ stats = {} }) => {
             ? "SKU ma'lumoti kelganda ombor holati ko'rinadi"
             : `${formatNumber(lowStock)} kam, ${formatNumber(outOfStock)} tugagan`}
         </p>
-        <span
-          className="dashboard-widget__meter"
-          style={{ "--widget-progress": `${progress}%` }}
-        >
-          <i />
+        <span className="dashboard-widget__split">
+          <b>{formatNumber(healthy)}</b>
+          <small>Sog'lom qoldiq</small>
         </span>
         <button
           type="button"

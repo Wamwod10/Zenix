@@ -1,5 +1,20 @@
-import { useMemo, useState } from "react";
-import { Archive, Building2, Edit3, Eye, MoreHorizontal, Power, Repeat2 } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import {
+  Archive,
+  BadgeCheck,
+  Building2,
+  CircleDollarSign,
+  Edit3,
+  Eye,
+  Landmark,
+  MoreHorizontal,
+  Power,
+  Repeat2,
+  TrendingDown,
+  TrendingUp,
+  WalletCards,
+} from "lucide-react";
 
 import ConfirmDialog from "../../components/ConfirmDialog/ConfirmDialog";
 import StatusBadge from "../../components/StatusBadge/StatusBadge";
@@ -82,7 +97,7 @@ const ChoiceGroup = ({ label, value, options, onChange }) => (
 );
 
 const BankAccountForm = ({ controller, form, setForm, errors }) => (
-  <div className="finance-form-grid">
+  <div className="finance-form-grid finance-bank-account-form">
     <label>
       <span>Hisob nomi</span>
       <input value={form.name} aria-invalid={Boolean(errors.name)} onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))} placeholder="Asosiy bank hisobi" />
@@ -151,6 +166,9 @@ const AccountManagement = ({ controller, kind = "bank" }) => {
   const [cashClose, setCashClose] = useState(emptyCashClose);
   const [selectedId, setSelectedId] = useState(accounts[0]?.id || "");
   const [actionMenu, setActionMenu] = useState("");
+  const actionButtonRef = useRef(null);
+  const actionMenuRef = useRef(null);
+  const [actionMenuStyle, setActionMenuStyle] = useState(null);
   const selectedAccount = accounts.find((account) => account.id === selectedId);
 
   const accountMovements = useMemo(
@@ -167,6 +185,50 @@ const AccountManagement = ({ controller, kind = "bank" }) => {
   const todayIn = todaysBankTransactions.filter((item) => item.cashDirection === "in").reduce((sum, item) => sum + Number(item.amount || 0), 0);
   const todayOut = todaysBankTransactions.filter((item) => item.cashDirection === "out").reduce((sum, item) => sum + Number(item.amount || 0), 0);
   const unreconciled = controller.state.reconciliation.system.filter((item) => !item.matched).length;
+  const bankSummaryCards = [
+    {
+      icon: WalletCards,
+      label: "Jami UZS balans",
+      value: formatMoney(totalUzs),
+      hint: "Milliy valyutadagi balans",
+      tone: "is-flow",
+    },
+    {
+      icon: CircleDollarSign,
+      label: "Jami USD balans",
+      value: formatMoney(totalUsd, "USD"),
+      hint: "Dollar hisoblari balansi",
+      tone: "is-net",
+    },
+    {
+      icon: BadgeCheck,
+      label: "Faol hisoblar soni",
+      value: activeAccounts.length,
+      hint: "Ishlayotgan bank hisoblari",
+      tone: "is-income",
+    },
+    {
+      icon: TrendingUp,
+      label: "Bugungi kirim",
+      value: formatMoney(todayIn),
+      hint: "Bugun kirim bo'lgan mablag'",
+      tone: "is-bank",
+    },
+    {
+      icon: TrendingDown,
+      label: "Bugungi chiqim",
+      value: formatMoney(todayOut),
+      hint: "Bugun chiqim bo'lgan mablag'",
+      tone: "is-expense",
+    },
+    {
+      icon: Landmark,
+      label: "Sverka talab qilinadi",
+      value: unreconciled,
+      hint: "Moslashmagan bank yozuvlari",
+      tone: "is-cash",
+    },
+  ];
 
   const validationErrors = useMemo(() => {
     const errors = {};
@@ -181,6 +243,82 @@ const AccountManagement = ({ controller, kind = "bank" }) => {
   }, [accounts, form, isBank]);
 
   const resetForm = () => setForm({ ...emptyBankForm, kind });
+  const placeActionMenu = useCallback((anchor = actionButtonRef.current) => {
+    const rect = anchor?.getBoundingClientRect();
+
+    if (!rect) {
+      return;
+    }
+
+    const menuWidth = 230;
+    const menuHeight = 320;
+    const gap = 8;
+    const viewportGap = 12;
+    const spaceBelow = window.innerHeight - rect.bottom - viewportGap;
+    const openUp = spaceBelow < menuHeight && rect.top > spaceBelow;
+    const left = Math.min(
+      Math.max(viewportGap, rect.right - menuWidth),
+      Math.max(viewportGap, window.innerWidth - menuWidth - viewportGap),
+    );
+
+    setActionMenuStyle({
+      left,
+      position: "fixed",
+      top: openUp
+        ? Math.max(viewportGap, rect.top - menuHeight - gap)
+        : Math.min(window.innerHeight - viewportGap - menuHeight, rect.bottom + gap),
+      width: menuWidth,
+    });
+  }, []);
+
+  const toggleActionMenu = useCallback((event, accountId) => {
+    event.stopPropagation();
+
+    if (actionMenu === accountId) {
+      setActionMenu("");
+      return;
+    }
+
+    actionButtonRef.current = event.currentTarget;
+    placeActionMenu(event.currentTarget);
+    setActionMenu(accountId);
+  }, [actionMenu, placeActionMenu]);
+
+  useEffect(() => {
+    if (!actionMenu) {
+      return undefined;
+    }
+
+    const handlePointerDown = (event) => {
+      const clickedMenu = actionMenuRef.current?.contains(event.target);
+      const clickedButton = actionButtonRef.current?.contains(event.target);
+
+      if (!clickedMenu && !clickedButton) {
+        setActionMenu("");
+      }
+    };
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        setActionMenu("");
+      }
+    };
+
+    const updatePosition = () => placeActionMenu();
+
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("resize", updatePosition);
+    window.addEventListener("scroll", updatePosition, true);
+
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("resize", updatePosition);
+      window.removeEventListener("scroll", updatePosition, true);
+    };
+  }, [actionMenu, placeActionMenu]);
+
   const openCreate = () => {
     resetForm();
     controller.actions.setActiveModal(isBank ? "create-bank-account" : "create-cash-account");
@@ -256,11 +394,11 @@ const AccountManagement = ({ controller, kind = "bank" }) => {
                 <div><span>Qoldiq</span><strong>{formatMoney(account.openingBalance, account.currency)}</strong></div>
                 <div><span>Oxirgi inkassatsiya</span><strong>{formatDateTime(account.lastCollectionAt)}</strong></div>
                 <div><span>Holat</span><strong>{account.active === false ? "Nofaol" : "Faol"}</strong></div>
-                <button type="button" className="finance-icon-button" aria-label="Kassa amallari" onClick={() => setActionMenu(actionMenu === account.id ? "" : account.id)}>
+                <button type="button" className="finance-icon-button" aria-label="Kassa amallari" onClick={(event) => toggleActionMenu(event, account.id)}>
                   <MoreHorizontal size={18} />
                 </button>
-                {actionMenu === account.id && (
-                  <div className="finance-action-menu">
+                {actionMenu === account.id && (typeof document === "undefined" ? (
+                  <div className="finance-action-menu finance-action-menu--portal" ref={actionMenuRef} style={actionMenuStyle ?? undefined}>
                     <button type="button" onClick={() => { controller.actions.openCashSession({ accountId: account.id, cashier: account.cashier || controller.currentUser, openingBalance: account.openingBalance }); setActionMenu(""); }}>Kassani ochish</button>
                     <button type="button" onClick={() => { setCashClose({ accountId: account.id, actualBalance: account.openingBalance || "", reason: "" }); controller.actions.setActiveModal("close-cash-session"); setActionMenu(""); }}>Kassani yopish</button>
                     <button type="button" onClick={() => { openCashOperation(account, CASH_DIRECTION.IN, "Qo'lda kirim"); setActionMenu(""); }}>Kirim kiritish</button>
@@ -270,7 +408,19 @@ const AccountManagement = ({ controller, kind = "bank" }) => {
                     <button type="button" onClick={() => { openEdit(account); setActionMenu(""); }}>Tahrirlash</button>
                     <button type="button" onClick={() => { controller.actions.toggleFinanceAccount(account.id); setActionMenu(""); }}>{account.active === false ? "Qayta faollashtirish" : "Nofaol qilish"}</button>
                   </div>
-                )}
+                ) : createPortal(
+                  <div className="finance-action-menu finance-action-menu--portal" ref={actionMenuRef} style={actionMenuStyle ?? undefined}>
+                    <button type="button" onClick={() => { controller.actions.openCashSession({ accountId: account.id, cashier: account.cashier || controller.currentUser, openingBalance: account.openingBalance }); setActionMenu(""); }}>Kassani ochish</button>
+                    <button type="button" onClick={() => { setCashClose({ accountId: account.id, actualBalance: account.openingBalance || "", reason: "" }); controller.actions.setActiveModal("close-cash-session"); setActionMenu(""); }}>Kassani yopish</button>
+                    <button type="button" onClick={() => { openCashOperation(account, CASH_DIRECTION.IN, "Qo'lda kirim"); setActionMenu(""); }}>Kirim kiritish</button>
+                    <button type="button" onClick={() => { openCashOperation(account, CASH_DIRECTION.OUT, "Qo'lda chiqim"); setActionMenu(""); }}>Chiqim kiritish</button>
+                    <button type="button" onClick={() => { openCashOperation(account, CASH_DIRECTION.OUT, "Inkassatsiya"); setActionMenu(""); }}>Inkassatsiya</button>
+                    <button type="button" onClick={() => { startTransfer(account); setActionMenu(""); }}>Bankka topshirish</button>
+                    <button type="button" onClick={() => { openEdit(account); setActionMenu(""); }}>Tahrirlash</button>
+                    <button type="button" onClick={() => { controller.actions.toggleFinanceAccount(account.id); setActionMenu(""); }}>{account.active === false ? "Qayta faollashtirish" : "Nofaol qilish"}</button>
+                  </div>,
+                  document.body,
+                ))}
               </article>
             ))}
           </div>
@@ -359,12 +509,20 @@ const AccountManagement = ({ controller, kind = "bank" }) => {
         </div>
 
         <div className="finance-card-grid">
-          <article className="finance-mini-card"><strong>{formatMoney(totalUzs)}</strong><span>Jami UZS balans</span></article>
-          <article className="finance-mini-card"><strong>{formatMoney(totalUsd, "USD")}</strong><span>Jami USD balans</span></article>
-          <article className="finance-mini-card"><strong>{activeAccounts.length}</strong><span>Faol hisoblar soni</span></article>
-          <article className="finance-mini-card"><strong>{formatMoney(todayIn)}</strong><span>Bugungi kirim</span></article>
-          <article className="finance-mini-card"><strong>{formatMoney(todayOut)}</strong><span>Bugungi chiqim</span></article>
-          <article className="finance-mini-card"><strong>{unreconciled}</strong><span>Sverka talab qilinadi</span></article>
+          {bankSummaryCards.map((card) => {
+            const Icon = card.icon;
+
+            return (
+              <article className={`finance-mini-card finance-mini-card--metric ${card.tone}`} key={card.label}>
+                <span className="finance-mini-card__icon" aria-hidden="true">
+                  <Icon size={18} />
+                </span>
+                <span className="finance-mini-card__label">{card.label}</span>
+                <strong>{card.value}</strong>
+                <small>{card.hint}</small>
+              </article>
+            );
+          })}
         </div>
 
         {accounts.length ? (
@@ -401,21 +559,27 @@ const AccountManagement = ({ controller, kind = "bank" }) => {
                     <span>Oxirgi operatsiya</span>
                     <strong>{formatDate(lastTransaction?.date)}</strong>
                   </div>
-                  <button type="button" className="finance-icon-button" aria-label="Hisob amallari" onClick={(event) => {
-                    event.stopPropagation();
-                    setActionMenu(actionMenu === account.id ? "" : account.id);
-                  }}>
+                  <button type="button" className="finance-icon-button" aria-label="Hisob amallari" onClick={(event) => toggleActionMenu(event, account.id)}>
                     <MoreHorizontal size={18} />
                   </button>
-                  {actionMenu === account.id && (
-                    <div className="finance-action-menu" onClick={(event) => event.stopPropagation()}>
+                  {actionMenu === account.id && (typeof document === "undefined" ? (
+                    <div className="finance-action-menu finance-action-menu--portal" ref={actionMenuRef} style={actionMenuStyle ?? undefined} onClick={(event) => event.stopPropagation()}>
                       <button type="button" onClick={() => { setSelectedId(account.id); setActionMenu(""); }}> <Eye size={15} /> Batafsil ko'rish</button>
                       <button type="button" onClick={() => openEdit(account)}> <Edit3 size={15} /> Tahrirlash</button>
                       <button type="button" onClick={() => startTransfer(account)}> <Repeat2 size={15} /> Tranzaksiyalar tarixi</button>
                       <button type="button" onClick={() => { controller.actions.toggleFinanceAccount(account.id); setActionMenu(""); }}> <Power size={15} /> {account.active === false ? "Qayta faollashtirish" : "Nofaol qilish"}</button>
                       <button type="button" className="is-danger" onClick={() => { controller.actions.archiveFinanceAccount(account.id); setActionMenu(""); }}> <Archive size={15} /> Arxivlash</button>
                     </div>
-                  )}
+                  ) : createPortal(
+                    <div className="finance-action-menu finance-action-menu--portal" ref={actionMenuRef} style={actionMenuStyle ?? undefined} onClick={(event) => event.stopPropagation()}>
+                      <button type="button" onClick={() => { setSelectedId(account.id); setActionMenu(""); }}> <Eye size={15} /> Batafsil ko'rish</button>
+                      <button type="button" onClick={() => openEdit(account)}> <Edit3 size={15} /> Tahrirlash</button>
+                      <button type="button" onClick={() => startTransfer(account)}> <Repeat2 size={15} /> Tranzaksiyalar tarixi</button>
+                      <button type="button" onClick={() => { controller.actions.toggleFinanceAccount(account.id); setActionMenu(""); }}> <Power size={15} /> {account.active === false ? "Qayta faollashtirish" : "Nofaol qilish"}</button>
+                      <button type="button" className="is-danger" onClick={() => { controller.actions.archiveFinanceAccount(account.id); setActionMenu(""); }}> <Archive size={15} /> Arxivlash</button>
+                    </div>,
+                    document.body,
+                  ))}
                 </article>
               );
             })}
@@ -468,6 +632,7 @@ const AccountManagement = ({ controller, kind = "bank" }) => {
         title={form.id ? "Bank hisobini tahrirlash" : "Bank hisobi qo'shish"}
         description="Majburiy maydonlar tekshiriladi va barcha o'zgarishlar audit jurnaliga yoziladi."
         confirmLabel={form.id ? "Saqlash" : "Hisob yaratish"}
+        panelClassName="finance-dialog__panel--account"
         onClose={controller.actions.closeModal}
         onConfirm={submitAccount}
         confirmDisabled={Object.keys(validationErrors).length > 0}
@@ -480,6 +645,7 @@ const AccountManagement = ({ controller, kind = "bank" }) => {
         title="Hisoblararo o'tkazma"
         description="Bir xil hisobga o'tkazish, yetarli bo'lmagan balans va kurs kiritilmagan valyuta o'tkazmalari bloklanadi."
         confirmLabel="O'tkazmani bajarish"
+        panelClassName="finance-dialog__panel--transfer"
         onClose={controller.actions.closeModal}
         onConfirm={() => {
           if (controller.actions.transferBetweenAccounts(transfer)) {
@@ -489,7 +655,7 @@ const AccountManagement = ({ controller, kind = "bank" }) => {
         }}
         confirmDisabled={!transfer.sourceId || !transfer.destinationId || transfer.sourceId === transfer.destinationId || Number(transfer.amount || 0) <= 0}
       >
-        <div className="finance-form-grid">
+        <div className="finance-form-grid finance-transfer-form">
           <ChoiceGroup
             label="Qaysi hisobdan"
             value={transfer.sourceId}

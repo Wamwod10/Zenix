@@ -1,1 +1,74 @@
-﻿/* Component styles are composed in ../pages/Reports.scss. */
+.chart-card {
+  &__analytics {
+    display: grid;
+    gap: 12px;
+  }
+
+  &__summary {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+
+    article {
+      min-width: 0;
+      display: grid;
+      gap: 5px;
+      padding: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.62);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.16);
+    }
+  }
+
+  &__rows {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+
+    article {
+      min-width: 0;
+      display: grid;
+      gap: 7px;
+      padding: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.58);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.12);
+    }
+  }
+
+  &__summary span,
+  &__rows span,
+  &__rows small {
+    overflow: hidden;
+    color: rgba(15, 23, 42, 0.46);
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.2;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__summary strong,
+  &__rows strong {
+    min-width: 0;
+    display: grid;
+    gap: 3px;
+    overflow: hidden;
+    color: rgba(5, 14, 35, 0.84);
+    font-size: 15px;
+    font-weight: 780;
+    line-height: 1.08;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@media (max-width: 900px) {
+  .chart-card {
+    &__summary,
+    &__rows {
+      grid-template-columns: 1fr;
+    }
+  }
+}

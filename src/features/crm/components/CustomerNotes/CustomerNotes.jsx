@@ -1,3 +1,4 @@
+import { GlassSelect } from "@/components/ui";
 import {
   AlertCircle,
   CheckCircle2,
@@ -261,7 +262,7 @@ const CustomerNotes = ({
               <div>
                 <label htmlFor="crm-customer-note-category">Kategoriya</label>
 
-                <select
+                <GlassSelect
                   id="crm-customer-note-category"
                   value={form.category}
                   disabled={isSaving}
@@ -279,7 +280,7 @@ const CustomerNotes = ({
                         {label}
                       </option>
                     ))}
-                </select>
+                </GlassSelect>
               </div>
 
               <div>
@@ -287,7 +288,7 @@ const CustomerNotes = ({
                   Muhimlik darajasi
                 </label>
 
-                <select
+                <GlassSelect
                   id="crm-customer-note-priority"
                   value={form.priority}
                   disabled={isSaving}
@@ -300,7 +301,7 @@ const CustomerNotes = ({
                       {label}
                     </option>
                   ))}
-                </select>
+                </GlassSelect>
               </div>
             </div>
 

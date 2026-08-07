@@ -1,3 +1,4 @@
+import { GlassSelect } from "@/components/ui";
 import { Download, PanelTopOpen, Search, ShieldCheck, SlidersHorizontal, Sparkles } from "lucide-react";
 
 import "./ReportsHeader.scss";
@@ -42,13 +43,13 @@ const ReportsHeader = ({
       </label>
 
       <div className="reports-header__actions">
-        <select value={role} onChange={(event) => onRoleChange(event.target.value)} aria-label="Reports roli">
+        <GlassSelect value={role} onChange={(event) => onRoleChange(event.target.value)} aria-label="Reports roli">
           {roles.map((item) => (
             <option key={item.id} value={item.id}>
               {item.label}
             </option>
           ))}
-        </select>
+        </GlassSelect>
         <button type="button" onClick={onOpenFilters}>
           <SlidersHorizontal size={16} />
           Filter

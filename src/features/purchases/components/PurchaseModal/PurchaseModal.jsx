@@ -1,6 +1,7 @@
 // Xaridlar moduli umumiy modal qobig'i (backdrop, Escape, scroll-lock).
 
 import { useEffect, useId, useRef } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 
 import "./PurchaseModal.scss";
@@ -82,7 +83,7 @@ const PurchaseModal = ({
     }
   };
 
-  return (
+  const modal = (
     <div
       className="purchase-modal"
       role="presentation"
@@ -121,6 +122,8 @@ const PurchaseModal = ({
       </section>
     </div>
   );
+
+  return typeof document === "undefined" ? modal : createPortal(modal, document.body);
 };
 
 export default PurchaseModal;

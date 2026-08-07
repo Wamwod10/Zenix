@@ -77,14 +77,15 @@
 
   &__menu {
     position: absolute;
-    z-index: 1700;
+    z-index: 3500;
     top: calc(100% + 8px);
     left: 0;
     right: 0;
+    min-width: 180px;
     max-height: 240px;
     overflow-y: auto;
     padding: 7px;
-    background: var(--glass-surface-elevated);
+    background: var(--glass-dropdown-panel, var(--glass-surface-elevated));
     border: 1px solid var(--glass-border);
     border-radius: var(--glass-radius-md);
     box-shadow: var(--glass-shadow-elevated);
@@ -92,7 +93,16 @@
     -webkit-backdrop-filter: var(--glass-blur-medium);
     animation: ui-dropdown-in 160ms ease both;
     scrollbar-width: thin;
-    scrollbar-color: rgba(93, 120, 180, 0.28) transparent;
+    scrollbar-color: var(--scrollbar-thumb) transparent;
+  }
+
+  &__menu--portal {
+    position: fixed;
+    top: auto;
+    right: auto;
+    left: auto;
+    width: auto;
+    z-index: 3500;
   }
 
   &__option {
@@ -103,8 +113,8 @@
     justify-content: space-between;
     gap: 10px;
     padding: 10px 12px;
-    color: rgba(15, 23, 42, 0.66);
-    background: transparent;
+    color: var(--glass-dropdown-option-muted, var(--color-text-soft));
+    background: var(--glass-dropdown-option, transparent);
     border: 0;
     border-radius: 12px;
     font-size: 14px;
@@ -117,14 +127,14 @@
       transform 160ms ease;
 
     &:hover {
-      color: var(--color-text);
-      background: rgba(255, 255, 255, 0.22);
+      color: var(--glass-dropdown-option-text, var(--color-text));
+      background: var(--glass-dropdown-option-hover, rgba(255, 255, 255, 0.22));
       transform: translateX(2px);
     }
 
     &--selected {
-      color: var(--color-primary);
-      background: rgba(94, 127, 255, 0.1);
+      color: var(--glass-dropdown-option-selected-text, var(--color-primary));
+      background: var(--glass-dropdown-option-selected, rgba(94, 127, 255, 0.1));
 
       svg {
         flex: 0 0 auto;

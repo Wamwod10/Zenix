@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { BadgeDollarSign, ChartNoAxesColumnIncreasing, CircleDollarSign, TrendingUp } from "lucide-react";
 
 import StatusBadge from "../../components/StatusBadge/StatusBadge";
 import { sumBy } from "../../utils/financeCalculations";
@@ -59,6 +60,36 @@ const ProfitAndLoss = ({ controller }) => {
     ["Sof foyda", netProfit],
     ...rows.map((row) => [row.title, row.amount]),
   ];
+  const summaryCards = [
+    {
+      icon: BadgeDollarSign,
+      label: "Sof daromad",
+      value: formatMoney(netIncome),
+      hint: "Daromad minus chegirma va qaytarimlar",
+      tone: "is-income",
+    },
+    {
+      icon: TrendingUp,
+      label: "Yalpi foyda",
+      value: formatMoney(grossProfit),
+      hint: "Sof daromad minus tannarx",
+      tone: "is-flow",
+    },
+    {
+      icon: ChartNoAxesColumnIncreasing,
+      label: "Operatsion foyda",
+      value: formatMoney(operatingProfit),
+      hint: "Operatsion xarajatlardan keyin",
+      tone: "is-bank",
+    },
+    {
+      icon: CircleDollarSign,
+      label: "Sof foyda",
+      value: formatMoney(netProfit),
+      hint: "Soliqlardan keyingi natija",
+      tone: "is-net",
+    },
+  ];
 
   return (
     <section className="finance-view">
@@ -77,26 +108,36 @@ const ProfitAndLoss = ({ controller }) => {
           <label><span>Usul</span><input value={filters.method} onChange={(event) => setFilters((current) => ({ ...current, method: event.target.value }))} /></label>
         </div>
         <div className="finance-card-grid">
-          <article className="finance-mini-card"><strong>{formatMoney(netIncome)}</strong><span>Sof daromad</span></article>
-          <article className="finance-mini-card"><strong>{formatMoney(grossProfit)}</strong><span>Yalpi foyda</span></article>
-          <article className="finance-mini-card"><strong>{formatMoney(operatingProfit)}</strong><span>Operatsion foyda</span></article>
-          <article className="finance-mini-card"><strong>{formatMoney(netProfit)}</strong><span>Sof foyda</span></article>
+          {summaryCards.map((card) => {
+            const Icon = card.icon;
+
+            return (
+              <article className={`finance-mini-card finance-mini-card--metric ${card.tone}`} key={card.label}>
+                <span className="finance-mini-card__icon" aria-hidden="true">
+                  <Icon size={18} />
+                </span>
+                <span className="finance-mini-card__label">{card.label}</span>
+                <strong>{card.value}</strong>
+                <small>{card.hint}</small>
+              </article>
+            );
+          })}
         </div>
-        <div className="finance-statement">
+        <div className="finance-statement finance-statement--profit-loss">
           <h3>Daromadlar</h3>
           {rows.filter((row) => row.type === "income").map((row) => (
-            <article key={row.id} onClick={() => setDrilldown(row)}>
+            <article className={`finance-statement__row finance-statement__row--${row.id}`} key={row.id} onClick={() => setDrilldown(row)}>
               <span>{row.title}</span><strong>{formatMoney(row.amount)}</strong>
             </article>
           ))}
-          <article className="is-total"><span>Sof daromad</span><strong>{formatMoney(netIncome)}</strong></article>
+          <article className="is-total finance-statement__row finance-statement__row--net-income"><span>Sof daromad</span><strong>{formatMoney(netIncome)}</strong></article>
           <h3>Xarajatlar</h3>
           {rows.filter((row) => row.type === "expense" || row.source === "cogs").map((row) => (
-            <article key={row.id} onClick={() => setDrilldown(row)}>
+            <article className={`finance-statement__row finance-statement__row--${row.id}`} key={row.id} onClick={() => setDrilldown(row)}>
               <span>{row.title}</span><strong>{formatMoney(row.amount)}</strong>
             </article>
           ))}
-          <article className="is-total"><span>Sof foyda</span><strong>{formatMoney(netProfit)}</strong></article>
+          <article className="is-total finance-statement__row finance-statement__row--net-profit"><span>Sof foyda</span><strong>{formatMoney(netProfit)}</strong></article>
         </div>
         {!transactions.length && <div className="finance-empty">Tanlangan davr uchun foyda va zarar hisobotini shakllantiradigan operatsiyalar mavjud emas.</div>}
       </section>

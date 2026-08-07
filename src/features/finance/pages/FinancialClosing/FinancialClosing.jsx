@@ -1,3 +1,4 @@
+import { GlassSelect } from "@/components/ui";
 import { useState } from "react";
 
 import ConfirmDialog from "../../components/ConfirmDialog/ConfirmDialog";
@@ -79,11 +80,11 @@ const FinancialClosing = ({ controller }) => {
         <div className="finance-form-grid">
           <label>
             <span>Period</span>
-            <select value={reopen.periodId} onChange={(event) => setReopen((current) => ({ ...current, periodId: event.target.value }))}>
+            <GlassSelect value={reopen.periodId} onChange={(event) => setReopen((current) => ({ ...current, periodId: event.target.value }))}>
               {controller.state.periods.map((period) => (
                 <option key={period.id} value={period.id}>{period.label}</option>
               ))}
-            </select>
+            </GlassSelect>
           </label>
           <label className="finance-form-grid__wide">
             <span>Sabab</span>

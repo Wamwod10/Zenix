@@ -1,3 +1,4 @@
+import { GlassSelect } from "@/components/ui";
 import { CheckCircle2, Clock3, History, Menu, MoreHorizontal, RotateCcw, Save, Star, Undo2, Upload, Users } from "lucide-react";
 
 import SettingsSearch from "../SettingsSearch/SettingsSearch";
@@ -41,11 +42,11 @@ const SettingsHeader = ({
       </button>
       <SettingsSearch search={search} compact />
       <div className="settings-header__actions">
-        <select aria-label="Ruxsat preview roli" title="Ruxsat preview roli" value={role} onChange={(event) => onRoleChange(event.target.value)}>
+        <GlassSelect aria-label="Ruxsat preview roli" title="Ruxsat preview roli" value={role} onChange={(event) => onRoleChange(event.target.value)}>
           {roles.map((item) => (
             <option key={item.id} value={item.id}>{item.name}</option>
           ))}
-        </select>
+        </GlassSelect>
         {showPageActions ? (
           <>
             <button type="button" aria-label="Sevimliga qo'shish" title="Sevimliga qo'shish" aria-pressed={isFavorite} onClick={onFavorite}>

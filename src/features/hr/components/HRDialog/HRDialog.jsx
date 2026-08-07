@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 
 import "./HRDialog.scss";
@@ -19,7 +20,7 @@ const HRDialog = ({ open, title, children, onClose }) => {
 
   if (!open) return null;
 
-  return (
+  const dialog = (
     <div className="hr-dialog" role="presentation" onMouseDown={onClose}>
       <section
         className="hr-dialog__panel"
@@ -38,6 +39,8 @@ const HRDialog = ({ open, title, children, onClose }) => {
       </section>
     </div>
   );
+
+  return typeof document === "undefined" ? dialog : createPortal(dialog, document.body);
 };
 
 export default HRDialog;

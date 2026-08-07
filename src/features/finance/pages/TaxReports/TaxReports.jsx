@@ -1,3 +1,5 @@
+import { GlassSelect } from "@/components/ui";
+import { BadgePercent, CalendarClock, ReceiptText, WalletCards } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import StatusBadge from "../../components/StatusBadge/StatusBadge";
@@ -74,9 +76,40 @@ const TaxReports = ({ controller }) => {
 
   const totalCalculated = sumBy(rows, (row) => row.calculated);
   const totalPaid = sumBy(rows, (row) => row.paid);
+  const taxBalance = Math.max(totalCalculated - totalPaid, 0);
   const exportRows = [
     ["Soliq turi", "Hisoblangan", "To'langan", "Qoldiq", "Muddat", "Holat", "Deklaratsiya"],
     ...rows.map((row) => [row.label, row.calculated, row.paid, row.balance, formatDate(row.dueDate), formatStatusLabel(row.status), row.declarationNumber]),
+  ];
+  const summaryCards = [
+    {
+      icon: ReceiptText,
+      label: "Hisoblangan soliqlar",
+      value: formatMoney(totalCalculated),
+      hint: "Davr bo'yicha hisoblangan soliq",
+      tone: "is-flow",
+    },
+    {
+      icon: WalletCards,
+      label: "To'langan soliqlar",
+      value: formatMoney(totalPaid),
+      hint: "Soliq to'lovlari summasi",
+      tone: "is-income",
+    },
+    {
+      icon: BadgePercent,
+      label: "Soliq majburiyati",
+      value: formatMoney(taxBalance),
+      hint: "To'lanishi kerak bo'lgan qoldiq",
+      tone: "is-expense",
+    },
+    {
+      icon: CalendarClock,
+      label: "Muddati yaqin hisobotlar",
+      value: rows.filter((row) => row.balance > 0).length,
+      hint: "E'tibor talab qiladigan deklaratsiyalar",
+      tone: "is-cash",
+    },
   ];
 
   return (
@@ -97,19 +130,29 @@ const TaxReports = ({ controller }) => {
           <label><span>Sana oxiri</span><input type="date" value={filters.dateTo} onChange={(event) => setFilters((current) => ({ ...current, dateTo: event.target.value }))} /></label>
           <label>
             <span>Soliq turi</span>
-            <select value={filters.type} onChange={(event) => setFilters((current) => ({ ...current, type: event.target.value }))}>
+            <GlassSelect value={filters.type} onChange={(event) => setFilters((current) => ({ ...current, type: event.target.value }))}>
               <option value="all">Barchasi</option>
               {taxReportTypes.map((type) => <option key={type.id} value={type.id}>{type.label}</option>)}
-            </select>
+            </GlassSelect>
           </label>
           <label><span>Filial</span><input value={filters.branch === "all" ? "" : filters.branch} placeholder="Barcha filiallar" onChange={(event) => setFilters((current) => ({ ...current, branch: event.target.value.trim() || "all" }))} /></label>
         </div>
 
         <div className="finance-card-grid">
-          <article className="finance-mini-card"><strong>{formatMoney(totalCalculated)}</strong><span>Hisoblangan soliqlar</span></article>
-          <article className="finance-mini-card"><strong>{formatMoney(totalPaid)}</strong><span>To'langan soliqlar</span></article>
-          <article className="finance-mini-card"><strong>{formatMoney(Math.max(totalCalculated - totalPaid, 0))}</strong><span>Soliq majburiyati</span></article>
-          <article className="finance-mini-card"><strong>{rows.filter((row) => row.balance > 0).length}</strong><span>Muddati yaqin hisobotlar</span></article>
+          {summaryCards.map((card) => {
+            const Icon = card.icon;
+
+            return (
+              <article className={`finance-mini-card finance-mini-card--metric ${card.tone}`} key={card.label}>
+                <span className="finance-mini-card__icon" aria-hidden="true">
+                  <Icon size={18} />
+                </span>
+                <span className="finance-mini-card__label">{card.label}</span>
+                <strong>{card.value}</strong>
+                <small>{card.hint}</small>
+              </article>
+            );
+          })}
         </div>
 
         {postedTransactions.length || controller.state.settings.taxRates.length ? (

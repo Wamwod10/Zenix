@@ -1,3 +1,4 @@
+import { GlassSelect } from "@/components/ui";
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
@@ -95,8 +96,8 @@ const TrialBalance = ({ controller }) => {
         <div className="finance-filters">
           <label><span>Sana boshidan</span><input type="date" /></label>
           <label><span>Sana oxiri</span><input type="date" /></label>
-          <label><span>Filial</span><select><option>Barchasi</option></select></label>
-          <label><span>Valyuta</span><select><option>Barchasi</option>{controller.state.currencies.map((item) => <option key={item.code}>{item.code}</option>)}</select></label>
+          <label><span>Filial</span><GlassSelect><option>Barchasi</option></GlassSelect></label>
+          <label><span>Valyuta</span><GlassSelect><option>Barchasi</option>{controller.state.currencies.map((item) => <option key={item.code}>{item.code}</option>)}</GlassSelect></label>
         </div>
         <div className="ledger-table">
           {rows.map((row) => (
@@ -148,7 +149,7 @@ const DebtView = ({ controller, kind = "customer" }) => {
         </div>
         <div className="finance-filters finance-filters--compact">
           <label><span>Qidirish</span><input placeholder={isCustomer ? "Mijoz nomi yoki telefon" : "Supplier nomi yoki hujjat"} /></label>
-          <label><span>Holat</span><select><option>Barchasi</option><option>Ochiq</option><option>Muddati o'tgan</option><option>Qisman</option></select></label>
+          <label><span>Holat</span><GlassSelect><option>Barchasi</option><option>Ochiq</option><option>Muddati o'tgan</option><option>Qisman</option></GlassSelect></label>
           <button type="button" className="finance-button">Filtrlarni tozalash</button>
         </div>
         {rows.length ? (

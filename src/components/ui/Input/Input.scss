@@ -95,9 +95,9 @@
 
   &:focus-within {
     .ui-input__control {
-      border-color: var(--glass-border-active);
-      box-shadow: var(--focus-ring);
-      background: var(--glass-control-hover);
+      border-color: var(--glass-border-subtle);
+      box-shadow: none;
+      background: var(--glass-control);
     }
   }
 

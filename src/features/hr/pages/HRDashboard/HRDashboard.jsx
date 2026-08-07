@@ -107,8 +107,9 @@ const HRDashboard = ({ controller, onNavigate }) => {
           <div className="hr-panel__head"><div><span>Davomat trendi</span><h2>Kunlik ko'rsatkichlar</h2></div></div>
           <div className="hr-chart-bars">
             {state.attendance.map((row) => (
-              <span key={row.id} style={{ "--value": ["present", "remote"].includes(row.status) ? "92%" : row.status === "late" ? "68%" : "36%" }}>
+              <span key={row.id}>
                 <b>{row.date.slice(5)}</b>
+                <small>{row.status}</small>
               </span>
             ))}
           </div>
@@ -117,8 +118,9 @@ const HRDashboard = ({ controller, onNavigate }) => {
           <div className="hr-panel__head"><div><span>Filiallar</span><h2>Xodimlar taqsimoti</h2></div></div>
           <div className="hr-chart-bars">
             {state.branches.map((branch) => (
-              <span key={branch.id} style={{ "--value": `${Math.min(branch.employeeCount * 2, 100)}%` }}>
+              <span key={branch.id}>
                 <b>{branch.city}</b>
+                <small>{branch.employeeCount} xodim</small>
               </span>
             ))}
           </div>
@@ -140,7 +142,7 @@ const HRDashboard = ({ controller, onNavigate }) => {
                 <article key={employee.id}>
                   <strong>{formatEmployeeName(employee)}</strong>
                   <span>{meta.remaining} kun qoldi - progress {meta.progress}%</span>
-                  <meter min="0" max="100" value={meta.progress} />
+                  <b>{meta.progress}% yakunlangan</b>
                 </article>
               );
             })}

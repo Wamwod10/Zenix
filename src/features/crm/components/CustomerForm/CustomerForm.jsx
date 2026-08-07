@@ -1,3 +1,4 @@
+import { GlassSelect } from "@/components/ui";
 import { useEffect, useMemo, useState } from "react";
 import {
   BadgePercent,
@@ -488,7 +489,7 @@ const CustomerForm = ({
                   shouldShowError("status") ? validationErrors.status : null
                 }
               >
-                <select
+                <GlassSelect
                   id="crm-customer-status"
                   name="status"
                   value={values.status}
@@ -502,11 +503,11 @@ const CustomerForm = ({
                       {status.label}
                     </option>
                   ))}
-                </select>
+                </GlassSelect>
               </FormField>
 
               <FormField label="Mijoz guruhi" htmlFor="crm-customer-group">
-                <select
+                <GlassSelect
                   id="crm-customer-group"
                   name="group"
                   value={values.group}
@@ -521,11 +522,11 @@ const CustomerForm = ({
                       {group.label}
                     </option>
                   ))}
-                </select>
+                </GlassSelect>
               </FormField>
 
               <FormField label="Mas’ul menejer" htmlFor="crm-customer-manager">
-                <select
+                <GlassSelect
                   id="crm-customer-manager"
                   name="assignedManager"
                   value={values.assignedManager}
@@ -540,11 +541,11 @@ const CustomerForm = ({
                       {manager.label}
                     </option>
                   ))}
-                </select>
+                </GlassSelect>
               </FormField>
 
               <FormField label="Mijoz manbasi" htmlFor="crm-customer-source">
-                <select
+                <GlassSelect
                   id="crm-customer-source"
                   name="source"
                   value={values.source}
@@ -559,7 +560,7 @@ const CustomerForm = ({
                       {source}
                     </option>
                   ))}
-                </select>
+                </GlassSelect>
               </FormField>
             </div>
 
@@ -799,7 +800,7 @@ const CustomerForm = ({
             <div>
               <span>Sodiqlik darajasi</span>
 
-              <select
+              <GlassSelect
                 name="loyaltyLevel"
                 value={values.loyaltyLevel}
                 disabled={submitting}
@@ -812,7 +813,7 @@ const CustomerForm = ({
                     {option.label}
                   </option>
                 ))}
-              </select>
+              </GlassSelect>
             </div>
           </div>
 

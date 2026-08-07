@@ -1,3 +1,4 @@
+import { GlassSelect } from "@/components/ui";
 import { useCallback, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -398,7 +399,7 @@ const Customers = () => {
               <div className="crm-customers__pagination-size">
                 <label htmlFor="crm-customers-page-size">Har sahifada</label>
 
-                <select
+                <GlassSelect
                   id="crm-customers-page-size"
                   value={pageSize}
                   onChange={handlePageSizeChange}
@@ -406,7 +407,7 @@ const Customers = () => {
                   <option value={10}>10 ta</option>
                   <option value={20}>20 ta</option>
                   <option value={50}>50 ta</option>
-                </select>
+                </GlassSelect>
               </div>
             </div>
           </>

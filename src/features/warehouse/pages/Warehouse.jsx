@@ -1,3 +1,4 @@
+import { GlassSelect } from "@/components/ui";
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
@@ -164,13 +165,13 @@ const WarehouseFormModal = ({ open, mode, warehouse, onClose, onSubmit }) => {
         </label>
         <label>
           <span>Ombor turi</span>
-          <select value={form.type} onChange={(event) => update("type", event.target.value)}>
+          <GlassSelect value={form.type} onChange={(event) => update("type", event.target.value)}>
             <option>Asosiy ombor</option>
             <option>Filial ombori</option>
             <option>Tranzit ombor</option>
             <option>Nuqsonli ombor</option>
             <option>Virtual ombor</option>
-          </select>
+          </GlassSelect>
         </label>
         <label>
           <span>Mas'ul xodim</span>
@@ -291,45 +292,45 @@ const OperationModal = ({
           <>
             <label>
               <span>Yuboruvchi ombor</span>
-              <select
+              <GlassSelect
                 value={form.sourceWarehouseId}
                 onChange={(event) => update("sourceWarehouseId", event.target.value)}
               >
                 {warehouses.map((item) => (
                   <option key={item.id} value={item.id}>{item.name}</option>
                 ))}
-              </select>
+              </GlassSelect>
             </label>
             <label>
               <span>Qabul qiluvchi ombor</span>
-              <select
+              <GlassSelect
                 value={form.destinationWarehouseId}
                 onChange={(event) => update("destinationWarehouseId", event.target.value)}
               >
                 {warehouses.map((item) => (
                   <option key={item.id} value={item.id}>{item.name}</option>
                 ))}
-              </select>
+              </GlassSelect>
             </label>
           </>
         ) : (
           <label>
             <span>Ombor</span>
-            <select value={form.warehouseId} onChange={(event) => update("warehouseId", event.target.value)}>
+            <GlassSelect value={form.warehouseId} onChange={(event) => update("warehouseId", event.target.value)}>
               {warehouses.map((item) => (
                 <option key={item.id} value={item.id}>{item.name}</option>
               ))}
-            </select>
+            </GlassSelect>
           </label>
         )}
 
         <label>
           <span>Mahsulot</span>
-          <select value={form.item.productId} onChange={(event) => updateItem("productId", event.target.value)}>
+          <GlassSelect value={form.item.productId} onChange={(event) => updateItem("productId", event.target.value)}>
             {products.map((item) => (
               <option key={item.id} value={item.id}>{item.name}</option>
             ))}
-          </select>
+          </GlassSelect>
         </label>
 
         {["receipt", "issue", "transfer", "writeOff"].includes(type) && (

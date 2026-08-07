@@ -1,3 +1,4 @@
+import { GlassSelect } from "@/components/ui";
 import { Copy, Pencil, Search, Star, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 
@@ -46,11 +47,11 @@ const SavedReports = ({ controller, mode = "saved" }) => {
           <Search size={14} />
           <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Hisobot nomi bo'yicha qidirish" />
         </label>
-        <select value={sort} onChange={(event) => setSort(event.target.value)} aria-label="Saralash">
+        <GlassSelect value={sort} onChange={(event) => setSort(event.target.value)} aria-label="Saralash">
           <option value="newest">Yangi birinchi</option>
           <option value="name">Nomi bo'yicha</option>
           <option value="type">Turi bo'yicha</option>
-        </select>
+        </GlassSelect>
       </div>
       {items.length ? (
         <div className="saved-reports__grid">

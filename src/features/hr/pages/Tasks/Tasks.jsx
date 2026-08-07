@@ -1,3 +1,4 @@
+import { GlassSelect } from "@/components/ui";
 import { useState } from "react";
 import { Plus } from "lucide-react";
 
@@ -29,9 +30,9 @@ const Tasks = ({ controller }) => {
                   <span>{task.description}</span>
                   <span>{task.assigneeIds.map((id) => dictionaries.employeeById[id]?.firstName).join(", ")} · {task.deadline}</span>
                   <StatusBadge status={task.priority} label={task.priority} />
-                  <select value={task.status} onChange={(event) => controller.actions.updateTaskStatus(task.id, event.target.value)} aria-label="Task status">
+                  <GlassSelect value={task.status} onChange={(event) => controller.actions.updateTaskStatus(task.id, event.target.value)} aria-label="Task status">
                     {statuses.map((item) => <option key={item} value={item}>{item}</option>)}
-                  </select>
+                  </GlassSelect>
                 </article>
               ))}
             </section>

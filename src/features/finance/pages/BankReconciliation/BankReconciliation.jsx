@@ -1,5 +1,13 @@
 import { useState } from "react";
-import { FileSpreadsheet, Link2, ShieldCheck } from "lucide-react";
+import {
+  BadgeCheck,
+  CircleAlert,
+  CopyCheck,
+  FileSpreadsheet,
+  Link2,
+  Scale,
+  ShieldCheck,
+} from "lucide-react";
 
 import StatusBadge from "../../components/StatusBadge/StatusBadge";
 import { RECONCILIATION_STATUS } from "../../constants/financeConstants";
@@ -75,6 +83,50 @@ const BankReconciliation = ({ controller }) => {
   const duplicates = bank.filter((item) => item.matchStatus === RECONCILIATION_STATUS.DUPLICATE).length;
   const systemTotal = system.reduce((sum, item) => sum + Number(item.amount || 0), 0);
   const bankTotal = bank.reduce((sum, item) => sum + Number(item.amount || 0), 0);
+  const summaryCards = [
+    {
+      icon: FileSpreadsheet,
+      label: "Jami tizim tranzaksiyalari",
+      value: system.length,
+      hint: "Platformadagi operatsiyalar",
+      tone: "is-flow",
+    },
+    {
+      icon: ShieldCheck,
+      label: "Jami bank yozuvlari",
+      value: bank.length,
+      hint: "Bank vipiskasi yozuvlari",
+      tone: "is-bank",
+    },
+    {
+      icon: BadgeCheck,
+      label: "Mos tushganlar",
+      value: matched,
+      hint: "Avtomatik yoki qo'lda moslangan",
+      tone: "is-income",
+    },
+    {
+      icon: CircleAlert,
+      label: "Mos tushmaganlar",
+      value: unmatched,
+      hint: "Tekshiruv talab qiladiganlar",
+      tone: "is-expense",
+    },
+    {
+      icon: Scale,
+      label: "Summa farqi",
+      value: formatMoney(Math.abs(systemTotal - bankTotal)),
+      hint: "Tizim va bank orasidagi farq",
+      tone: "is-net",
+    },
+    {
+      icon: CopyCheck,
+      label: "Takroriy yozuvlar",
+      value: duplicates,
+      hint: "Dublikat sifatida belgilangan",
+      tone: "is-cash",
+    },
+  ];
 
   return (
     <section className="finance-view">
@@ -112,12 +164,20 @@ const BankReconciliation = ({ controller }) => {
         </div>
 
         <div className="finance-card-grid">
-          <article className="finance-mini-card"><strong>{system.length}</strong><span>Jami tizim tranzaksiyalari</span></article>
-          <article className="finance-mini-card"><strong>{bank.length}</strong><span>Jami bank yozuvlari</span></article>
-          <article className="finance-mini-card"><strong>{matched}</strong><span>Mos tushganlar</span></article>
-          <article className="finance-mini-card"><strong>{unmatched}</strong><span>Mos tushmaganlar</span></article>
-          <article className="finance-mini-card"><strong>{formatMoney(Math.abs(systemTotal - bankTotal))}</strong><span>Summa farqi</span></article>
-          <article className="finance-mini-card"><strong>{duplicates}</strong><span>Takroriy yozuvlar</span></article>
+          {summaryCards.map((card) => {
+            const Icon = card.icon;
+
+            return (
+              <article className={`finance-mini-card finance-mini-card--metric ${card.tone}`} key={card.label}>
+                <span className="finance-mini-card__icon" aria-hidden="true">
+                  <Icon size={18} />
+                </span>
+                <span className="finance-mini-card__label">{card.label}</span>
+                <strong>{card.value}</strong>
+                <small>{card.hint}</small>
+              </article>
+            );
+          })}
         </div>
 
         <div className="finance-row-actions">

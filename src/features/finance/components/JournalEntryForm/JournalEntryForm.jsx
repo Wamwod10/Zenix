@@ -1,3 +1,4 @@
+import { GlassSelect } from "@/components/ui";
 import { useMemo, useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 
@@ -79,7 +80,7 @@ const JournalEntryForm = ({ accounts, periods, onSubmit }) => {
       <div className="journal-form__rows">
         {form.rows.map((row, index) => (
           <div className="journal-form__row" key={`${row.accountId}-${index}`}>
-            <select
+            <GlassSelect
               value={row.accountId}
               onChange={(event) => updateRow(index, "accountId", event.target.value)}
               aria-label="Hisob"
@@ -89,7 +90,7 @@ const JournalEntryForm = ({ accounts, periods, onSubmit }) => {
                   {account.code} | {account.name}
                 </option>
               ))}
-            </select>
+            </GlassSelect>
             <input
               type="number"
               min="0"

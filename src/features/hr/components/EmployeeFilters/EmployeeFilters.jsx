@@ -1,3 +1,4 @@
+import { GlassSelect } from "@/components/ui";
 import { SlidersHorizontal, X } from "lucide-react";
 
 import "./EmployeeFilters.scss";
@@ -17,71 +18,71 @@ const EmployeeFilters = ({ filters, normalizedFilters, activeFilters, onChange, 
 
     <label>
       Bo'lim
-      <select value={filters.department} onChange={(event) => onChange("department", event.target.value)}>
+      <GlassSelect value={filters.department} onChange={(event) => onChange("department", event.target.value)}>
         <option value="all">Barcha bo'limlar</option>
         {departments.map((item) => (
           <option key={item.id} value={item.id}>
             {item.name}
           </option>
         ))}
-      </select>
+      </GlassSelect>
     </label>
     <label>
       Lavozim
-      <select value={filters.position} onChange={(event) => onChange("position", event.target.value)}>
+      <GlassSelect value={filters.position} onChange={(event) => onChange("position", event.target.value)}>
         <option value="all">Barcha lavozimlar</option>
         {positions.map((item) => (
           <option key={item.id} value={item.id}>
             {item.title}
           </option>
         ))}
-      </select>
+      </GlassSelect>
     </label>
     <label>
       Filial
-      <select value={filters.branch} onChange={(event) => onChange("branch", event.target.value)}>
+      <GlassSelect value={filters.branch} onChange={(event) => onChange("branch", event.target.value)}>
         <option value="all">Barcha filiallar</option>
         {branches.map((item) => (
           <option key={item.id} value={item.id}>
             {item.name}
           </option>
         ))}
-      </select>
+      </GlassSelect>
     </label>
     <label>
       Status
-      <select value={filters.status} onChange={(event) => onChange("status", event.target.value)}>
+      <GlassSelect value={filters.status} onChange={(event) => onChange("status", event.target.value)}>
         <option value="all">Barcha statuslar</option>
         <option value="active">Ishda</option>
         <option value="late">Kechikkan</option>
         <option value="leave">Ta'tilda</option>
         <option value="sick">Kasal</option>
         <option value="terminated">Bo'shagan</option>
-      </select>
+      </GlassSelect>
     </label>
     <label>
       Sinov muddati
-      <select value={filters.probation} onChange={(event) => onChange("probation", event.target.value)}>
+      <GlassSelect value={filters.probation} onChange={(event) => onChange("probation", event.target.value)}>
         <option value="all">Barchasi</option>
         <option value="active">{probationLabels.active}</option>
         <option value="ending-soon">{probationLabels["ending-soon"]}</option>
         <option value="decision-pending">{probationLabels["decision-pending"]}</option>
-      </select>
+      </GlassSelect>
     </label>
     <label>
       Hujjat muddati
-      <select value={filters.document} onChange={(event) => onChange("document", event.target.value)}>
+      <GlassSelect value={filters.document} onChange={(event) => onChange("document", event.target.value)}>
         <option value="all">Barchasi</option>
         <option value="risk">Xavf bor</option>
-      </select>
+      </GlassSelect>
     </label>
     <label>
       Davomat
-      <select value={filters.attendance} onChange={(event) => onChange("attendance", event.target.value)}>
+      <GlassSelect value={filters.attendance} onChange={(event) => onChange("attendance", event.target.value)}>
         <option value="all">Barchasi</option>
         <option value="low">85% dan past</option>
         <option value="high">90% va yuqori</option>
-      </select>
+      </GlassSelect>
     </label>
     <label className={normalizedFilters?.salaryRangeInvalid ? "is-invalid" : ""}>
       Min oylik

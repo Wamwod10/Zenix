@@ -34,9 +34,8 @@ select:focus,
 input:focus-visible,
 textarea:focus-visible,
 select:focus-visible {
-  border-color: var(--glass-border-active);
-  box-shadow: var(--focus-ring);
-  background: var(--glass-control-hover);
+  outline: none;
+  box-shadow: none;
 }
 
 input:disabled,
@@ -55,6 +54,12 @@ select:invalid {
 }
 
 select {
+  min-height: var(--control-height);
+  padding: 0 42px 0 14px;
+  color-scheme: light;
+  cursor: pointer;
+  font-weight: 650;
+  line-height: 1.2;
   padding-right: 42px;
   background-image:
     linear-gradient(45deg, transparent 50%, rgba(71, 85, 105, 0.86) 50%),
@@ -69,4 +74,38 @@ select {
     5px 5px,
     100% 100%;
   background-repeat: no-repeat;
+}
+
+[data-theme="dark"] select {
+  color-scheme: dark;
+  background-image:
+    linear-gradient(45deg, transparent 50%, rgba(226, 232, 240, 0.84) 50%),
+    linear-gradient(135deg, rgba(226, 232, 240, 0.84) 50%, transparent 50%),
+    var(--glass-control);
+}
+
+select option,
+select optgroup {
+  color: var(--glass-dropdown-option-text);
+  background: var(--glass-dropdown-panel);
+  font-weight: 650;
+}
+
+select option {
+  min-height: 36px;
+  padding: 10px 12px;
+}
+
+select option:hover,
+select option:focus {
+  color: var(--glass-dropdown-option-text);
+  background: var(--glass-dropdown-option-hover);
+  box-shadow: 0 0 0 999px var(--glass-dropdown-option-hover) inset;
+}
+
+select option:checked,
+select option:active {
+  color: var(--glass-dropdown-option-selected-text);
+  background: var(--glass-dropdown-option-selected);
+  box-shadow: 0 0 0 999px var(--glass-dropdown-option-selected) inset;
 }

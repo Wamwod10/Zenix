@@ -1,3 +1,4 @@
+import { GlassSelect } from "@/components/ui";
 import { Download, FileText, MoveRight, Plus, Search, ShieldCheck, Sparkles, TrendingDown, TrendingUp } from "lucide-react";
 
 import "./FinanceHeader.scss";
@@ -66,7 +67,7 @@ const FinanceHeader = ({
       </label>
 
       <div className="finance-header__actions">
-        <select
+        <GlassSelect
           value={role}
           onChange={(event) => onRoleChange(event.target.value)}
           aria-label="Moliya roli"
@@ -76,7 +77,7 @@ const FinanceHeader = ({
               {item.label}
             </option>
           ))}
-        </select>
+        </GlassSelect>
         <button type="button" onClick={onCreate}>
           <Plus size={16} />
           Tranzaksiya
