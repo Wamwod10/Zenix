@@ -106,11 +106,19 @@ const DashboardAnalytics = () => {
   const fetchedAt = getFetchedAt(summary, fulfilledTimeStamp);
   const isStale = isOlderThan(fetchedAt, 10);
   const branchOptions = useMemo(
-    () => toSelectOptions(summary?.branches || summary?.tenant?.branches, "Barcha filiallar"),
+    () =>
+      toSelectOptions(
+        summary?.branches || summary?.tenant?.branches,
+        "Barcha filiallar",
+      ),
     [summary],
   );
   const warehouseOptions = useMemo(
-    () => toSelectOptions(summary?.warehouses || summary?.tenant?.warehouses, "Barcha omborlar"),
+    () =>
+      toSelectOptions(
+        summary?.warehouses || summary?.tenant?.warehouses,
+        "Barcha omborlar",
+      ),
     [summary],
   );
 
@@ -129,7 +137,11 @@ const DashboardAnalytics = () => {
       </nav>
 
       <section className="dashboard-filterbar" aria-label="Dashboard filtrlari">
-        <div className="dashboard-filterbar__period" role="group" aria-label="Davr">
+        <div
+          className="dashboard-filterbar__period"
+          role="group"
+          aria-label="Davr"
+        >
           {PERIOD_OPTIONS.map((period) => (
             <button
               className={filters.period === period.value ? "is-active" : ""}
@@ -143,7 +155,7 @@ const DashboardAnalytics = () => {
         </div>
 
         <label>
-          <span>Filial</span>
+          {/* <span>Filial</span> */}
           <GlassSelect
             value={filters.branchId}
             onChange={(event) => updateFilter("branchId", event.target.value)}
@@ -157,10 +169,12 @@ const DashboardAnalytics = () => {
         </label>
 
         <label>
-          <span>Ombor</span>
+          {/* <span>Ombor</span> */}
           <GlassSelect
             value={filters.warehouseId}
-            onChange={(event) => updateFilter("warehouseId", event.target.value)}
+            onChange={(event) =>
+              updateFilter("warehouseId", event.target.value)
+            }
           >
             {warehouseOptions.map((warehouse) => (
               <option key={warehouse.id} value={warehouse.id}>
@@ -173,10 +187,12 @@ const DashboardAnalytics = () => {
 
       {isError ? (
         <section className="zenix-dashboard__notice" role="alert">
-          <AlertTriangle size={18} />
-          <div>
-            <strong>Ma'lumotlarni yuklab bo'lmadi</strong>
-            <span>{getErrorMessage(error)}</span>
+          <div style={{ display: "flex", alignItems: "center", columnGap: 8 }}>
+            <AlertTriangle size={18} />
+            <div>
+              <strong>Ma'lumotlarni yuklab bo'lmadi</strong>
+              <span>{getErrorMessage(error)}</span>
+            </div>
           </div>
           <button type="button" disabled={isFetching} onClick={refetch}>
             <RotateCw size={14} />
@@ -196,7 +212,11 @@ const DashboardAnalytics = () => {
         <QuickActions />
       </section>
 
-      <StatsGrid currency={currency} isLoading={isLoading && !summary} stats={summary?.stats} />
+      <StatsGrid
+        currency={currency}
+        isLoading={isLoading && !summary}
+        stats={summary?.stats}
+      />
 
       {isStale ? (
         <section className="zenix-dashboard__notice zenix-dashboard__notice--warning">
@@ -219,7 +239,11 @@ const DashboardAnalytics = () => {
         </div>
         <div className="zenix-dashboard__finance">
           <RevenueChart currency={currency} stats={summary?.stats} />
-          <SalesChart currency={currency} stats={summary?.stats} summary={summary} />
+          <SalesChart
+            currency={currency}
+            stats={summary?.stats}
+            summary={summary}
+          />
         </div>
       </section>
 

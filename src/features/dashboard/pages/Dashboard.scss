@@ -5,6 +5,7 @@
   gap: 16px;
   isolation: isolate;
   color: rgba(5, 14, 35, 0.86);
+  padding: 10px;
   border-radius: 28px 28px 0 0;
   background:
     radial-gradient(circle at 8% 0%, rgba(255, 255, 255, 0.36), transparent 16rem),
@@ -836,7 +837,13 @@
   min-height: 26px;
   color: rgba(15, 23, 42, 0.48);
   font-size: 12px;
+  padding: 15px;
   font-weight: 680;
+
+  span {
+    font-size: 22px;
+    font-weight: 700;
+  }
 
   span::after {
     content: "/";
@@ -846,7 +853,8 @@
 
   strong {
     color: rgba(43, 79, 188, 0.78);
-    font-weight: 800;
+    font-weight: 700;
+    font-size: 22px;
   }
 }
 
@@ -854,8 +862,8 @@
   display: grid;
   grid-template-columns: minmax(320px, 1fr) minmax(180px, 240px) minmax(180px, 240px);
   gap: 10px;
-  align-items: end;
-  padding: 12px;
+  align-items: center;
+  padding: 10px;
   border: 1px solid rgba(255, 255, 255, 0.72);
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.16);

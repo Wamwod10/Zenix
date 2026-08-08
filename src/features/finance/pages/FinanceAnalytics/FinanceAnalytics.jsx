@@ -1,3 +1,5 @@
+import { BadgeCheck, CircleDollarSign, ShieldAlert, WalletCards } from "lucide-react";
+
 import { FinanceBarChart, FinanceTrendChart } from "../../components/FinanceCharts/FinanceCharts";
 import StatusBadge from "../../components/StatusBadge/StatusBadge";
 import { formatDate, formatMoney } from "../../utils/financeFormatters";
@@ -17,6 +19,36 @@ const FinanceAnalytics = ({ controller }) => {
     { label: "Kreditor", value: controller.summary.payable },
     { label: "Soliq", value: controller.summary.taxPayable },
   ];
+  const summaryCards = [
+    {
+      icon: CircleDollarSign,
+      label: "Sof foyda",
+      value: formatMoney(controller.summary.netProfit),
+      hint: "Daromad minus xarajatlar",
+      tone: "is-net",
+    },
+    {
+      icon: WalletCards,
+      label: "Pul oqimi",
+      value: formatMoney(controller.summary.cashFlow),
+      hint: "Kirim va chiqim farqi",
+      tone: "is-flow",
+    },
+    {
+      icon: BadgeCheck,
+      label: "Tasdiq kutayotgan tranzaksiyalar",
+      value: controller.summary.pendingApprovals,
+      hint: "Maker-checker navbatidagi yozuvlar",
+      tone: "is-bank",
+    },
+    {
+      icon: ShieldAlert,
+      label: "Bank sverkasida moslanmagan yozuvlar",
+      value: controller.summary.unreconciled,
+      hint: "Tekshiruv talab qiladigan bank yozuvlari",
+      tone: "is-expense",
+    },
+  ];
 
   return (
     <section className="finance-view">
@@ -28,7 +60,7 @@ const FinanceAnalytics = ({ controller }) => {
           </div>
           <StatusBadge status={controller.summary.healthScore > 70 ? "success" : "warning"} label={`${controller.summary.healthScore}/100`} />
         </div>
-        <div className="finance-grid">
+        <div className="finance-grid finance-grid--analytics">
           <FinanceTrendChart rows={trendRows} title="Pul oqimi trendi" />
           <FinanceBarChart rows={debtRows} title="Qarzdorlik va soliq taqsimoti" />
         </div>
@@ -41,10 +73,20 @@ const FinanceAnalytics = ({ controller }) => {
           </div>
         </div>
         <div className="finance-card-grid">
-          <article className="finance-mini-card"><strong>{formatMoney(controller.summary.netProfit)}</strong><span>Sof foyda</span></article>
-          <article className="finance-mini-card"><strong>{formatMoney(controller.summary.cashFlow)}</strong><span>Pul oqimi</span></article>
-          <article className="finance-mini-card"><strong>{controller.summary.pendingApprovals}</strong><span>Tasdiq kutayotgan tranzaksiyalar</span></article>
-          <article className="finance-mini-card"><strong>{controller.summary.unreconciled}</strong><span>Bank sverkasida moslanmagan yozuvlar</span></article>
+          {summaryCards.map((card) => {
+            const Icon = card.icon;
+
+            return (
+              <article className={`finance-mini-card finance-mini-card--metric ${card.tone}`} key={card.label}>
+                <span className="finance-mini-card__icon" aria-hidden="true">
+                  <Icon size={18} />
+                </span>
+                <span className="finance-mini-card__label">{card.label}</span>
+                <strong>{card.value}</strong>
+                <small>{card.hint}</small>
+              </article>
+            );
+          })}
         </div>
       </section>
     </section>

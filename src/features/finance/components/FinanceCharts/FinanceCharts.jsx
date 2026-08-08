@@ -31,9 +31,14 @@ const FinanceAnalyticsBlock = ({ rows = [], title, mode = "trend" }) => {
   const summary = buildSummary(rows);
   return (
     <div className={`finance-analytics-block finance-analytics-block--${mode}`} aria-label={title}>
+      <div className="finance-analytics-block__head">
+        <h3>{title}</h3>
+        <span>{rows.length} yozuv</span>
+      </div>
+
       <div className="finance-analytics-block__summary">
         {summary.map((item) => (
-          <article key={item.label}>
+          <article className={Number(item.value || 0) < 0 ? "is-negative" : "is-positive"} key={item.label}>
             <span>{item.label}</span>
             <strong>{formatMoney(item.value)}</strong>
           </article>
@@ -42,7 +47,7 @@ const FinanceAnalyticsBlock = ({ rows = [], title, mode = "trend" }) => {
 
       <div className="finance-analytics-block__rows">
         {visibleRows.map((item, index) => (
-          <article key={`${item.label}-${index}`}>
+          <article className={Number(item.value || 0) < 0 ? "is-negative" : "is-positive"} key={`${item.label}-${index}`}>
             <span>{item.label}</span>
             <strong>{formatMoney(item.value)}</strong>
             <em>{Number(item.value || 0) >= 0 ? "Kirim" : "Chiqim"}</em>
