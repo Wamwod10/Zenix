@@ -75,7 +75,7 @@ const AIInsights = ({ currency = "uzs", stats = {} }) => {
   const insights = useMemo(() => buildInsights(stats, currency), [currency, stats]);
 
   return (
-    <article className="ai-insights">
+    <article className="zenix-dashboard__panel ai-insights">
       <div className="ai-insights__head">
         <div className="ai-insights__brand">
           <span>
